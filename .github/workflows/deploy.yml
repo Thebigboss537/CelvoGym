@@ -34,7 +34,7 @@ jobs:
             ${{ env.API_IMAGE }}:latest
             ${{ env.API_IMAGE }}:${{ github.sha }}
           build-args: |
-            NUGET_TOKEN=${{ secrets.GHCR_TOKEN }}
+            NUGET_TOKEN=${{ secrets.GITHUB_TOKEN }}
           cache-from: type=gha,scope=celvogym-api
           cache-to: type=gha,mode=max,scope=celvogym-api
 
@@ -76,7 +76,6 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd /opt/celvo
-            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u thebigboss537 --password-stdin
             docker compose -f docker-compose.prod.yml pull celvogym-api celvogym-web
             docker compose -f docker-compose.prod.yml up -d celvogym-api celvogym-web
             sleep 15
