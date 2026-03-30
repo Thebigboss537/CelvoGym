@@ -1,0 +1,216 @@
+{
+  "routines": [
+    {
+      "id": "routine_w1",
+      "name": "Semana 1",
+      "description": "Inicio del mesociclo. Enfoca en técnica y registra tus pesos base.",
+      "createdAt": "2026-03-27T10:00:00.000Z",
+      "updatedAt": "2026-03-27T10:00:00.000Z",
+      "days": [
+        {
+          "id": "day_w1d1",
+          "name": "Día 1 — Full Body",
+          "exercises": [
+            { "id": "ex_w1d1_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w1d1_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w1d1_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w1d1_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w1d1_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w1d1_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w1d1_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w1d1_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w1d1_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w1d1_10", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        },
+        {
+          "id": "day_w1d2",
+          "name": "Día 2 — Full Body",
+          "exercises": [
+            { "id": "ex_w1d2_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w1d2_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w1d2_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w1d2_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w1d2_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w1d2_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w1d2_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w1d2_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w1d2_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w1d2_10", "name": "Prensa de piernas", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Pies al ancho de hombros. No bloquear rodillas.", "videoUrl": "https://www.youtube.com/watch?v=bNsrqXUIJqc" }
+          ]
+        },
+        {
+          "id": "day_w1d3",
+          "name": "Día 3 — Lower",
+          "exercises": [
+            { "id": "ex_w1d3_01", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w1d3_02", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w1d3_03", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w1d3_04", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w1d3_05", "name": "Gemelos en hack", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Rango completo: bajar talón al máximo, subir de puntillas.", "videoUrl": "https://www.youtube.com/watch?v=w-bR1cm8imk" },
+            { "id": "ex_w1d3_06", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "routine_w2",
+      "name": "Semana 2",
+      "description": "Sube ligeramente el peso respecto a la semana 1. Mantén la técnica.",
+      "createdAt": "2026-03-27T10:00:00.000Z",
+      "updatedAt": "2026-03-27T10:00:00.000Z",
+      "days": [
+        {
+          "id": "day_w2d1",
+          "name": "Día 1 — Full Body",
+          "exercises": [
+            { "id": "ex_w2d1_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w2d1_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w2d1_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w2d1_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w2d1_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w2d1_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w2d1_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w2d1_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w2d1_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w2d1_10", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        },
+        {
+          "id": "day_w2d2",
+          "name": "Día 2 — Full Body",
+          "exercises": [
+            { "id": "ex_w2d2_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w2d2_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w2d2_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w2d2_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w2d2_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w2d2_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w2d2_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w2d2_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w2d2_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w2d2_10", "name": "Prensa de piernas", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Pies al ancho de hombros. No bloquear rodillas.", "videoUrl": "https://www.youtube.com/watch?v=bNsrqXUIJqc" }
+          ]
+        },
+        {
+          "id": "day_w2d3",
+          "name": "Día 3 — Lower",
+          "exercises": [
+            { "id": "ex_w2d3_01", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w2d3_02", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w2d3_03", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w2d3_04", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w2d3_05", "name": "Gemelos en hack", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Rango completo: bajar talón al máximo, subir de puntillas.", "videoUrl": "https://www.youtube.com/watch?v=w-bR1cm8imk" },
+            { "id": "ex_w2d3_06", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "routine_w3",
+      "name": "Semana 3",
+      "description": "Sube peso nuevamente. Si la técnica se compromete, mantén el peso de la semana 2.",
+      "createdAt": "2026-03-27T10:00:00.000Z",
+      "updatedAt": "2026-03-27T10:00:00.000Z",
+      "days": [
+        {
+          "id": "day_w3d1",
+          "name": "Día 1 — Full Body",
+          "exercises": [
+            { "id": "ex_w3d1_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w3d1_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w3d1_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w3d1_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w3d1_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w3d1_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w3d1_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w3d1_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w3d1_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w3d1_10", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        },
+        {
+          "id": "day_w3d2",
+          "name": "Día 2 — Full Body",
+          "exercises": [
+            { "id": "ex_w3d2_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w3d2_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w3d2_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w3d2_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w3d2_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w3d2_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w3d2_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w3d2_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w3d2_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w3d2_10", "name": "Prensa de piernas", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Pies al ancho de hombros. No bloquear rodillas.", "videoUrl": "https://www.youtube.com/watch?v=bNsrqXUIJqc" }
+          ]
+        },
+        {
+          "id": "day_w3d3",
+          "name": "Día 3 — Lower",
+          "exercises": [
+            { "id": "ex_w3d3_01", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w3d3_02", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w3d3_03", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w3d3_04", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w3d3_05", "name": "Gemelos en hack", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Rango completo: bajar talón al máximo, subir de puntillas.", "videoUrl": "https://www.youtube.com/watch?v=w-bR1cm8imk" },
+            { "id": "ex_w3d3_06", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "routine_w4",
+      "name": "Semana 4",
+      "description": "Última semana. Intenta tu mejor marca de peso en cada ejercicio.",
+      "createdAt": "2026-03-27T10:00:00.000Z",
+      "updatedAt": "2026-03-27T10:00:00.000Z",
+      "days": [
+        {
+          "id": "day_w4d1",
+          "name": "Día 1 — Full Body",
+          "exercises": [
+            { "id": "ex_w4d1_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w4d1_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w4d1_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w4d1_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w4d1_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w4d1_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w4d1_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w4d1_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w4d1_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w4d1_10", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        },
+        {
+          "id": "day_w4d2",
+          "name": "Día 2 — Full Body",
+          "exercises": [
+            { "id": "ex_w4d2_01", "name": "Peck Deck", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Apretar al final del movimiento. Codos ligeramente flexionados.", "videoUrl": "https://www.youtube.com/watch?v=WtMmRk1SCEM" },
+            { "id": "ex_w4d2_02", "name": "Jalón al pecho", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Agarre ancho, llevar la barra al pecho. No tirar con impulso.", "videoUrl": "https://www.youtube.com/watch?v=72q0tKij5uU" },
+            { "id": "ex_w4d2_03", "name": "Tríceps en soga", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Abrir la soga al final. Codos pegados al cuerpo.", "videoUrl": "https://www.youtube.com/watch?v=OlZnLb3S8pk" },
+            { "id": "ex_w4d2_04", "name": "Elevaciones laterales", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Subir hasta la altura de los hombros. Leve inclinación hacia adelante.", "videoUrl": "https://www.youtube.com/watch?v=hgLpdwMtEEs" },
+            { "id": "ex_w4d2_05", "name": "Curl de bíceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Sin balanceo. Subir controlado, bajar lento.", "videoUrl": "https://www.youtube.com/watch?v=PY9QylAMtyE" },
+            { "id": "ex_w4d2_06", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w4d2_07", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w4d2_08", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w4d2_09", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w4d2_10", "name": "Prensa de piernas", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Pies al ancho de hombros. No bloquear rodillas.", "videoUrl": "https://www.youtube.com/watch?v=bNsrqXUIJqc" }
+          ]
+        },
+        {
+          "id": "day_w4d3",
+          "name": "Día 3 — Lower",
+          "exercises": [
+            { "id": "ex_w4d3_01", "name": "Aductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Movimiento controlado. Apretar 1s al cerrar.", "videoUrl": "https://www.youtube.com/watch?v=9EuO_mMQ3i8" },
+            { "id": "ex_w4d3_02", "name": "Abductores", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No usar impulso. Apretar al abrir.", "videoUrl": "https://www.youtube.com/watch?v=-g5AF8wA740" },
+            { "id": "ex_w4d3_03", "name": "Extensión de cuádriceps", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Extender completamente. Bajar controlado.", "videoUrl": "https://www.youtube.com/watch?v=MyeQ1zCcfas" },
+            { "id": "ex_w4d3_04", "name": "Curl femoral", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "No levantar la cadera. Apretar arriba.", "videoUrl": "https://www.youtube.com/watch?v=H_ADCsf0JOw" },
+            { "id": "ex_w4d3_05", "name": "Gemelos en hack", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Rango completo: bajar talón al máximo, subir de puntillas.", "videoUrl": "https://www.youtube.com/watch?v=w-bR1cm8imk" },
+            { "id": "ex_w4d3_06", "name": "Hack squat", "sets": 3, "reps": "8-12", "weight": "", "restSeconds": 90, "notes": "Bajar hasta 90°. No bloquear rodillas arriba.", "videoUrl": "https://www.youtube.com/watch?v=D5NAofeaa58" }
+          ]
+        }
+      ]
+    }
+  ]
+}

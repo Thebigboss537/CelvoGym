@@ -1,0 +1,35 @@
+name: CelvoGym CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet restore CelvoGym.slnx
+      - run: dotnet build CelvoGym.slnx --no-restore -c Release
+      - run: dotnet test CelvoGym.slnx --no-build -c Release
+        if: hashFiles('tests/**/*.csproj') != ''
+
+  build-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: celvogym-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: celvogym-web/package-lock.json
+      - run: npm ci
+      - run: npx ng build --configuration=production

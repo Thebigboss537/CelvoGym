@@ -1,0 +1,35 @@
+{
+  "sets": [
+    {
+      "exerciseId": "ex_w1d1_01",
+      "dayId": "day_w1d1",
+      "routineId": "routine_w1",
+      "setIndex": 0,
+      "completed": false,
+      "completedAt": null,
+      "weight": "",
+      "reps": ""
+    },
+    {
+      "exerciseId": "ex_w1d1_01",
+      "dayId": "day_w1d1",
+      "routineId": "routine_w1",
+      "setIndex": 1,
+      "completed": false,
+      "completedAt": null,
+      "weight": "",
+      "reps": ""
+    },
+    {
+      "exerciseId": "ex_w1d1_01",
+      "dayId": "day_w1d1",
+      "routineId": "routine_w1",
+      "setIndex": 2,
+      "completed": false,
+      "completedAt": null,
+      "weight": "",
+      "reps": ""
+    }
+  ],
+  "comments": []
+}
