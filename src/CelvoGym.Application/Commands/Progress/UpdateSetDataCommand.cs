@@ -19,6 +19,10 @@ public sealed class UpdateSetDataHandler(ICelvoGymDbContext db)
 {
     public async Task<SetLogDto> Handle(UpdateSetDataCommand request, CancellationToken cancellationToken)
     {
+        var hasAssignment = await db.RoutineAssignments
+            .AnyAsync(ra => ra.RoutineId == request.RoutineId && ra.StudentId == request.StudentId && ra.IsActive, cancellationToken);
+        if (!hasAssignment) throw new InvalidOperationException("Routine not assigned to this student");
+
         var log = await db.SetLogs
             .FirstOrDefaultAsync(sl => sl.StudentId == request.StudentId
                 && sl.SetId == request.SetId, cancellationToken);

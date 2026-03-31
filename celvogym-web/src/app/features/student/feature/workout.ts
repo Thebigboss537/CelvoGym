@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
@@ -150,7 +150,7 @@ import { StudentRoutineDetailDto, SetLogDto } from '../../../shared/models';
     </div>
   `,
 })
-export class Workout implements OnInit {
+export class Workout implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
 
@@ -162,6 +162,10 @@ export class Workout implements OnInit {
   timerActive = signal(false);
   timerSeconds = signal(0);
   private timerInterval: ReturnType<typeof setInterval> | null = null;
+
+  ngOnDestroy() {
+    this.stopTimer();
+  }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;

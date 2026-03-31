@@ -1,4 +1,4 @@
-using System.Text.Json;
+using CelvoGym.Api.Extensions;
 using CelvoGym.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,15 +8,15 @@ public sealed class StudentContextMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, ICelvoGymDbContext db)
     {
-        var session = context.Items["Session"] as Dictionary<string, object>;
+        var session = context.Items[ContextKeys.Session] as Dictionary<string, object>;
         if (session is null)
         {
             context.Response.StatusCode = 401;
             return;
         }
 
-        if (!session.TryGetValue("userId", out var userIdObj)
-            || !Guid.TryParse(userIdObj is JsonElement je ? je.GetString() : userIdObj?.ToString(), out var userId))
+        var userId = session.GetGuid("userId");
+        if (userId is null)
         {
             context.Response.StatusCode = 401;
             return;
@@ -24,7 +24,7 @@ public sealed class StudentContextMiddleware(RequestDelegate next)
 
         var student = await db.Students
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.CelvoGuardUserId == userId && s.IsActive);
+            .FirstOrDefaultAsync(s => s.CelvoGuardUserId == userId.Value && s.IsActive);
 
         if (student is null)
         {
@@ -33,15 +33,11 @@ public sealed class StudentContextMiddleware(RequestDelegate next)
             return;
         }
 
-        context.Items["StudentId"] = student.Id;
-        context.Items["StudentUserId"] = userId;
-        context.Items["StudentName"] = student.DisplayName;
+        context.Items[ContextKeys.StudentId] = student.Id;
+        context.Items[ContextKeys.StudentUserId] = userId.Value;
+        context.Items[ContextKeys.StudentName] = student.DisplayName;
 
-        if (session.TryGetValue("permissions", out var permObj) && permObj is JsonElement permElement)
-        {
-            var permissions = permElement.EnumerateArray().Select(x => x.GetString()!).ToList();
-            context.Items["Permissions"] = permissions;
-        }
+        session.ExtractPermissionsTo(context);
 
         await next(context);
     }

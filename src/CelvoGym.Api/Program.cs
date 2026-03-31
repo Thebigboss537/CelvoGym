@@ -126,13 +126,14 @@ try
         }
     );
 
-    // CelvoGuard + StudentContext for authenticated student endpoints
+    // CelvoGuard + StudentContext + CSRF for authenticated student endpoints
     app.UseWhen(
         ctx => ctx.Request.Path.StartsWithSegments("/api/v1/public/my"),
         branch =>
         {
             branch.UseMiddleware<CelvoGuardMiddleware>();
             branch.UseMiddleware<StudentContextMiddleware>();
+            branch.UseMiddleware<CsrfValidationMiddleware>();
         }
     );
 

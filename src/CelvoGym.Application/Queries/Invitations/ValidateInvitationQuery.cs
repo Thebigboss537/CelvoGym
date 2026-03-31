@@ -1,5 +1,4 @@
-using System.Security.Cryptography;
-using System.Text;
+using CelvoGym.Application.Common;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using MediatR;
@@ -14,7 +13,7 @@ public sealed class ValidateInvitationHandler(ICelvoGymDbContext db)
 {
     public async Task<InvitationInfoDto> Handle(ValidateInvitationQuery request, CancellationToken cancellationToken)
     {
-        var tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(request.Token)));
+        var tokenHash = TokenHasher.Hash(request.Token);
 
         var invitation = await db.StudentInvitations
             .AsNoTracking()

@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using System.Text;
+using CelvoGym.Application.Common;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using CelvoGym.Domain.Entities;
@@ -18,7 +18,7 @@ public sealed class InviteStudentHandler(ICelvoGymDbContext db)
     public async Task<StudentInvitationDto> Handle(InviteStudentCommand request, CancellationToken cancellationToken)
     {
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-        var tokenHash = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+        var tokenHash = TokenHasher.Hash(token);
 
         var invitation = new StudentInvitation
         {

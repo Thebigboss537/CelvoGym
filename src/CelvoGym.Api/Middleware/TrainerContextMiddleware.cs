@@ -1,4 +1,4 @@
-using System.Text.Json;
+using CelvoGym.Api.Extensions;
 using CelvoGym.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,25 +8,25 @@ public sealed class TrainerContextMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext context, ICelvoGymDbContext db)
     {
-        var session = context.Items["Session"] as Dictionary<string, object>;
+        var session = context.Items[ContextKeys.Session] as Dictionary<string, object>;
         if (session is null)
         {
             context.Response.StatusCode = 401;
             return;
         }
 
-        if (!session.TryGetValue("tenantId", out var tenantIdObj)
-            || !Guid.TryParse(tenantIdObj is JsonElement je ? je.GetString() : tenantIdObj?.ToString(), out var tenantId))
+        var tenantId = session.GetGuid("tenantId");
+        if (tenantId is null)
         {
             context.Response.StatusCode = 401;
             return;
         }
 
-        context.Items["TenantId"] = tenantId;
+        context.Items[ContextKeys.TenantId] = tenantId.Value;
 
         var trainer = await db.Trainers
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.IsActive);
+            .FirstOrDefaultAsync(t => t.TenantId == tenantId.Value && t.IsActive);
 
         if (trainer is not null)
         {
@@ -37,7 +37,7 @@ public sealed class TrainerContextMiddleware(RequestDelegate next)
                 return;
             }
 
-            context.Items["TrainerId"] = trainer.Id;
+            context.Items[ContextKeys.TrainerId] = trainer.Id;
         }
         else if (!context.Request.Path.StartsWithSegments("/api/v1/onboarding"))
         {
@@ -46,11 +46,7 @@ public sealed class TrainerContextMiddleware(RequestDelegate next)
             return;
         }
 
-        if (session.TryGetValue("permissions", out var permObj) && permObj is JsonElement permElement)
-        {
-            var permissions = permElement.EnumerateArray().Select(x => x.GetString()!).ToList();
-            context.Items["Permissions"] = permissions;
-        }
+        session.ExtractPermissionsTo(context);
 
         await next(context);
     }

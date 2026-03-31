@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { InvitationInfoDto } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
@@ -121,7 +122,7 @@ export class AcceptInvite implements OnInit {
 
   async loadInvitation() {
     try {
-      const info = await this.api.get<InvitationInfoDto>(`/public/invite/${this.token}`).toPromise();
+      const info = await firstValueFrom(this.api.get<InvitationInfoDto>(`/public/invite/${this.token}`));
       this.invitation.set(info ?? null);
     } catch {
       this.error.set('Invitación inválida o expirada');
@@ -156,10 +157,10 @@ export class AcceptInvite implements OnInit {
       const userData = await res.json();
 
       // Accept invitation in CelvoGym API
-      await this.api.post(`/public/invite/${this.token}/accept`, {
+      await firstValueFrom(this.api.post(`/public/invite/${this.token}/accept`, {
         celvoGuardUserId: userData.userId,
         displayName: this.displayName,
-      }).toPromise();
+      }));
 
       this.accepted.set(true);
     } catch (e: any) {

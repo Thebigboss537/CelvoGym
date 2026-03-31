@@ -1,6 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { AuthUser } from '../../shared/models';
 
@@ -30,7 +31,7 @@ export const AuthStore = signalStore(
       if (store.initialized()) return;
       patchState(store, { loading: true });
       try {
-        const user = await api.get<AuthUser>('/auth/me').toPromise();
+        const user = await firstValueFrom(api.get<AuthUser>('/auth/me'));
         patchState(store, { user: user ?? null, initialized: true, loading: false });
       } catch {
         patchState(store, { user: null, initialized: true, loading: false });

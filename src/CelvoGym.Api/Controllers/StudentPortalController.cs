@@ -1,21 +1,24 @@
+using CelvoGym.Api.Extensions;
 using CelvoGym.Application.Commands.Comments;
 using CelvoGym.Application.Commands.Progress;
+using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.Queries.Comments;
 using CelvoGym.Application.Queries.StudentPortal;
 using CelvoGym.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CelvoGym.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/public/my")]
-public class StudentPortalController(IMediator mediator) : ControllerBase
+public class StudentPortalController(IMediator mediator, ICelvoGymDbContext db) : ControllerBase
 {
     [HttpGet("routines")]
     public async Task<IActionResult> GetMyRoutines(CancellationToken ct)
     {
-        var studentId = GetStudentId();
+        var studentId = HttpContext.GetStudentId();
         var result = await mediator.Send(new GetMyRoutinesQuery(studentId), ct);
         return Ok(result);
     }
@@ -23,7 +26,7 @@ public class StudentPortalController(IMediator mediator) : ControllerBase
     [HttpGet("routines/{id:guid}")]
     public async Task<IActionResult> GetMyRoutineDetail(Guid id, CancellationToken ct)
     {
-        var studentId = GetStudentId();
+        var studentId = HttpContext.GetStudentId();
         var result = await mediator.Send(new GetMyRoutineDetailQuery(id, studentId), ct);
         return Ok(result);
     }
@@ -31,7 +34,7 @@ public class StudentPortalController(IMediator mediator) : ControllerBase
     [HttpPost("sets/toggle")]
     public async Task<IActionResult> ToggleSet([FromBody] ToggleSetRequest request, CancellationToken ct)
     {
-        var studentId = GetStudentId();
+        var studentId = HttpContext.GetStudentId();
         var result = await mediator.Send(new ToggleSetCommand(studentId, request.SetId, request.RoutineId), ct);
         return Ok(result);
     }
@@ -39,7 +42,7 @@ public class StudentPortalController(IMediator mediator) : ControllerBase
     [HttpPost("sets/update")]
     public async Task<IActionResult> UpdateSetData([FromBody] UpdateSetDataRequest request, CancellationToken ct)
     {
-        var studentId = GetStudentId();
+        var studentId = HttpContext.GetStudentId();
         var result = await mediator.Send(new UpdateSetDataCommand(
             studentId, request.SetId, request.RoutineId,
             request.Weight, request.Reps, request.Rpe), ct);
@@ -52,6 +55,11 @@ public class StudentPortalController(IMediator mediator) : ControllerBase
         [FromQuery] Guid dayId,
         CancellationToken ct)
     {
+        var studentId = HttpContext.GetStudentId();
+        var hasAssignment = await db.RoutineAssignments
+            .AnyAsync(ra => ra.RoutineId == routineId && ra.StudentId == studentId && ra.IsActive, ct);
+        if (!hasAssignment) throw new InvalidOperationException("Routine not assigned to this student");
+
         var result = await mediator.Send(new GetCommentsQuery(routineId, dayId), ct);
         return Ok(result);
     }
@@ -59,20 +67,14 @@ public class StudentPortalController(IMediator mediator) : ControllerBase
     [HttpPost("comments")]
     public async Task<IActionResult> AddComment([FromBody] CreateStudentCommentRequest request, CancellationToken ct)
     {
-        var studentUserId = (Guid)HttpContext.Items["StudentUserId"]!;
-        var studentName = (string)HttpContext.Items["StudentName"]!;
+        var studentUserId = (Guid)HttpContext.Items[ContextKeys.StudentUserId]!;
+        var studentName = (string)HttpContext.Items[ContextKeys.StudentName]!;
 
         var result = await mediator.Send(new CreateCommentCommand(
             request.RoutineId, request.DayId, request.ExerciseId,
             studentUserId, AuthorType.Student, studentName, request.Text), ct);
 
         return Created($"/api/v1/public/my/comments/{result.Id}", result);
-    }
-
-    private Guid GetStudentId()
-    {
-        return (Guid)(HttpContext.Items["StudentId"]
-            ?? throw new InvalidOperationException("Student profile not found"));
     }
 }
 
