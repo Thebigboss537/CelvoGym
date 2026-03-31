@@ -14,6 +14,7 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - run: dotnet nuget update source github --username thebigboss537 --password ${{ secrets.GHCR_TOKEN }} --store-password-in-clear-text
       - run: dotnet restore CelvoGym.slnx
       - run: dotnet build CelvoGym.slnx --no-restore -c Release
       - run: dotnet test CelvoGym.slnx --no-build -c Release
