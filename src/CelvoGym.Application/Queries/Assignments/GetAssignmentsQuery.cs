@@ -15,6 +15,7 @@ public sealed class GetAssignmentsHandler(ICelvoGymDbContext db)
         return await db.RoutineAssignments
             .AsNoTracking()
             .Where(ra => ra.Routine.TrainerId == request.TrainerId && ra.IsActive)
+            .OrderByDescending(ra => ra.CreatedAt)
             .Select(ra => new AssignmentDto(
                 ra.Id,
                 ra.RoutineId,
@@ -23,7 +24,6 @@ public sealed class GetAssignmentsHandler(ICelvoGymDbContext db)
                 ra.Student.DisplayName,
                 ra.IsActive,
                 ra.CreatedAt))
-            .OrderByDescending(a => a.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 }
