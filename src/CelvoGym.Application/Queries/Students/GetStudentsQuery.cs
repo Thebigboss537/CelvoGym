@@ -15,13 +15,13 @@ public sealed class GetStudentsHandler(ICelvoGymDbContext db)
         return await db.TrainerStudents
             .AsNoTracking()
             .Where(ts => ts.TrainerId == request.TrainerId && ts.IsActive)
+            .OrderByDescending(ts => ts.CreatedAt)
             .Select(ts => new StudentDto(
                 ts.Student.Id,
                 ts.Student.DisplayName,
                 ts.Student.AvatarUrl,
                 ts.Student.IsActive,
                 ts.CreatedAt))
-            .OrderByDescending(s => s.CreatedAt)
             .ToListAsync(cancellationToken);
     }
 }
