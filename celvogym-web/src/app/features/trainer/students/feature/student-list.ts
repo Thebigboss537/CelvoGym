@@ -47,6 +47,22 @@ import { StudentDto, StudentInvitationDto } from '../../../../shared/models';
         </div>
       }
 
+      <!-- Login link for students -->
+      @if (loginLink()) {
+        <div class="bg-card border border-border rounded-xl p-4 mb-4">
+          <h3 class="font-semibold text-sm mb-2">Link de acceso para alumnos</h3>
+          <p class="text-text-muted text-xs mb-2">Comparte este link para que tus alumnos inicien sesión:</p>
+          <div class="flex items-center gap-2">
+            <input type="text" [value]="loginLink()" readonly
+              class="flex-1 bg-bg-raised border border-border rounded-lg px-3 py-2 text-xs text-text-secondary" />
+            <button (click)="copyLoginLink()"
+              class="bg-primary hover:bg-primary-dark text-white text-xs px-3 py-2 rounded-lg transition shrink-0">
+              {{ copied() ? '¡Copiado!' : 'Copiar' }}
+            </button>
+          </div>
+        </div>
+      }
+
       <!-- Student list -->
       @if (loading()) {
         <div class="flex justify-center py-12">
@@ -83,6 +99,8 @@ export class StudentList implements OnInit {
   students = signal<StudentDto[]>([]);
   loading = signal(true);
   showInvite = signal(false);
+  loginLink = signal('');
+  copied = signal(false);
 
   inviteEmail = '';
   inviteFirstName = '';
@@ -95,6 +113,18 @@ export class StudentList implements OnInit {
       next: (data) => { this.students.set(data); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+
+    this.api.get<{ tenantId: string }>('/trainer/me').subscribe({
+      next: (data) => {
+        this.loginLink.set(`${window.location.origin}/auth/login?t=${data.tenantId}`);
+      },
+    });
+  }
+
+  copyLoginLink() {
+    navigator.clipboard.writeText(this.loginLink());
+    this.copied.set(true);
+    setTimeout(() => this.copied.set(false), 2000);
   }
 
   invite() {

@@ -22,6 +22,11 @@ export const studentGuard: CanActivateFn = async () => {
 
   if (store.isEndUser()) return true;
 
-  router.navigate(['/auth/login']);
+  const tenantId = localStorage.getItem('celvogym_tenant_id');
+  if (tenantId) {
+    router.navigate(['/auth/login'], { queryParams: { t: tenantId } });
+  } else {
+    router.navigate(['/auth/login']);
+  }
   return false;
 };

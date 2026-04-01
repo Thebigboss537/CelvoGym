@@ -1,7 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environments/environment';
+
+const TENANT_ID_KEY = 'celvogym_tenant_id';
 
 @Component({
   selector: 'app-login',
@@ -11,7 +13,13 @@ import { environment } from '../../../../environments/environment';
       <div class="w-full max-w-sm animate-fade-up">
         <div class="text-center mb-8">
           <h1 class="font-[var(--font-display)] text-3xl font-bold text-primary">CelvoGym</h1>
-          <p class="text-text-secondary mt-2">Inicia sesión para continuar</p>
+          <p class="text-text-secondary mt-2">
+            @if (isStudentLogin()) {
+              Acceso alumno
+            } @else {
+              Inicia sesión para continuar
+            }
+          </p>
         </div>
 
         <form (ngSubmit)="login()" class="space-y-4">
@@ -56,48 +64,46 @@ import { environment } from '../../../../environments/environment';
           </button>
         </form>
 
-        <p class="text-center text-text-muted text-sm mt-6">
-          ¿Eres entrenador?
-          <a routerLink="/auth/register" class="text-primary hover:underline">Regístrate aquí</a>
-        </p>
+        @if (!isStudentLogin()) {
+          <p class="text-center text-text-muted text-sm mt-6">
+            ¿Eres entrenador?
+            <a routerLink="/auth/register" class="text-primary hover:underline">Regístrate aquí</a>
+          </p>
+        }
       </div>
     </div>
   `,
 })
-export class Login {
+export class Login implements OnInit {
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   email = '';
   password = '';
   loading = signal(false);
   error = signal('');
+  isStudentLogin = signal(false);
+
+  private tenantId = '';
+
+  ngOnInit() {
+    const t = this.route.snapshot.queryParamMap.get('t');
+    if (t) {
+      this.tenantId = t;
+      this.isStudentLogin.set(true);
+      localStorage.setItem(TENANT_ID_KEY, t);
+    }
+  }
 
   async login() {
     this.loading.set(true);
     this.error.set('');
 
     try {
-      const res = await fetch(`${environment.guardUrl}/api/v1/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: this.email,
-          password: this.password,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
-
-      const data = await res.json();
-
-      if (data.userType === 'enduser') {
-        this.router.navigate(['/workout']);
+      if (this.isStudentLogin()) {
+        await this.loginEndUser();
       } else {
-        this.router.navigate(['/trainer']);
+        await this.loginOperator();
       }
     } catch (e: any) {
       this.error.set(e.message);
@@ -105,4 +111,42 @@ export class Login {
       this.loading.set(false);
     }
   }
+
+  private async loginOperator() {
+    const res = await fetch(`${environment.guardUrl}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
+      credentials: 'include',
+      body: JSON.stringify({ email: this.email, password: this.password }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Error al iniciar sesión');
+    }
+
+    this.router.navigate(['/trainer']);
+  }
+
+  private async loginEndUser() {
+    const res = await fetch(`${environment.guardUrl}/api/v1/enduser/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: this.email,
+        password: this.password,
+        tenantId: this.tenantId,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Error al iniciar sesión');
+    }
+
+    this.router.navigate(['/workout']);
+  }
 }
+
+export const TENANT_ID_STORAGE_KEY = TENANT_ID_KEY;
