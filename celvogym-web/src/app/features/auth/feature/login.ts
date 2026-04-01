@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
 
 const TENANT_ID_KEY = 'celvogym_tenant_id';
@@ -77,6 +78,7 @@ const TENANT_ID_KEY = 'celvogym_tenant_id';
 export class Login implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private authStore = inject(AuthStore);
 
   email = '';
   password = '';
@@ -125,6 +127,7 @@ export class Login implements OnInit {
       throw new Error(data.error || 'Error al iniciar sesión');
     }
 
+    this.authStore.reset();
     this.router.navigate(['/trainer']);
   }
 
@@ -145,6 +148,7 @@ export class Login implements OnInit {
       throw new Error(data.error || 'Error al iniciar sesión');
     }
 
+    this.authStore.reset();
     this.router.navigate(['/workout']);
   }
 }

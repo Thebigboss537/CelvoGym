@@ -44,6 +44,9 @@ export const AuthStore = signalStore(
     setUser(user: AuthUser) {
       patchState(store, { user, initialized: true });
     },
+    reset() {
+      patchState(store, { user: null, initialized: false, loading: false });
+    },
     logout() {
       patchState(store, { user: null });
       router.navigate(['/auth/login']);
