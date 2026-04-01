@@ -1,8 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import { firstValueFrom } from 'rxjs';
-import { ApiService } from '../services/api.service';
+import { environment } from '../../../environments/environment';
 import { AuthUser } from '../../shared/models';
 
 interface AuthState {
@@ -26,13 +25,18 @@ export const AuthStore = signalStore(
     isEndUser: computed(() => user()?.userType === 'enduser'),
     permissions: computed(() => user()?.permissions ?? []),
   })),
-  withMethods((store, api = inject(ApiService), router = inject(Router)) => ({
+  withMethods((store, router = inject(Router)) => ({
     async initialize() {
       if (store.initialized()) return;
       patchState(store, { loading: true });
       try {
-        const user = await firstValueFrom(api.get<AuthUser>('/auth/me'));
-        patchState(store, { user: user ?? null, initialized: true, loading: false });
+        const res = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
+          credentials: 'include',
+          headers: { 'X-App-Slug': 'celvogym' },
+        });
+        if (!res.ok) throw new Error();
+        const user = await res.json() as AuthUser;
+        patchState(store, { user, initialized: true, loading: false });
       } catch {
         patchState(store, { user: null, initialized: true, loading: false });
       }

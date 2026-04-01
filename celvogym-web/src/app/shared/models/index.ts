@@ -1,10 +1,11 @@
-// Auth
+// Auth (matches CelvoGuard /api/v1/auth/me response)
 export interface AuthUser {
-  userId: string;
+  id: string;
   tenantId: string;
-  email: string;
+  email: string | null;
+  firstName: string | null;
   permissions: string[];
-  userType: 'operator' | 'enduser';
+  userType: string;
 }
 
 // Trainer
