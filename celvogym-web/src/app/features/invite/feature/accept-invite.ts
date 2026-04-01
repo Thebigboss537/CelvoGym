@@ -158,7 +158,7 @@ export class AcceptInvite implements OnInit {
 
       // Accept invitation in CelvoGym API
       await firstValueFrom(this.api.post(`/public/invite/${this.token}/accept`, {
-        celvoGuardUserId: userData.userId,
+        celvoGuardUserId: userData.user.id,
         displayName: this.displayName,
       }));
 
