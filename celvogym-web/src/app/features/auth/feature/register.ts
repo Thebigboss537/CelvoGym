@@ -1,6 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
+import { ApiService } from '../../../core/services/api.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -91,6 +93,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class Register {
   private router = inject(Router);
+  private api = inject(ApiService);
 
   displayName = '';
   email = '';
@@ -121,20 +124,10 @@ export class Register {
         throw new Error(data.error || 'Error al registrarse');
       }
 
-      // Setup trainer profile in CelvoGym API
-      const setupRes = await fetch(`${environment.apiUrl}/onboarding/trainer/setup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          displayName: this.displayName,
-        }),
-      });
-
-      if (!setupRes.ok) {
-        const data = await setupRes.json();
-        throw new Error(data.error || 'Error al crear perfil');
-      }
+      // Setup trainer profile in CelvoGym API (via ApiService → CSRF interceptor)
+      await firstValueFrom(this.api.post('/onboarding/trainer/setup', {
+        displayName: this.displayName,
+      }));
 
       this.registered.set(true);
     } catch (e: any) {
