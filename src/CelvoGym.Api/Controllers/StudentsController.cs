@@ -3,6 +3,7 @@ using CelvoGym.Application.Commands.Students;
 using CelvoGym.Application.Queries.Students;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using QRCoder;
 
 namespace CelvoGym.Api.Controllers;
 
@@ -32,6 +33,22 @@ public class StudentsController(IMediator mediator) : ControllerBase
         HttpContext.RequirePermission(Permissions.GymManage);
         await mediator.Send(new DeactivateStudentCommand(id, HttpContext.GetTrainerId()), ct);
         return NoContent();
+    }
+
+    [HttpGet("qr")]
+    public IActionResult GetQr([FromQuery] string url)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+
+        if (string.IsNullOrWhiteSpace(url))
+            return BadRequest(new { error = "URL is required" });
+
+        using var qrGenerator = new QRCodeGenerator();
+        using var qrCodeData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.M);
+        using var qrCode = new PngByteQRCode(qrCodeData);
+        var pngBytes = qrCode.GetGraphic(10);
+
+        return File(pngBytes, "image/png", "invite-qr.png");
     }
 }
 
