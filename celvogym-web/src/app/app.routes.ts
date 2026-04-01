@@ -7,7 +7,7 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
   {
-    path: 'invite/:token',
+    path: 'invite',
     loadComponent: () => import('./features/invite/feature/accept-invite').then(m => m.AcceptInvite),
   },
   {

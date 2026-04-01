@@ -118,7 +118,7 @@ export class StudentList implements OnInit {
   }
 
   inviteLink(): string {
-    return `${window.location.origin}/invite/${this.inviteToken()}`;
+    return `${window.location.origin}/invite?token=${encodeURIComponent(this.inviteToken())}`;
   }
 
   formatDate(iso: string): string {

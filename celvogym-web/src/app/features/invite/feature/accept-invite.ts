@@ -116,7 +116,7 @@ export class AcceptInvite implements OnInit {
   private token = '';
 
   ngOnInit() {
-    this.token = this.route.snapshot.paramMap.get('token') ?? '';
+    this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
     this.loadInvitation();
   }
 
