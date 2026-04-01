@@ -21,8 +21,14 @@ export const AuthStore = signalStore(
   withState(initialState),
   withComputed(({ user }) => ({
     isAuthenticated: computed(() => user() !== null),
-    isOperator: computed(() => user()?.userType === 'operator'),
-    isEndUser: computed(() => user()?.userType === 'enduser'),
+    isOperator: computed(() => {
+      const t = user()?.userType?.toLowerCase().replace('_', '');
+      return t === 'operator';
+    }),
+    isEndUser: computed(() => {
+      const t = user()?.userType?.toLowerCase().replace('_', '');
+      return t === 'enduser';
+    }),
     permissions: computed(() => user()?.permissions ?? []),
   })),
   withMethods((store, router = inject(Router)) => ({

@@ -127,7 +127,7 @@ export class Login implements OnInit {
       throw new Error(data.error || 'Error al iniciar sesión');
     }
 
-    this.authStore.reset();
+    await this.fetchAndSetUser();
     this.router.navigate(['/trainer']);
   }
 
@@ -148,8 +148,19 @@ export class Login implements OnInit {
       throw new Error(data.error || 'Error al iniciar sesión');
     }
 
-    this.authStore.reset();
+    await this.fetchAndSetUser();
     this.router.navigate(['/workout']);
+  }
+
+  private async fetchAndSetUser() {
+    const meRes = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
+      credentials: 'include',
+      headers: { 'X-App-Slug': 'celvogym' },
+    });
+    if (meRes.ok) {
+      const user = await meRes.json();
+      this.authStore.setUser(user);
+    }
   }
 }
 
