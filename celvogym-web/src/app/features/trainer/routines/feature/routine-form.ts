@@ -71,6 +71,10 @@ interface DayForm { name: string; groups: GroupForm[]; }
                         placeholder="Nombre del ejercicio" />
                       <button type="button" (click)="removeExercise(di, gi, ei)" class="text-text-muted hover:text-danger text-xs">×</button>
                     </div>
+                    <input type="url" [ngModel]="ex.videoUrl" (ngModelChange)="onVideoUrlChange(ex, $event)"
+                      [name]="'vid-' + di + '-' + gi + '-' + ei"
+                      class="w-full bg-bg-raised border border-border-light rounded px-2 py-1 text-xs text-text focus:outline-none focus:border-primary"
+                      placeholder="URL de YouTube (opcional)" />
 
                     <!-- Sets -->
                     <div class="space-y-1">
@@ -255,6 +259,11 @@ export class RoutineForm implements OnInit {
   }
   removeSet(di: number, gi: number, ei: number, si: number) {
     this.days.update(d => { d[di].groups[gi].exercises[ei].sets.splice(si, 1); return [...d]; });
+  }
+
+  onVideoUrlChange(ex: ExerciseForm, url: string) {
+    ex.videoUrl = url;
+    ex.videoSource = url ? 'YouTube' : 'None';
   }
 
   private newDay(): DayForm {

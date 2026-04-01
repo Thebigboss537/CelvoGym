@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { RoutineDetailDto, StudentDto, AssignmentDto } from '../../../../shared/models';
 
@@ -21,10 +21,16 @@ import { RoutineDetailDto, StudentDto, AssignmentDto } from '../../../../shared/
               <p class="text-text-secondary text-sm mt-1">{{ routine()!.description }}</p>
             }
           </div>
-          <a
-            [routerLink]="'edit'"
-            class="bg-card hover:bg-card-hover border border-border text-sm px-3 py-1.5 rounded-lg transition"
-          >Editar</a>
+          <div class="flex gap-2">
+            <a
+              [routerLink]="'edit'"
+              class="bg-card hover:bg-card-hover border border-border text-sm px-3 py-1.5 rounded-lg transition"
+            >Editar</a>
+            <button (click)="deleteRoutine()"
+              class="bg-card hover:bg-danger hover:text-white border border-border text-danger text-sm px-3 py-1.5 rounded-lg transition">
+              Eliminar
+            </button>
+          </div>
         </div>
 
         <!-- Assign to students -->
@@ -95,7 +101,17 @@ import { RoutineDetailDto, StudentDto, AssignmentDto } from '../../../../shared/
                     @for (exercise of group.exercises; track exercise.id) {
                       <div class="py-1.5">
                         <div class="flex items-center justify-between">
-                          <span class="text-text font-medium text-sm">{{ exercise.name }}</span>
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-text font-medium text-sm">{{ exercise.name }}</span>
+                            @if (exercise.videoSource !== 'None' && exercise.videoUrl) {
+                              <a [href]="exercise.videoUrl" target="_blank" rel="noopener noreferrer"
+                                class="text-danger hover:text-danger/80 transition" title="Ver video en YouTube">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14c1.88.55 9.38.55 9.38.55s7.5 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.81zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/>
+                                </svg>
+                              </a>
+                            }
+                          </div>
                           @if (exercise.tempo) {
                             <span class="text-text-muted text-xs">Tempo: {{ exercise.tempo }}</span>
                           }
@@ -126,6 +142,7 @@ import { RoutineDetailDto, StudentDto, AssignmentDto } from '../../../../shared/
 })
 export class RoutineDetail implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private api = inject(ApiService);
 
   routine = signal<RoutineDetailDto | null>(null);
@@ -190,6 +207,14 @@ export class RoutineDetail implements OnInit {
         this.assignedStudents.set(forRoutine);
         this.updateAvailable();
       },
+    });
+  }
+
+  deleteRoutine() {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta rutina?')) return;
+    this.api.delete(`/routines/${this.routineId}`).subscribe({
+      next: () => this.router.navigate(['/trainer/routines']),
+      error: (err) => this.assignError.set(err.error?.error || 'Error al eliminar'),
     });
   }
 

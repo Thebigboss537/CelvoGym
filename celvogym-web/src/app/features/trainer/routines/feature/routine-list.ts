@@ -20,6 +20,11 @@ import { RoutineListDto } from '../../../../shared/models';
         <div class="flex justify-center py-12">
           <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
+      } @else if (error()) {
+        <div class="text-center py-12">
+          <p class="text-danger">{{ error() }}</p>
+          <button (click)="reload()" class="text-primary text-sm mt-2 hover:underline">Reintentar</button>
+        </div>
       } @else if (routines().length === 0) {
         <div class="text-center py-16">
           <p class="text-text-muted text-lg">No tienes rutinas aún</p>
@@ -58,14 +63,28 @@ export class RoutineList implements OnInit {
 
   routines = signal<RoutineListDto[]>([]);
   loading = signal(true);
+  error = signal('');
 
   ngOnInit() {
+    this.loadData();
+  }
+
+  reload() {
+    this.error.set('');
+    this.loading.set(true);
+    this.loadData();
+  }
+
+  private loadData() {
     this.api.get<RoutineListDto[]>('/routines').subscribe({
       next: (data) => {
         this.routines.set(data);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: (err) => {
+        this.error.set(err.error?.error || 'Error al cargar datos');
+        this.loading.set(false);
+      },
     });
   }
 
