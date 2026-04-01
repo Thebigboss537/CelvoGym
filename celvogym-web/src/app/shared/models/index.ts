@@ -97,6 +97,7 @@ export interface InvitationInfoDto {
   trainerName: string;
   trainerAvatarUrl: string | null;
   email: string;
+  tenantId: string;
 }
 
 // Assignments

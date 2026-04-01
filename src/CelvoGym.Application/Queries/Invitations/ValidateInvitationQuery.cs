@@ -26,6 +26,7 @@ public sealed class ValidateInvitationHandler(ICelvoGymDbContext db)
         return new InvitationInfoDto(
             invitation.Trainer.DisplayName,
             invitation.Trainer.AvatarUrl,
-            invitation.Email);
+            invitation.Email,
+            invitation.Trainer.TenantId);
     }
 }

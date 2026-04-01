@@ -19,4 +19,5 @@ public sealed record StudentInvitationDto(
 public sealed record InvitationInfoDto(
     string TrainerName,
     string? TrainerAvatarUrl,
-    string Email);
+    string Email,
+    Guid TenantId);

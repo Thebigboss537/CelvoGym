@@ -145,6 +145,7 @@ export class AcceptInvite implements OnInit {
           email: this.invitation()!.email,
           password: this.password,
           firstName: this.displayName,
+          tenantId: this.invitation()!.tenantId,
         }),
       });
 
