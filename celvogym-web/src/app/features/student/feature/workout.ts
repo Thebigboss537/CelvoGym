@@ -84,12 +84,17 @@ import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/
                             }
                           </div>
                           @if (expandedVideos().has(exercise.id) && exercise.videoUrl) {
-                            <div class="mb-2 rounded-lg overflow-hidden aspect-video">
-                              <iframe [src]="getEmbedUrl(exercise.videoUrl)"
-                                class="w-full h-full" frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowfullscreen></iframe>
-                            </div>
+                            @if (exercise.videoSource === 'Upload') {
+                              <video [src]="exercise.videoUrl" controls preload="metadata"
+                                class="w-full rounded-lg mt-2"></video>
+                            } @else {
+                              <div class="mb-2 rounded-lg overflow-hidden aspect-video">
+                                <iframe [src]="getEmbedUrl(exercise.videoUrl)"
+                                  class="w-full h-full" frameborder="0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowfullscreen></iframe>
+                              </div>
+                            }
                           }
 
                           <!-- Sets -->

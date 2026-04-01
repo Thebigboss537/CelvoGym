@@ -5,7 +5,7 @@ import { ApiService } from '../../../../core/services/api.service';
 import { RoutineDetailDto, GroupType, SetType, VideoSource } from '../../../../shared/models';
 
 interface SetForm { setType: SetType; targetReps: string; targetWeight: string; targetRpe: number | null; restSeconds: number | null; }
-interface ExerciseForm { name: string; notes: string; videoSource: VideoSource; videoUrl: string; tempo: string; sets: SetForm[]; }
+interface ExerciseForm { name: string; notes: string; videoSource: VideoSource; videoUrl: string; tempo: string; sets: SetForm[]; videoInputMode: 'youtube' | 'upload'; uploading: boolean; }
 interface GroupForm { groupType: GroupType; restSeconds: number; exercises: ExerciseForm[]; }
 interface DayForm { name: string; groups: GroupForm[]; }
 
@@ -71,10 +71,39 @@ interface DayForm { name: string; groups: GroupForm[]; }
                         placeholder="Nombre del ejercicio" />
                       <button type="button" (click)="removeExercise(di, gi, ei)" class="text-text-muted hover:text-danger text-xs">×</button>
                     </div>
-                    <input type="url" [ngModel]="ex.videoUrl" (ngModelChange)="onVideoUrlChange(ex, $event)"
-                      [name]="'vid-' + di + '-' + gi + '-' + ei"
-                      class="w-full bg-bg-raised border border-border-light rounded px-2 py-1 text-xs text-text focus:outline-none focus:border-primary"
-                      placeholder="URL de YouTube (opcional)" />
+                    <div class="space-y-1">
+                      <div class="flex gap-1">
+                        <button type="button" (click)="ex.videoInputMode = 'youtube'"
+                          class="px-2 py-0.5 text-xs rounded transition"
+                          [class.bg-primary]="ex.videoInputMode === 'youtube'"
+                          [class.text-white]="ex.videoInputMode === 'youtube'"
+                          [class.bg-bg-raised]="ex.videoInputMode !== 'youtube'"
+                          [class.text-text-muted]="ex.videoInputMode !== 'youtube'">YouTube</button>
+                        <button type="button" (click)="ex.videoInputMode = 'upload'"
+                          class="px-2 py-0.5 text-xs rounded transition"
+                          [class.bg-primary]="ex.videoInputMode === 'upload'"
+                          [class.text-white]="ex.videoInputMode === 'upload'"
+                          [class.bg-bg-raised]="ex.videoInputMode !== 'upload'"
+                          [class.text-text-muted]="ex.videoInputMode !== 'upload'">Subir video</button>
+                      </div>
+                      @if (ex.videoInputMode === 'youtube') {
+                        <input type="url" [ngModel]="ex.videoUrl" (ngModelChange)="onVideoUrlChange(ex, $event)"
+                          [name]="'vid-' + di + '-' + gi + '-' + ei"
+                          class="w-full bg-bg-raised border border-border-light rounded px-2 py-1 text-xs text-text focus:outline-none focus:border-primary"
+                          placeholder="URL de YouTube (opcional)" />
+                      } @else {
+                        @if (ex.uploading) {
+                          <p class="text-xs text-primary">Subiendo...</p>
+                        } @else {
+                          <input type="file" accept="video/mp4,video/webm,video/quicktime"
+                            (change)="onVideoUpload(ex, $event)"
+                            class="w-full text-xs text-text-muted file:mr-2 file:py-0.5 file:px-2 file:rounded file:border-0 file:text-xs file:bg-primary file:text-white file:cursor-pointer" />
+                        }
+                      }
+                      @if (ex.videoUrl) {
+                        <p class="text-xs text-text-muted truncate">{{ ex.videoSource === 'Upload' ? 'Video subido' : ex.videoUrl }}</p>
+                      }
+                    </div>
 
                     <!-- Sets -->
                     <div class="space-y-1">
@@ -175,6 +204,8 @@ export class RoutineForm implements OnInit {
               videoSource: e.videoSource,
               videoUrl: e.videoUrl ?? '',
               tempo: e.tempo ?? '',
+              videoInputMode: e.videoSource === 'Upload' ? 'upload' : 'youtube',
+              uploading: false,
               sets: e.sets.map(s => ({
                 setType: s.setType,
                 targetReps: s.targetReps ?? '',
@@ -266,6 +297,26 @@ export class RoutineForm implements OnInit {
     ex.videoSource = url ? 'YouTube' : 'None';
   }
 
+  onVideoUpload(ex: ExerciseForm, event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    ex.uploading = true;
+    const formData = new FormData();
+    formData.append('file', file);
+    this.api.upload<{ url: string; key: string }>('/videos/upload', formData).subscribe({
+      next: (res) => {
+        ex.videoUrl = res.url;
+        ex.videoSource = 'Upload';
+        ex.uploading = false;
+        this.days.update(d => [...d]);
+      },
+      error: () => {
+        ex.uploading = false;
+        this.days.update(d => [...d]);
+      },
+    });
+  }
+
   private newDay(): DayForm {
     return { name: '', groups: [this.newGroup()] };
   }
@@ -273,7 +324,7 @@ export class RoutineForm implements OnInit {
     return { groupType: 'Single', restSeconds: 90, exercises: [this.newExercise()] };
   }
   private newExercise(): ExerciseForm {
-    return { name: '', notes: '', videoSource: 'None', videoUrl: '', tempo: '', sets: [this.newSet()] };
+    return { name: '', notes: '', videoSource: 'None', videoUrl: '', tempo: '', sets: [this.newSet()], videoInputMode: 'youtube', uploading: false };
   }
   private newSet(): SetForm {
     return { setType: 'Effective', targetReps: '', targetWeight: '', targetRpe: null, restSeconds: null };

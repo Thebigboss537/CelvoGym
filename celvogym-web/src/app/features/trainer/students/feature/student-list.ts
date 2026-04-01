@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { StudentDto, StudentInvitationDto } from '../../../../shared/models';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   selector: 'app-student-list',
@@ -36,6 +37,12 @@ import { StudentDto, StudentInvitationDto } from '../../../../shared/models';
                 <p class="text-text-secondary text-xs mt-1 break-all">
                   Comparte este link: <span class="text-text">{{ inviteLink() }}</span>
                 </p>
+                <button (click)="toggleQr(inviteLink())" class="text-primary text-xs hover:underline mt-2">
+                  {{ showQr() ? 'Ocultar QR' : 'Ver QR' }}
+                </button>
+                @if (showQr() && qrUrl()) {
+                  <img [src]="qrUrl()" alt="QR Code" class="w-48 h-48 mx-auto mt-2 rounded-lg" />
+                }
               </div>
             }
 
@@ -60,6 +67,12 @@ import { StudentDto, StudentInvitationDto } from '../../../../shared/models';
               {{ copied() ? '¡Copiado!' : 'Copiar' }}
             </button>
           </div>
+          <button (click)="toggleLoginQr(loginLink())" class="text-primary text-xs hover:underline mt-2">
+            {{ showLoginQr() ? 'Ocultar QR' : 'Ver QR' }}
+          </button>
+          @if (showLoginQr() && loginQrUrl()) {
+            <img [src]="loginQrUrl()" alt="QR Code" class="w-48 h-48 mx-auto mt-2 rounded-lg" />
+          }
         </div>
       }
 
@@ -108,6 +121,11 @@ export class StudentList implements OnInit {
   inviteError = signal('');
   inviteToken = signal('');
 
+  showQr = signal(false);
+  qrUrl = signal('');
+  showLoginQr = signal(false);
+  loginQrUrl = signal('');
+
   ngOnInit() {
     this.api.get<StudentDto[]>('/students').subscribe({
       next: (data) => { this.students.set(data); this.loading.set(false); },
@@ -149,6 +167,38 @@ export class StudentList implements OnInit {
 
   inviteLink(): string {
     return `${window.location.origin}/invite?token=${encodeURIComponent(this.inviteToken())}`;
+  }
+
+  async toggleQr(url: string) {
+    if (this.showQr()) {
+      this.showQr.set(false);
+      return;
+    }
+    const res = await fetch(`${environment.apiUrl}/students/qr?url=${encodeURIComponent(url)}`, {
+      credentials: 'include',
+      headers: { 'X-CSRF-Token': document.cookie.match(/(^| )cg-csrf=([^;]+)/)?.[2] ?? '' },
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      this.qrUrl.set(URL.createObjectURL(blob));
+      this.showQr.set(true);
+    }
+  }
+
+  async toggleLoginQr(url: string) {
+    if (this.showLoginQr()) {
+      this.showLoginQr.set(false);
+      return;
+    }
+    const res = await fetch(`${environment.apiUrl}/students/qr?url=${encodeURIComponent(url)}`, {
+      credentials: 'include',
+      headers: { 'X-CSRF-Token': document.cookie.match(/(^| )cg-csrf=([^;]+)/)?.[2] ?? '' },
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      this.loginQrUrl.set(URL.createObjectURL(blob));
+      this.showLoginQr.set(true);
+    }
   }
 
   formatDate(iso: string): string {
