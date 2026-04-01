@@ -139,13 +139,12 @@ export class AcceptInvite implements OnInit {
       // Register as end-user in CelvoGuard
       const res = await fetch(`${environment.guardUrl}/api/v1/enduser/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
         credentials: 'include',
         body: JSON.stringify({
           email: this.invitation()!.email,
           password: this.password,
-          displayName: this.displayName,
-          appSlug: 'celvogym',
+          firstName: this.displayName,
         }),
       });
 

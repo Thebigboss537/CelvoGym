@@ -107,13 +107,12 @@ export class Register {
       // Register in CelvoGuard
       const res = await fetch(`${environment.guardUrl}/api/v1/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
         credentials: 'include',
         body: JSON.stringify({
           email: this.email,
           password: this.password,
-          displayName: this.displayName,
-          appSlug: 'celvogym',
+          firstName: this.displayName,
         }),
       });
 
