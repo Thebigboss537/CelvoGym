@@ -2,28 +2,27 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { StudentRoutineListDto } from '../../../shared/models';
+import { CgSpinner } from '../../../shared/ui/spinner';
+import { CgEmptyState } from '../../../shared/ui/empty-state';
 
 @Component({
   selector: 'app-my-routines',
-  imports: [RouterLink],
+  imports: [RouterLink, CgSpinner, CgEmptyState],
   template: `
     <div class="animate-fade-up">
-      <h2 class="font-[var(--font-display)] text-2xl font-bold mb-6">Mis rutinas</h2>
+      <h1 class="font-display text-2xl font-bold mb-6">Mis rutinas</h1>
 
       @if (loading()) {
-        <div class="flex justify-center py-12">
-          <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <cg-spinner />
       } @else if (error()) {
         <div class="text-center py-12">
           <p class="text-danger">{{ error() }}</p>
           <button (click)="reload()" class="text-primary text-sm mt-2 hover:underline">Reintentar</button>
         </div>
       } @else if (routines().length === 0) {
-        <div class="text-center py-16">
-          <p class="text-text-muted text-lg">No tienes rutinas asignadas</p>
-          <p class="text-text-muted text-sm mt-1">Espera a que tu entrenador te asigne una rutina</p>
-        </div>
+        <cg-empty-state
+          title="Tu rutina te espera"
+          subtitle="Tu entrenador te asignará una rutina pronto" />
       } @else {
         <div class="space-y-3 stagger">
           @for (routine of routines(); track routine.id) {
@@ -37,9 +36,8 @@ import { StudentRoutineListDto } from '../../../shared/models';
                     <p class="text-text-secondary text-sm mt-0.5 line-clamp-1">{{ routine.description }}</p>
                   }
                 </div>
-                <span class="text-sm font-bold shrink-0 ml-3"
-                  [class.text-primary]="routine.progress.percentage < 100"
-                  [class.text-success]="routine.progress.percentage === 100">
+                <span class="text-sm font-bold shrink-0 ml-3 tabular-nums"
+                  [style.color]="progressColor(routine.progress.percentage)">
                   {{ routine.progress.percentage }}%
                 </span>
               </div>
@@ -79,11 +77,17 @@ export class MyRoutines implements OnInit {
     this.loadData();
   }
 
+  progressColor(pct: number): string {
+    if (pct === 100) return 'var(--color-success)';
+    if (pct >= 70) return 'var(--color-warning)';
+    return 'var(--color-primary)';
+  }
+
   private loadData() {
     this.api.get<StudentRoutineListDto[]>('/public/my/routines').subscribe({
       next: (data) => { this.routines.set(data); this.loading.set(false); },
       error: (err) => {
-        this.error.set(err.error?.error || 'Error al cargar datos');
+        this.error.set(err.error?.error || 'No pudimos cargar tus rutinas. Intentá de nuevo.');
         this.loading.set(false);
       },
     });

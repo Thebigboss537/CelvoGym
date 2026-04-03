@@ -47,3 +47,25 @@ docker compose up -d
 - Trainer (operator): `/api/v1/routines`, `/api/v1/students`, `/api/v1/assignments`
 - Student (end-user): `/api/v1/public/my/routines`, `/api/v1/public/my/sets/*`
 - Public: `/api/v1/health`, `/api/v1/public/invite/{token}`
+
+## Design Context
+
+### Brand Identity
+- **Logo:** "The Lift" — chevron (progress) + bar (strength), stroke-based SVG mark
+- **Primary color:** CelvoGym Crimson `#E62639` (HSL 354, 79%, 53%)
+- **Typography:** Syne (display/headings) + Outfit (body/UI) via Google Fonts
+- **Icons:** Lucide (outline, 1.5px stroke)
+- **Theme:** Dark only — blue-black premium (#09090B base)
+- **Voice:** Spanish (tú), motivational but professional, direct
+
+### Design Principles
+1. **Progress is visible** — progress bars, completion states, visual feedback
+2. **Gym-practical first** — generous touch targets, glanceable info, fast logging
+3. **Structure without clutter** — clear visual nesting via spacing and progressive disclosure
+4. **Celebrate achievement** — glow, bounce, pulse for earned completions
+5. **Trust through consistency** — every element belongs to the same system
+
+### Reusable Components (`celvogym-web/src/app/shared/ui/`)
+- `<cg-logo>` — Logo mark + wordmark (inputs: size, showText, href)
+
+Full design context: `celvogym-web/.impeccable.md`

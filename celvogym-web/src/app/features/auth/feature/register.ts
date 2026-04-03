@@ -4,25 +4,31 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { environment } from '../../../../environments/environment';
+import { CgLogo } from '../../../shared/ui/logo';
 
 @Component({
   selector: 'app-register',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CgLogo],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
         <div class="text-center mb-8">
-          <h1 class="font-[var(--font-display)] text-3xl font-bold text-primary">CelvoGym</h1>
+          <cg-logo [size]="36" class="flex justify-center" />
           <p class="text-text-secondary mt-2">Registro de entrenador</p>
         </div>
 
         @if (registered()) {
-          <div class="bg-success-dark border border-success/30 rounded-lg p-4 text-center">
-            <p class="text-success font-medium">Registro exitoso</p>
-            <p class="text-text-secondary text-sm mt-1">
-              Tu cuenta está pendiente de aprobación. Te notificaremos cuando esté activa.
+          <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3">
+            <p class="text-success font-display font-bold text-lg">¡Registro exitoso!</p>
+            <p class="text-text-secondary text-sm">
+              Tu cuenta está pendiente de aprobación. Recibirás un aviso cuando esté activa.
             </p>
-            <a routerLink="/auth/login" class="text-primary hover:underline text-sm mt-3 inline-block">
+            <div class="text-text-muted text-xs space-y-1 pt-2 border-t border-border-light">
+              <p class="font-medium text-text-secondary">Mientras tanto, podés ir pensando en:</p>
+              <p>Las rutinas que vas a crear para tus alumnos</p>
+              <p>Los ejercicios y series de cada día</p>
+            </div>
+            <a routerLink="/auth/login" class="text-primary hover:underline text-sm inline-block pt-1">
               Ir a iniciar sesión
             </a>
           </div>
@@ -72,7 +78,7 @@ import { environment } from '../../../../environments/environment';
             <button
               type="submit"
               [disabled]="loading()"
-              class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition press"
+              class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press"
             >
               @if (loading()) {
                 Registrando...
@@ -121,7 +127,7 @@ export class Register {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Error al registrarse');
+        throw new Error(data.error || 'No pudimos completar el registro. Intentá de nuevo.');
       }
 
       // Setup trainer profile in CelvoGym API (via ApiService → CSRF interceptor)

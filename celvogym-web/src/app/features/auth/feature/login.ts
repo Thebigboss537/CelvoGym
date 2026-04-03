@@ -3,22 +3,27 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
+import { CgLogo } from '../../../shared/ui/logo';
 
 const TENANT_ID_KEY = 'celvogym_tenant_id';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CgLogo],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
-        <div class="text-center mb-8">
-          <h1 class="font-[var(--font-display)] text-3xl font-bold text-primary">CelvoGym</h1>
-          <p class="text-text-secondary mt-2">
+        <div class="text-center mb-10">
+          <!-- Brand moment: logo with ambient glow -->
+          <div class="relative inline-block mb-4">
+            <div class="absolute inset-0 blur-2xl opacity-20 bg-primary rounded-full scale-150"></div>
+            <cg-logo [size]="48" class="relative flex justify-center" />
+          </div>
+          <p class="text-text-secondary mt-1">
             @if (isStudentLogin()) {
               Acceso alumno
             } @else {
-              Inicia sesión para continuar
+              Tu progreso, tu fuerza.
             }
           </p>
         </div>
@@ -55,7 +60,7 @@ const TENANT_ID_KEY = 'celvogym_tenant_id';
           <button
             type="submit"
             [disabled]="loading()"
-            class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition press"
+            class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press"
           >
             @if (loading()) {
               Iniciando sesión...
@@ -124,7 +129,7 @@ export class Login implements OnInit {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.error || 'Error al iniciar sesión');
+      throw new Error(data.error || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
     }
 
     await this.fetchAndSetUser();
@@ -145,7 +150,7 @@ export class Login implements OnInit {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.error || 'Error al iniciar sesión');
+      throw new Error(data.error || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
     }
 
     await this.fetchAndSetUser();

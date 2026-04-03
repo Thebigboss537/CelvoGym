@@ -1,19 +1,19 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/models';
+import { CgSpinner } from '../../../shared/ui/spinner';
 
 @Component({
   selector: 'app-workout',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CgSpinner],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="animate-fade-up">
       @if (loading()) {
-        <div class="flex justify-center py-12">
-          <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <cg-spinner />
       } @else if (error()) {
         <div class="text-center py-12">
           <p class="text-danger">{{ error() }}</p>
@@ -21,7 +21,7 @@ import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/
         </div>
       } @else if (routine()) {
         <a routerLink="/workout" class="text-text-muted text-sm hover:text-text transition">← Mis rutinas</a>
-        <h2 class="font-[var(--font-display)] text-2xl font-bold mt-1 mb-1">{{ routine()!.name }}</h2>
+        <h1 class="font-display text-2xl font-bold mt-1 mb-1 truncate">{{ routine()!.name }}</h1>
 
         <!-- Total progress -->
         <div class="flex items-center gap-2 mb-6">
@@ -29,49 +29,50 @@ import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/
             <div class="h-full rounded-full transition-all duration-500 progress-fill"
               [style.width.%]="routine()!.progress.percentage"></div>
           </div>
-          <span class="text-sm font-bold"
-            [class.text-primary]="routine()!.progress.percentage < 100"
-            [class.text-success]="routine()!.progress.percentage === 100">
+          <span class="text-sm font-bold tabular-nums"
+            [style.color]="progressColor(routine()!.progress.percentage)">
             {{ routine()!.progress.percentage }}%
           </span>
         </div>
 
         <!-- Days -->
-        <div class="space-y-4">
+        <div class="space-y-5">
           @for (day of routine()!.days; track day.id; let di = $index) {
             <div class="bg-card border border-border rounded-xl overflow-hidden"
-              [class.glow-complete]="day.progress.percentage === 100">
+              [class.glow-complete]="day.progress.percentage === 100"
+              [class.expanded]="expandedDays().has(di)">
               <!-- Day header (collapsible) -->
               <button (click)="toggleDay(di)"
+                [attr.aria-expanded]="expandedDays().has(di)"
+                [attr.aria-controls]="'day-content-' + di"
                 class="w-full px-4 py-3 flex items-center justify-between bg-bg-raised border-b border-border-light">
                 <div class="flex items-center gap-2">
-                  <h3 class="font-semibold text-sm">{{ day.name }}</h3>
+                  <h2 class="font-semibold text-sm">{{ day.name }}</h2>
                   @if (day.progress.percentage === 100) {
-                    <span class="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full font-medium">LISTO</span>
+                    <span class="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full font-medium animate-badge">LISTO</span>
                   }
                 </div>
-                <span class="text-xs font-bold"
-                  [class.text-primary]="day.progress.percentage < 100"
-                  [class.text-success]="day.progress.percentage === 100">
+                <span class="text-xs font-bold tabular-nums"
+                  [style.color]="progressColor(day.progress.percentage)">
                   {{ day.progress.percentage }}%
                 </span>
               </button>
 
-              @if (expandedDays().has(di)) {
-                <div class="divide-y divide-border-light">
+              <div class="collapse-content">
+                <div [id]="'day-content-' + di" class="divide-y divide-border-light">
                   @for (group of day.groups; track group.id) {
-                    <div class="px-4 py-3">
+                    <div class="px-4 py-4">
                       @if (group.groupType !== 'Single') {
-                        <span class="text-xs text-primary font-medium uppercase mb-2 block">
-                          {{ group.groupType }}
+                        <span class="text-overline text-primary mb-3 block">
+                          {{ groupTypeLabel(group.groupType) }}
                         </span>
                       }
 
                       @for (exercise of group.exercises; track exercise.id) {
-                        <div class="py-2">
+                        <div class="py-3 first:pt-0 last:pb-0">
                           <div class="flex items-center justify-between mb-1.5">
-                            <div class="flex items-center gap-2">
-                              <span class="font-medium text-sm">{{ exercise.name }}</span>
+                            <div class="flex items-center gap-2 min-w-0">
+                              <span class="font-medium text-sm truncate">{{ exercise.name }}</span>
                               @if (exercise.videoSource !== 'None' && exercise.videoUrl) {
                                 <button (click)="toggleVideo(exercise.id)"
                                   class="text-xs text-primary hover:underline">
@@ -98,41 +99,39 @@ import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/
                           }
 
                           <!-- Sets -->
-                          <div class="space-y-1.5">
+                          <div class="space-y-2">
                             @for (set of exercise.sets; track set.id; let si = $index) {
-                              <div class="flex items-center gap-2 text-xs">
-                                <!-- Checkbox -->
+                              <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                                <!-- Row 1: checkbox + info -->
                                 <button (click)="toggleSet(set.id, routine()!.id)"
-                                  class="w-6 h-6 rounded border flex items-center justify-center shrink-0 transition"
+                                  role="checkbox" [attr.aria-checked]="isSetCompleted(set.id)"
+                                  [attr.aria-label]="'Completar serie ' + (si + 1)"
+                                  class="w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 transition"
                                   [class.bg-primary]="isSetCompleted(set.id)"
                                   [class.border-primary]="isSetCompleted(set.id)"
                                   [class.border-border]="!isSetCompleted(set.id)"
                                   [class.animate-check]="isSetCompleted(set.id)">
                                   @if (isSetCompleted(set.id)) {
-                                    <span class="text-white text-xs">✓</span>
+                                    <span class="text-white text-sm">✓</span>
                                   }
                                 </button>
-
-                                <!-- Set info -->
-                                <span class="w-16 text-text-muted">
-                                  {{ set.setType === 'Warmup' ? 'Warmup' : (set.setType === 'AMRAP' ? 'AMRAP' : set.setType) }}
-                                </span>
+                                <span class="w-16 font-medium" [style.color]="setTypeColor(set.setType)">{{ setTypeLabel(set.setType) }}</span>
                                 <span class="text-text-secondary">
                                   {{ set.targetReps ?? '-' }} × {{ set.targetWeight ?? '-' }}
+                                  @if (set.targetRpe) { <span class="text-primary ml-1">RPE {{ set.targetRpe }}</span> }
                                 </span>
-                                @if (set.targetRpe) {
-                                  <span class="text-primary">RPE {{ set.targetRpe }}</span>
-                                }
 
-                                <!-- Actual inputs -->
-                                <input type="text" [value]="getLogWeight(set.id)"
-                                  (change)="updateSetData(set.id, routine()!.id, $event, 'weight')"
-                                  class="w-14 bg-bg-raised border border-border-light rounded px-1.5 py-0.5 text-center text-text"
-                                  placeholder="Peso" />
-                                <input type="text" [value]="getLogReps(set.id)"
-                                  (change)="updateSetData(set.id, routine()!.id, $event, 'reps')"
-                                  class="w-12 bg-bg-raised border border-border-light rounded px-1.5 py-0.5 text-center text-text"
-                                  placeholder="Reps" />
+                                <!-- Actual inputs — right-aligned -->
+                                <div class="flex items-center gap-1.5 ml-auto">
+                                  <input type="text" inputmode="decimal" [value]="getLogWeight(set.id)"
+                                    (change)="updateSetData(set.id, routine()!.id, $event, 'weight')"
+                                    class="w-16 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-center text-text"
+                                    placeholder="kg" [attr.aria-label]="'Peso real serie ' + (si + 1)" />
+                                  <input type="text" inputmode="numeric" [value]="getLogReps(set.id)"
+                                    (change)="updateSetData(set.id, routine()!.id, $event, 'reps')"
+                                    class="w-14 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-center text-text"
+                                    placeholder="Reps" [attr.aria-label]="'Reps real serie ' + (si + 1)" />
+                                </div>
                               </div>
                             }
                           </div>
@@ -152,8 +151,8 @@ import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/
                 </div>
 
                 <!-- Comments section -->
-                <div class="px-4 py-3 border-t border-border-light">
-                  <h4 class="text-xs font-semibold text-text-secondary uppercase mb-2">Comentarios</h4>
+                <div class="px-4 py-4 border-t border-border bg-bg-raised/50">
+                  <h3 class="text-overline text-text-secondary mb-2">Comentarios</h3>
                   @if (loadingComments().has(day.id)) {
                     <div class="flex justify-center py-2">
                       <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -161,11 +160,13 @@ import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/
                   } @else {
                     <div class="space-y-2 mb-3">
                       @for (comment of getComments(day.id); track comment.id) {
-                        <div class="bg-bg-raised rounded-lg px-3 py-2">
+                        <div class="bg-bg-raised rounded-lg px-3 py-2"
+                          [class.border-l-2]="comment.authorType === 'Trainer'"
+                          [class.border-l-primary]="comment.authorType === 'Trainer'">
                           <div class="flex items-center gap-2 mb-0.5">
                             <span class="text-xs font-medium"
                               [class.text-primary]="comment.authorType === 'Trainer'"
-                              [class.text-text]="comment.authorType === 'Student'">
+                              [class.text-text-secondary]="comment.authorType === 'Student'">
                               {{ comment.authorName }}
                             </span>
                             <span class="text-text-muted text-xs">{{ relativeTime(comment.createdAt) }}</span>
@@ -173,42 +174,53 @@ import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/
                           <p class="text-sm text-text">{{ comment.text }}</p>
                         </div>
                       } @empty {
-                        <p class="text-text-muted text-xs text-center py-1">Sin comentarios</p>
+                        <p class="text-text-muted text-xs text-center py-1">Aún no hay mensajes</p>
                       }
                     </div>
                     <div class="flex gap-2">
                       <input type="text" [value]="getCommentText(day.id)"
                         (input)="setCommentText(day.id, $event)"
                         (keydown.enter)="sendComment(day.id)"
+                        maxlength="500"
                         class="flex-1 bg-bg-raised border border-border-light rounded-lg px-3 py-1.5 text-sm text-text focus:outline-none focus:border-primary"
-                        placeholder="Escribe un comentario..." />
+                        placeholder="Mensaje para tu entrenador..." />
                       <button (click)="sendComment(day.id)"
-                        class="bg-primary hover:bg-primary-dark text-white text-sm px-3 py-1.5 rounded-lg transition press">
+                        class="bg-primary hover:bg-primary-hover text-white text-sm px-3 py-1.5 rounded-lg transition press">
                         Enviar
                       </button>
                     </div>
                   }
                 </div>
-              }
+              </div>
             </div>
           }
         </div>
 
         <!-- Rest timer overlay -->
         @if (timerActive()) {
-          <div class="fixed inset-0 bg-bg/90 flex items-center justify-center z-50" (click)="stopTimer()">
+          <div class="fixed inset-0 bg-bg/95 flex items-center justify-center z-50"
+            role="dialog" aria-label="Temporizador de descanso"
+            (click)="stopTimer()" (keydown.escape)="stopTimer()">
             <div class="text-center animate-fade-up">
-              <p class="text-text-muted text-sm mb-2">Descanso</p>
-              <p class="font-[var(--font-display)] text-7xl font-bold"
-                [class.text-primary]="timerSeconds() > 0"
-                [class.text-success]="timerSeconds() === 0">
-                @if (timerSeconds() > 0) {
-                  {{ timerSeconds() }}
-                } @else {
-                  GO!
-                }
-              </p>
-              <p class="text-text-muted text-xs mt-4">Toca para cerrar</p>
+              <p class="text-overline text-text-muted mb-6 tracking-widest">Descanso</p>
+              <!-- Pulsing ring around the number -->
+              <div class="relative inline-flex items-center justify-center">
+                <div class="absolute w-48 h-48 rounded-full border-2 animate-ring animate-complete"
+                  [class.border-primary/30]="timerSeconds() > 0"
+                  [class.border-success/30]="timerSeconds() === 0"></div>
+                <p class="font-display font-bold tabular-nums leading-none"
+                  [class.text-primary]="timerSeconds() > 0"
+                  [class.text-success]="timerSeconds() === 0"
+                  [style.font-size]="timerSeconds() > 0 ? '7rem' : '4rem'"
+                  role="timer" [attr.aria-live]="'off'">
+                  @if (timerSeconds() > 0) {
+                    {{ timerSeconds() }}
+                  } @else {
+                    ¡YA!
+                  }
+                </p>
+              </div>
+              <p class="text-text-muted text-xs mt-8">Toca para cerrar</p>
             </div>
           </div>
         }
@@ -237,6 +249,7 @@ export class Workout implements OnInit, OnDestroy {
   timerActive = signal(false);
   timerSeconds = signal(0);
   private timerInterval: ReturnType<typeof setInterval> | null = null;
+  private timerEndTime = 0;
   private routineId = '';
 
   ngOnDestroy() {
@@ -266,7 +279,7 @@ export class Workout implements OnInit, OnDestroy {
         data.days.forEach(d => this.loadComments(d.id));
       },
       error: (err) => {
-        this.error.set(err.error?.error || 'Error al cargar datos');
+        this.error.set(err.error?.error || 'No pudimos cargar la rutina. Intentá de nuevo.');
         this.loading.set(false);
       },
     });
@@ -317,16 +330,19 @@ export class Workout implements OnInit, OnDestroy {
   }
 
   startTimer(seconds: number) {
+    this.timerEndTime = Date.now() + seconds * 1000;
     this.timerSeconds.set(seconds);
     this.timerActive.set(true);
     this.timerInterval = setInterval(() => {
-      if (this.timerSeconds() > 0) {
-        this.timerSeconds.update(s => s - 1);
+      const remaining = Math.ceil((this.timerEndTime - Date.now()) / 1000);
+      if (remaining > 0) {
+        this.timerSeconds.set(remaining);
       } else {
+        this.timerSeconds.set(0);
         this.stopTimer();
-        if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+        if ('vibrate' in navigator) navigator.vibrate([100, 80, 100, 80, 200]);
       }
-    }, 1000);
+    }, 250);
   }
 
   stopTimer() {
@@ -415,6 +431,33 @@ export class Workout implements OnInit, OnDestroy {
         this.commentTexts.set(dayId, '');
       },
     });
+  }
+
+  groupTypeLabel(type: string): string {
+    const labels: Record<string, string> = { Single: 'Individual', Superset: 'Biserie', Triset: 'Triserie', Circuit: 'Circuito' };
+    return labels[type] ?? type;
+  }
+
+  setTypeLabel(type: string): string {
+    const labels: Record<string, string> = { Warmup: 'Calent.', Effective: 'Efectiva', DropSet: 'Drop set', RestPause: 'Rest-pause', AMRAP: 'AMRAP' };
+    return labels[type] ?? type;
+  }
+
+  setTypeColor(type: string): string {
+    const colors: Record<string, string> = {
+      Warmup: 'var(--color-set-warmup)',
+      Effective: 'var(--color-set-effective)',
+      DropSet: 'var(--color-set-dropset)',
+      RestPause: 'var(--color-set-restpause)',
+      AMRAP: 'var(--color-set-amrap)',
+    };
+    return colors[type] ?? 'var(--color-text-muted)';
+  }
+
+  progressColor(pct: number): string {
+    if (pct === 100) return 'var(--color-success)';
+    if (pct >= 70) return 'var(--color-warning)';
+    return 'var(--color-primary)';
   }
 
   relativeTime(iso: string): string {

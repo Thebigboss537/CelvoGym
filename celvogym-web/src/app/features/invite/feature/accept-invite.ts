@@ -5,10 +5,11 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { InvitationInfoDto } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
+import { CgLogo } from '../../../shared/ui/logo';
 
 @Component({
   selector: 'app-accept-invite',
-  imports: [FormsModule],
+  imports: [FormsModule, CgLogo],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
@@ -24,19 +25,24 @@ import { environment } from '../../../../environments/environment';
           </div>
         } @else if (invitation()) {
           <div class="text-center mb-8">
-            <h1 class="font-[var(--font-display)] text-2xl font-bold text-primary">CelvoGym</h1>
-            <p class="text-text-secondary mt-2">
-              <span class="text-text font-medium">{{ invitation()!.trainerName }}</span>
-              te invita a entrenar
+            <cg-logo [size]="32" class="flex justify-center" />
+            <p class="text-text mt-3 font-medium">
+              {{ invitation()!.trainerName }} te invita a entrenar
+            </p>
+            <p class="text-text-muted text-sm mt-1">
+              Vas a poder seguir tus rutinas, registrar tu progreso y comunicarte con tu entrenador.
             </p>
           </div>
 
           @if (accepted()) {
-            <div class="bg-success-dark border border-success/30 rounded-lg p-4 text-center">
-              <p class="text-success font-medium">Invitación aceptada</p>
-              <p class="text-text-secondary text-sm mt-1">Ya puedes ver tus rutinas.</p>
-              <button (click)="goToWorkout()" class="text-primary hover:underline text-sm mt-3">
-                Ir a mis rutinas
+            <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3">
+              <p class="text-success font-display font-bold text-lg">¡Listo, ya estás dentro!</p>
+              <p class="text-text-secondary text-sm">
+                Tu entrenador te asignará rutinas que podrás seguir desde tu celular.
+              </p>
+              <button (click)="goToWorkout()"
+                class="bg-primary hover:bg-primary-hover text-white font-semibold px-6 py-2.5 rounded-lg transition press text-sm">
+                Ver mis rutinas
               </button>
             </div>
           } @else {
@@ -83,7 +89,7 @@ import { environment } from '../../../../environments/environment';
               <button
                 type="submit"
                 [disabled]="accepting()"
-                class="w-full bg-primary hover:bg-primary-dark text-white font-semibold py-3 rounded-lg transition press"
+                class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press"
               >
                 @if (accepting()) {
                   Aceptando...
@@ -125,7 +131,7 @@ export class AcceptInvite implements OnInit {
       const info = await firstValueFrom(this.api.get<InvitationInfoDto>(`/public/invite/${this.token}`));
       this.invitation.set(info ?? null);
     } catch {
-      this.error.set('Invitación inválida o expirada');
+      this.error.set('Esta invitación ya no es válida. Pedile a tu entrenador que te envíe una nueva.');
     } finally {
       this.loading.set(false);
     }
@@ -151,7 +157,7 @@ export class AcceptInvite implements OnInit {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Error al registrarse');
+        throw new Error(data.error || 'No pudimos crear tu cuenta. Intentá de nuevo.');
       }
 
       const userData = await res.json();
@@ -164,7 +170,7 @@ export class AcceptInvite implements OnInit {
 
       this.accepted.set(true);
     } catch (e: any) {
-      this.acceptError.set(e.message || 'Error al aceptar invitación');
+      this.acceptError.set(e.message || 'No pudimos aceptar la invitación. Intentá de nuevo.');
     } finally {
       this.accepting.set(false);
     }

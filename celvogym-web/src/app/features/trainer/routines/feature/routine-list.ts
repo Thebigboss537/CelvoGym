@@ -2,34 +2,38 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { RoutineListDto } from '../../../../shared/models';
+import { CgSpinner } from '../../../../shared/ui/spinner';
+import { CgEmptyState } from '../../../../shared/ui/empty-state';
 
 @Component({
   selector: 'app-routine-list',
-  imports: [RouterLink],
+  imports: [RouterLink, CgSpinner, CgEmptyState],
   template: `
     <div class="animate-fade-up">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="font-[var(--font-display)] text-2xl font-bold">Rutinas</h2>
+        <h1 class="font-display text-2xl font-bold">Rutinas</h1>
         <a
           routerLink="new"
-          class="bg-primary hover:bg-primary-dark text-white text-sm font-medium px-4 py-2 rounded-lg transition press"
+          class="bg-primary hover:bg-primary-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition press"
         >+ Nueva rutina</a>
       </div>
 
       @if (loading()) {
-        <div class="flex justify-center py-12">
-          <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <cg-spinner />
       } @else if (error()) {
         <div class="text-center py-12">
           <p class="text-danger">{{ error() }}</p>
           <button (click)="reload()" class="text-primary text-sm mt-2 hover:underline">Reintentar</button>
         </div>
       } @else if (routines().length === 0) {
-        <div class="text-center py-16">
-          <p class="text-text-muted text-lg">No tienes rutinas aún</p>
-          <p class="text-text-muted text-sm mt-1">Crea tu primera rutina para comenzar</p>
-        </div>
+        <cg-empty-state
+          title="Aún no hay rutinas"
+          subtitle="Creá tu primera rutina para empezar">
+          <a routerLink="new"
+            class="inline-block mt-4 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-5 py-2 rounded-lg transition press">
+            + Crear rutina
+          </a>
+        </cg-empty-state>
       } @else {
         <div class="space-y-3 stagger">
           @for (routine of routines(); track routine.id) {
@@ -82,7 +86,7 @@ export class RoutineList implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err.error?.error || 'Error al cargar datos');
+        this.error.set(err.error?.error || 'No pudimos cargar las rutinas. Intentá de nuevo.');
         this.loading.set(false);
       },
     });
