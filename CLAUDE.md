@@ -67,5 +67,21 @@ docker compose up -d
 
 ### Reusable Components (`celvogym-web/src/app/shared/ui/`)
 - `<cg-logo>` — Logo mark + wordmark (inputs: size, showText, href)
+- `<cg-spinner>` — Loading spinner (inputs: size, containerClass)
+- `<cg-empty-state>` — Empty state with brand mark (inputs: title, subtitle, ng-content for CTAs)
+- `<cg-page-header>` — Page header with display font (inputs: title, subtitle, hasBack)
+- `<cg-avatar>` — Initial circle avatar (inputs: name, size)
+- `<cg-confirm-dialog>` — Modal confirmation replacing native confirm() (inputs: open, title, message, confirmLabel, variant)
+- `<cg-toast>` + `ToastService` — Global toast notifications (placed in app root)
 
 Full design context: `celvogym-web/.impeccable.md`
+
+## Frontend Conventions (Angular)
+
+- **Tailwind 4 fonts**: Use `font-display` class (not `font-[var(--font-display)]`) — registered in `@theme`
+- **Typography utilities**: `.text-display`, `.text-h1`, `.text-h2`, `.text-h3`, `.text-overline` defined in `styles.css`
+- **Set type colors**: `--color-set-warmup`, `--color-set-effective`, `--color-set-dropset`, `--color-set-restpause`, `--color-set-amrap` tokens in `@theme`
+- **Animations**: `.animate-fade-up`, `.animate-check`, `.animate-complete`, `.animate-badge`, `.stagger`, `.press`, `.skeleton` — all respect `prefers-reduced-motion`
+- **Collapse/expand**: Use `.collapse-content` + `.expanded` parent class (CSS grid trick for height:auto transitions)
+- **Hover token**: Use `hover:bg-primary-hover` (not `hover:bg-primary-dark`)
+- **Brand assets**: SVG logos in `celvogym-web/public/`, brand guidelines in `celvogym-web/brand-guidelines.md`
