@@ -1,9 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { RoutineListDto } from '../../../../shared/models';
 import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
+import { formatDateWithYear } from '../../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-routine-list',
@@ -35,8 +36,26 @@ import { CgEmptyState } from '../../../../shared/ui/empty-state';
           </a>
         </cg-empty-state>
       } @else {
+        <!-- Category filter -->
+        @if (categories().length > 0) {
+          <div class="flex gap-1.5 mb-4 flex-wrap">
+            <button (click)="filterCategory.set(null)"
+              class="text-xs px-2.5 py-1 rounded-full border transition"
+              [class]="!filterCategory() ? 'bg-primary text-white border-primary' : 'border-border text-text-muted hover:border-primary/40'">
+              Todas
+            </button>
+            @for (cat of categories(); track cat) {
+              <button (click)="filterCategory.set(cat)"
+                class="text-xs px-2.5 py-1 rounded-full border transition"
+                [class]="filterCategory() === cat ? 'bg-primary text-white border-primary' : 'border-border text-text-muted hover:border-primary/40'">
+                {{ cat }}
+              </button>
+            }
+          </div>
+        }
+
         <div class="space-y-3 stagger">
-          @for (routine of routines(); track routine.id) {
+          @for (routine of filtered(); track routine.id) {
             <a
               [routerLink]="routine.id"
               class="block bg-card hover:bg-card-hover border border-border rounded-xl p-4 transition press"
@@ -50,10 +69,21 @@ import { CgEmptyState } from '../../../../shared/ui/empty-state';
                 </div>
                 <span class="text-text-muted text-xs shrink-0 ml-3">{{ routine.dayCount }} días</span>
               </div>
+              @if (routine.tags.length > 0) {
+                <div class="flex gap-1 mt-1.5 flex-wrap">
+                  @for (tag of routine.tags; track tag) {
+                    <span class="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">{{ tag }}</span>
+                  }
+                </div>
+              }
               <div class="flex items-center gap-3 mt-2 text-xs text-text-muted">
                 <span>{{ routine.exerciseCount }} ejercicios</span>
+                @if (routine.category) {
+                  <span>·</span>
+                  <span>{{ routine.category }}</span>
+                }
                 <span>·</span>
-                <span>{{ formatDate(routine.updatedAt) }}</span>
+                <span>{{ formatDateWithYear(routine.updatedAt) }}</span>
               </div>
             </a>
           }
@@ -64,10 +94,23 @@ import { CgEmptyState } from '../../../../shared/ui/empty-state';
 })
 export class RoutineList implements OnInit {
   private api = inject(ApiService);
+  formatDateWithYear = formatDateWithYear;
 
   routines = signal<RoutineListDto[]>([]);
   loading = signal(true);
   error = signal('');
+  filterCategory = signal<string | null>(null);
+
+  categories = computed(() => {
+    const cats = new Set(this.routines().map(r => r.category).filter((c): c is string => !!c));
+    return [...cats].sort();
+  });
+
+  filtered = computed(() => {
+    const cat = this.filterCategory();
+    if (!cat) return this.routines();
+    return this.routines().filter(r => r.category === cat);
+  });
 
   ngOnInit() {
     this.loadData();
@@ -92,8 +135,4 @@ export class RoutineList implements OnInit {
     });
   }
 
-  formatDate(iso: string): string {
-    const d = new Date(iso);
-    return d.toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
 }

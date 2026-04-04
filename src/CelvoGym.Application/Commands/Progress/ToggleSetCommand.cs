@@ -8,6 +8,7 @@ namespace CelvoGym.Application.Commands.Progress;
 
 public sealed record ToggleSetCommand(
     Guid StudentId,
+    Guid SessionId,
     Guid SetId,
     Guid RoutineId) : IRequest<SetLogDto>;
 
@@ -16,23 +17,34 @@ public sealed class ToggleSetHandler(ICelvoGymDbContext db)
 {
     public async Task<SetLogDto> Handle(ToggleSetCommand request, CancellationToken cancellationToken)
     {
-        var hasAssignment = await db.RoutineAssignments
-            .AnyAsync(ra => ra.RoutineId == request.RoutineId && ra.StudentId == request.StudentId && ra.IsActive, cancellationToken);
-        if (!hasAssignment) throw new InvalidOperationException("Routine not assigned to this student");
+        var session = await db.WorkoutSessions
+            .FirstOrDefaultAsync(ws => ws.Id == request.SessionId
+                && ws.StudentId == request.StudentId, cancellationToken)
+            ?? throw new InvalidOperationException("Session not found");
 
         var log = await db.SetLogs
-            .FirstOrDefaultAsync(sl => sl.StudentId == request.StudentId
+            .FirstOrDefaultAsync(sl => sl.SessionId == request.SessionId
                 && sl.SetId == request.SetId, cancellationToken);
 
         if (log is null)
         {
+            var exerciseSet = await db.ExerciseSets
+                .Include(es => es.Exercise)
+                .FirstOrDefaultAsync(es => es.Id == request.SetId, cancellationToken);
+
             log = new SetLog
             {
+                SessionId = request.SessionId,
                 StudentId = request.StudentId,
                 SetId = request.SetId,
                 RoutineId = request.RoutineId,
                 Completed = true,
-                CompletedAt = DateTimeOffset.UtcNow
+                CompletedAt = DateTimeOffset.UtcNow,
+                ActualWeight = exerciseSet?.TargetWeight,
+                ActualReps = exerciseSet?.TargetReps,
+                SnapshotExerciseName = exerciseSet?.Exercise.Name,
+                SnapshotTargetWeight = exerciseSet?.TargetWeight,
+                SnapshotTargetReps = exerciseSet?.TargetReps
             };
             db.SetLogs.Add(log);
         }

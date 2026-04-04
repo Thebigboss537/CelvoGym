@@ -16,6 +16,8 @@ public class RoutineConfiguration : IEntityTypeConfiguration<Routine>
         builder.Property(r => r.Description).HasMaxLength(2000);
         builder.Property(r => r.SortOrder).HasDefaultValue(0);
         builder.Property(r => r.IsActive).HasDefaultValue(true);
+        builder.Property(r => r.Tags).HasDefaultValueSql("ARRAY[]::text[]");
+        builder.Property(r => r.Category).HasMaxLength(100);
         builder.Property(r => r.CreatedAt).HasDefaultValueSql("NOW()");
         builder.Property(r => r.UpdatedAt).HasDefaultValueSql("NOW()");
 

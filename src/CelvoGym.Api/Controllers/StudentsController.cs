@@ -1,5 +1,7 @@
 using CelvoGym.Api.Extensions;
+using CelvoGym.Application.Commands.Notes;
 using CelvoGym.Application.Commands.Students;
+using CelvoGym.Application.Queries.Notes;
 using CelvoGym.Application.Queries.Students;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -35,6 +37,39 @@ public class StudentsController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{studentId:guid}/notes")]
+    public async Task<IActionResult> GetNotes(Guid studentId, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var result = await mediator.Send(new GetNotesQuery(HttpContext.GetTrainerId(), studentId), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("{studentId:guid}/notes")]
+    public async Task<IActionResult> CreateNote(Guid studentId, [FromBody] CreateNoteRequest request, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var result = await mediator.Send(new CreateNoteCommand(
+            HttpContext.GetTrainerId(), studentId, request.Text, request.IsPinned), ct);
+        return Created($"/api/v1/students/{studentId}/notes/{result.Id}", result);
+    }
+
+    [HttpPut("{studentId:guid}/notes/{noteId:guid}")]
+    public async Task<IActionResult> UpdateNote(Guid studentId, Guid noteId, [FromBody] CreateNoteRequest request, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var result = await mediator.Send(new UpdateNoteCommand(noteId, HttpContext.GetTrainerId(), request.Text, request.IsPinned), ct);
+        return Ok(result);
+    }
+
+    [HttpDelete("{studentId:guid}/notes/{noteId:guid}")]
+    public async Task<IActionResult> DeleteNote(Guid studentId, Guid noteId, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new DeleteNoteCommand(noteId, HttpContext.GetTrainerId()), ct);
+        return NoContent();
+    }
+
     [HttpGet("qr")]
     public IActionResult GetQr([FromQuery] string url)
     {
@@ -53,3 +88,4 @@ public class StudentsController(IMediator mediator) : ControllerBase
 }
 
 public sealed record InviteStudentRequest(string Email, string? FirstName);
+public sealed record CreateNoteRequest(string Text, bool IsPinned = false);

@@ -4,6 +4,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { StudentRoutineListDto } from '../../../shared/models';
 import { CgSpinner } from '../../../shared/ui/spinner';
 import { CgEmptyState } from '../../../shared/ui/empty-state';
+import { progressColor } from '../../../shared/utils/labels';
 
 @Component({
   selector: 'app-my-routines',
@@ -62,6 +63,7 @@ import { CgEmptyState } from '../../../shared/ui/empty-state';
 })
 export class MyRoutines implements OnInit {
   private api = inject(ApiService);
+  progressColor = progressColor;
 
   routines = signal<StudentRoutineListDto[]>([]);
   loading = signal(true);
@@ -75,12 +77,6 @@ export class MyRoutines implements OnInit {
     this.error.set('');
     this.loading.set(true);
     this.loadData();
-  }
-
-  progressColor(pct: number): string {
-    if (pct === 100) return 'var(--color-success)';
-    if (pct >= 70) return 'var(--color-warning)';
-    return 'var(--color-primary)';
   }
 
   private loadData() {

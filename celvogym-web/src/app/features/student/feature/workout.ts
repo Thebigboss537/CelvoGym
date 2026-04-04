@@ -3,8 +3,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
-import { StudentRoutineDetailDto, SetLogDto, CommentDto } from '../../../shared/models';
+import { StudentRoutineDetailDto, SetLogDto, CommentDto, WorkoutSessionDto, NewPrDto } from '../../../shared/models';
 import { CgSpinner } from '../../../shared/ui/spinner';
+import { ToastService } from '../../../shared/ui/toast';
+import { progressColor, groupTypeLabel, setTypeLabel, setTypeColor } from '../../../shared/utils/labels';
 
 @Component({
   selector: 'app-workout',
@@ -24,7 +26,7 @@ import { CgSpinner } from '../../../shared/ui/spinner';
         <h1 class="font-display text-2xl font-bold mt-1 mb-1 truncate">{{ routine()!.name }}</h1>
 
         <!-- Total progress -->
-        <div class="flex items-center gap-2 mb-6">
+        <div class="flex items-center gap-2 mb-4">
           <div class="flex-1 h-2 bg-bg-raised rounded-full overflow-hidden">
             <div class="h-full rounded-full transition-all duration-500 progress-fill"
               [style.width.%]="routine()!.progress.percentage"></div>
@@ -34,6 +36,18 @@ import { CgSpinner } from '../../../shared/ui/spinner';
             {{ routine()!.progress.percentage }}%
           </span>
         </div>
+
+        <!-- Session controls -->
+        @if (sessionId()) {
+          <button (click)="completeSession()"
+            class="w-full bg-success/10 border border-success/30 text-success text-sm font-medium rounded-xl px-4 py-3 mb-6 transition hover:bg-success/20 press">
+            Terminar entrenamiento
+          </button>
+        } @else {
+          <div class="mb-6 space-y-2">
+            <p class="text-text-muted text-xs text-center">Selecciona un día para comenzar</p>
+          </div>
+        }
 
         <!-- Days -->
         <div class="space-y-5">
@@ -232,10 +246,17 @@ export class Workout implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
   private sanitizer = inject(DomSanitizer);
+  private toast = inject(ToastService);
+
+  progressColor = progressColor;
+  groupTypeLabel = groupTypeLabel;
+  setTypeLabel = setTypeLabel;
+  setTypeColor = setTypeColor;
 
   routine = signal<StudentRoutineDetailDto | null>(null);
   loading = signal(true);
   error = signal('');
+  sessionId = signal<string | null>(null);
   expandedDays = signal(new Set<number>([0]));
   setLogMap = signal(new Map<string, SetLogDto>());
   expandedVideos = signal(new Set<string>());
@@ -275,8 +296,11 @@ export class Workout implements OnInit, OnDestroy {
         data.days.forEach(d => d.setLogs.forEach(sl => map.set(sl.setId, sl)));
         this.setLogMap.set(map);
         this.loading.set(false);
-        // Load comments for all days
-        data.days.forEach(d => this.loadComments(d.id));
+        // Load comments for initially expanded days
+        this.expandedDays().forEach(index => {
+          const dayId = data.days[index]?.id;
+          if (dayId) this.loadComments(dayId);
+        });
       },
       error: (err) => {
         this.error.set(err.error?.error || 'No pudimos cargar la rutina. Intentá de nuevo.');
@@ -291,6 +315,10 @@ export class Workout implements OnInit, OnDestroy {
       next.has(index) ? next.delete(index) : next.add(index);
       return next;
     });
+    const dayId = this.routine()?.days[index]?.id;
+    if (dayId && !this.commentsMap().has(dayId)) {
+      this.loadComments(dayId);
+    }
   }
 
   isSetCompleted(setId: string): boolean {
@@ -305,18 +333,77 @@ export class Workout implements OnInit, OnDestroy {
     return this.setLogMap().get(setId)?.actualReps ?? '';
   }
 
+  startSession(dayId: string) {
+    this.api.post<WorkoutSessionDto>('/public/my/sessions/start', {
+      routineId: this.routineId,
+      dayId,
+    }).subscribe({
+      next: (session) => this.sessionId.set(session.id),
+      error: (err) => this.toast.show(err.error?.error || 'Error al iniciar sesión', 'error'),
+    });
+  }
+
+  completeSession() {
+    const sid = this.sessionId();
+    if (!sid) return;
+    this.api.post<WorkoutSessionDto>(`/public/my/sessions/${sid}/complete`, {}).subscribe({
+      next: () => {
+        // Detect PRs
+        this.api.get<NewPrDto[]>(`/public/my/records/detect?sessionId=${sid}`).subscribe({
+          next: (prs) => {
+            if (prs.length > 0) {
+              const names = prs.map(pr => pr.exerciseName).join(', ');
+              this.toast.show(`🏆 Nuevo PR en ${names}!`);
+            } else {
+              this.toast.show('Entrenamiento completado');
+            }
+          },
+          error: () => this.toast.show('Entrenamiento completado'),
+        });
+        this.sessionId.set(null);
+      },
+      error: (err) => this.toast.show(err.error?.error || 'Error al completar', 'error'),
+    });
+  }
+
   toggleSet(setId: string, routineId: string) {
-    this.api.post<SetLogDto>('/public/my/sets/toggle', { setId, routineId }).subscribe({
+    const sid = this.sessionId();
+    if (!sid) {
+      // Auto-start session with first day
+      const firstDay = this.routine()?.days[0];
+      if (firstDay) {
+        this.api.post<WorkoutSessionDto>('/public/my/sessions/start', {
+          routineId: this.routineId,
+          dayId: firstDay.id,
+        }).subscribe({
+          next: (session) => {
+            this.sessionId.set(session.id);
+            this.doToggleSet(session.id, setId, routineId);
+          },
+        });
+      }
+      return;
+    }
+    this.doToggleSet(sid, setId, routineId);
+  }
+
+  private doToggleSet(sessionId: string, setId: string, routineId: string) {
+    this.api.post<SetLogDto>('/public/my/sets/toggle', { sessionId, setId, routineId }).subscribe({
       next: (log) => {
-        this.setLogMap.update(m => { const n = new Map(m); n.set(log.setId, log); return n; });
+        if (log.setId) {
+          this.setLogMap.update(m => { const n = new Map(m); n.set(log.setId!, log); return n; });
+        }
       },
     });
   }
 
   updateSetData(setId: string, routineId: string, event: Event, field: 'weight' | 'reps') {
+    const sid = this.sessionId();
+    if (!sid) return;
     const value = (event.target as HTMLInputElement).value;
     const current = this.setLogMap().get(setId);
     this.api.post<SetLogDto>('/public/my/sets/update', {
+      sessionId: sid,
       setId,
       routineId,
       weight: field === 'weight' ? value : (current?.actualWeight ?? null),
@@ -324,7 +411,9 @@ export class Workout implements OnInit, OnDestroy {
       rpe: current?.actualRpe ?? null,
     }).subscribe({
       next: (log) => {
-        this.setLogMap.update(m => { const n = new Map(m); n.set(log.setId, log); return n; });
+        if (log.setId) {
+          this.setLogMap.update(m => { const n = new Map(m); n.set(log.setId!, log); return n; });
+        }
       },
     });
   }
@@ -431,33 +520,6 @@ export class Workout implements OnInit, OnDestroy {
         this.commentTexts.set(dayId, '');
       },
     });
-  }
-
-  groupTypeLabel(type: string): string {
-    const labels: Record<string, string> = { Single: 'Individual', Superset: 'Biserie', Triset: 'Triserie', Circuit: 'Circuito' };
-    return labels[type] ?? type;
-  }
-
-  setTypeLabel(type: string): string {
-    const labels: Record<string, string> = { Warmup: 'Calent.', Effective: 'Efectiva', DropSet: 'Drop set', RestPause: 'Rest-pause', AMRAP: 'AMRAP' };
-    return labels[type] ?? type;
-  }
-
-  setTypeColor(type: string): string {
-    const colors: Record<string, string> = {
-      Warmup: 'var(--color-set-warmup)',
-      Effective: 'var(--color-set-effective)',
-      DropSet: 'var(--color-set-dropset)',
-      RestPause: 'var(--color-set-restpause)',
-      AMRAP: 'var(--color-set-amrap)',
-    };
-    return colors[type] ?? 'var(--color-text-muted)';
-  }
-
-  progressColor(pct: number): string {
-    if (pct === 100) return 'var(--color-success)';
-    if (pct >= 70) return 'var(--color-warning)';
-    return 'var(--color-primary)';
   }
 
   relativeTime(iso: string): string {

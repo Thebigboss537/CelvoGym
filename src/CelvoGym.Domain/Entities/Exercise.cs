@@ -11,8 +11,10 @@ public class Exercise : BaseEntity
     public VideoSource VideoSource { get; set; } = VideoSource.None;
     public string? VideoUrl { get; set; }
     public string? Tempo { get; set; }
+    public Guid? CatalogExerciseId { get; set; }
     public int SortOrder { get; set; }
 
     public ExerciseGroup Group { get; set; } = null!;
+    public CatalogExercise? CatalogExercise { get; set; }
     public ICollection<ExerciseSet> Sets { get; set; } = [];
 }

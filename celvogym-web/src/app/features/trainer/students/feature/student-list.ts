@@ -1,15 +1,17 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
-import { StudentDto, StudentInvitationDto } from '../../../../shared/models';
+import { StudentDto, StudentInvitationDto, TrainerNoteDto } from '../../../../shared/models';
 import { environment } from '../../../../../environments/environment';
 import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgAvatar } from '../../../../shared/ui/avatar';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
+import { formatDate } from '../../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-student-list',
-  imports: [FormsModule, CgSpinner, CgAvatar, CgEmptyState],
+  imports: [FormsModule, RouterLink, CgSpinner, CgAvatar, CgEmptyState],
   template: `
     <div class="animate-fade-up">
       <div class="flex items-center justify-between mb-6">
@@ -103,11 +105,69 @@ import { CgEmptyState } from '../../../../shared/ui/empty-state';
       } @else {
         <div class="space-y-2 stagger">
           @for (student of students(); track student.id) {
-            <div class="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
-              <cg-avatar [name]="student.displayName" size="md" />
-              <div>
-                <p class="font-medium text-text text-sm">{{ student.displayName }}</p>
-                <p class="text-text-muted text-xs">Desde {{ formatDate(student.createdAt) }}</p>
+            <div class="bg-card border border-border rounded-xl overflow-hidden"
+              [class.expanded]="expandedStudent() === student.id">
+              <button (click)="toggleStudent(student.id)"
+                class="w-full p-4 flex items-center gap-3 text-left hover:bg-card-hover transition">
+                <cg-avatar [name]="student.displayName" size="md" />
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-text text-sm">{{ student.displayName }}</p>
+                  <p class="text-text-muted text-xs">Desde {{ formatDate(student.createdAt) }}</p>
+                </div>
+                <svg class="w-4 h-4 text-text-muted transition"
+                  [class.rotate-180]="expandedStudent() === student.id"
+                  fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+
+              <div class="collapse-content">
+                <div class="px-4 pb-4 border-t border-border-light">
+                  <a [routerLink]="['/trainer/students', student.id]"
+                    [queryParams]="{name: student.displayName}"
+                    class="inline-block mt-3 mb-3 text-xs text-primary hover:underline">Ver progreso y analíticas →</a>
+
+                  <h4 class="text-overline text-text-secondary mb-2">Notas privadas</h4>
+
+                  @if (notesLoading()) {
+                    <div class="flex justify-center py-2">
+                      <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  } @else {
+                    <div class="space-y-2 mb-3">
+                      @for (note of notes(); track note.id) {
+                        <div class="bg-bg-raised rounded-lg px-3 py-2 group relative"
+                          [class.border-l-2]="note.isPinned"
+                          [class.border-l-warning]="note.isPinned">
+                          <p class="text-sm text-text">{{ note.text }}</p>
+                          <div class="flex items-center justify-between mt-1">
+                            <span class="text-text-muted text-xs">{{ formatDate(note.updatedAt) }}</span>
+                            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                              <button (click)="togglePin(student.id, note)"
+                                class="text-xs" [class.text-warning]="note.isPinned" [class.text-text-muted]="!note.isPinned">
+                                {{ note.isPinned ? '★' : '☆' }}
+                              </button>
+                              <button (click)="deleteNote(student.id, note.id)" class="text-xs text-danger">✕</button>
+                            </div>
+                          </div>
+                        </div>
+                      } @empty {
+                        <p class="text-text-muted text-xs text-center py-1">Sin notas</p>
+                      }
+                    </div>
+
+                    <div class="flex gap-2">
+                      <input type="text" [(ngModel)]="noteText" name="noteText" maxlength="2000"
+                        (keydown.enter)="addNote(student.id)"
+                        class="flex-1 bg-bg-raised border border-border-light rounded-lg px-3 py-1.5 text-sm text-text focus:outline-none focus:border-primary"
+                        placeholder="Agregar nota..." />
+                      <button (click)="addNote(student.id)"
+                        class="bg-primary hover:bg-primary-hover text-white text-xs px-3 py-1.5 rounded-lg transition press">
+                        Agregar
+                      </button>
+                    </div>
+                  }
+                </div>
               </div>
             </div>
           }
@@ -118,6 +178,7 @@ import { CgEmptyState } from '../../../../shared/ui/empty-state';
 })
 export class StudentList implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  formatDate = formatDate;
 
   students = signal<StudentDto[]>([]);
   loading = signal(true);
@@ -135,6 +196,11 @@ export class StudentList implements OnInit, OnDestroy {
   qrUrl = signal('');
   showLoginQr = signal(false);
   loginQrUrl = signal('');
+
+  expandedStudent = signal<string | null>(null);
+  notes = signal<TrainerNoteDto[]>([]);
+  notesLoading = signal(false);
+  noteText = '';
 
   ngOnInit() {
     this.api.get<StudentDto[]>('/students').subscribe({
@@ -232,7 +298,52 @@ export class StudentList implements OnInit, OnDestroy {
     return null;
   }
 
-  formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('es', { day: 'numeric', month: 'short' });
+  toggleStudent(studentId: string) {
+    if (this.expandedStudent() === studentId) {
+      this.expandedStudent.set(null);
+      return;
+    }
+    this.expandedStudent.set(studentId);
+    this.loadNotes(studentId);
   }
+
+  loadNotes(studentId: string) {
+    this.notesLoading.set(true);
+    this.api.get<TrainerNoteDto[]>(`/students/${studentId}/notes`).subscribe({
+      next: (data) => { this.notes.set(data); this.notesLoading.set(false); },
+      error: () => this.notesLoading.set(false),
+    });
+  }
+
+  addNote(studentId: string) {
+    const text = this.noteText.trim();
+    if (!text) return;
+    this.api.post<TrainerNoteDto>(`/students/${studentId}/notes`, { text }).subscribe({
+      next: (note) => {
+        this.notes.update(n => [...n, note]);
+        this.noteText = '';
+      },
+    });
+  }
+
+  togglePin(studentId: string, note: TrainerNoteDto) {
+    this.api.put<TrainerNoteDto>(`/students/${studentId}/notes/${note.id}`, {
+      text: note.text,
+      isPinned: !note.isPinned,
+    }).subscribe({
+      next: (updated) => {
+        this.notes.update(notes =>
+          notes.map(n => n.id === updated.id ? updated : n)
+            .sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0))
+        );
+      },
+    });
+  }
+
+  deleteNote(studentId: string, noteId: string) {
+    this.api.delete(`/students/${studentId}/notes/${noteId}`).subscribe({
+      next: () => this.notes.update(notes => notes.filter(n => n.id !== noteId)),
+    });
+  }
+
 }

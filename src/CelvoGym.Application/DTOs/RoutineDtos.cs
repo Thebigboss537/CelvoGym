@@ -8,6 +8,8 @@ public sealed record RoutineListDto(
     string? Description,
     int DayCount,
     int ExerciseCount,
+    List<string> Tags,
+    string? Category,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
 
@@ -16,6 +18,8 @@ public sealed record RoutineDetailDto(
     string Name,
     string? Description,
     List<DayDto> Days,
+    List<string> Tags,
+    string? Category,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
 

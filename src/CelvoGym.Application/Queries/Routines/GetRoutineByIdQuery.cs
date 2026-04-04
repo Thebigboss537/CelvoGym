@@ -52,6 +52,8 @@ public sealed class GetRoutineByIdHandler(ICelvoGymDbContext db)
                     )).ToList()
                 )).ToList()
             )).ToList(),
+            routine.Tags,
+            routine.Category,
             routine.CreatedAt,
             routine.UpdatedAt);
     }

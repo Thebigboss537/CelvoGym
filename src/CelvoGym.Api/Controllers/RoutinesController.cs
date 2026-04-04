@@ -32,7 +32,7 @@ public class RoutinesController(IMediator mediator) : ControllerBase
     {
         HttpContext.RequirePermission(Permissions.GymManage);
         var days = MapDays(request.Days);
-        var result = await mediator.Send(new CreateRoutineCommand(HttpContext.GetTrainerId(), request.Name, request.Description, days), ct);
+        var result = await mediator.Send(new CreateRoutineCommand(HttpContext.GetTrainerId(), request.Name, request.Description, days, request.Tags, request.Category), ct);
         return Created($"/api/v1/routines/{result.Id}", result);
     }
 
@@ -41,7 +41,7 @@ public class RoutinesController(IMediator mediator) : ControllerBase
     {
         HttpContext.RequirePermission(Permissions.GymManage);
         var days = MapDays(request.Days);
-        var result = await mediator.Send(new UpdateRoutineCommand(id, HttpContext.GetTrainerId(), request.Name, request.Description, days), ct);
+        var result = await mediator.Send(new UpdateRoutineCommand(id, HttpContext.GetTrainerId(), request.Name, request.Description, days, request.Tags, request.Category), ct);
         return Ok(result);
     }
 
@@ -51,6 +51,14 @@ public class RoutinesController(IMediator mediator) : ControllerBase
         HttpContext.RequirePermission(Permissions.GymManage);
         await mediator.Send(new DeleteRoutineCommand(id, HttpContext.GetTrainerId()), ct);
         return NoContent();
+    }
+
+    [HttpPost("{id:guid}/duplicate")]
+    public async Task<IActionResult> Duplicate(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var result = await mediator.Send(new DuplicateRoutineCommand(id, HttpContext.GetTrainerId()), ct);
+        return Created($"/api/v1/routines/{result.Id}", result);
     }
 
     private static List<CreateDayInput> MapDays(List<DayRequest> days)
@@ -71,7 +79,9 @@ public class RoutinesController(IMediator mediator) : ControllerBase
 public sealed record CreateRoutineRequest(
     string Name,
     string? Description,
-    List<DayRequest> Days);
+    List<DayRequest> Days,
+    List<string>? Tags = null,
+    string? Category = null);
 
 public sealed record DayRequest(
     string Name,

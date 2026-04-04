@@ -6,6 +6,7 @@ import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgAvatar } from '../../../../shared/ui/avatar';
 import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
+import { groupTypeLabel } from '../../../../shared/utils/labels';
 
 @Component({
   selector: 'app-routine-detail',
@@ -24,6 +25,11 @@ import { ToastService } from '../../../../shared/ui/toast';
             }
           </div>
           <div class="flex gap-2">
+            <button (click)="duplicate()"
+              [disabled]="duplicating()"
+              class="bg-card hover:bg-card-hover border border-border text-sm px-3 py-1.5 rounded-lg transition disabled:opacity-50">
+              {{ duplicating() ? 'Duplicando...' : 'Duplicar' }}
+            </button>
             <a
               [routerLink]="'edit'"
               class="bg-card hover:bg-card-hover border border-border text-sm px-3 py-1.5 rounded-lg transition"
@@ -46,17 +52,68 @@ import { ToastService } from '../../../../shared/ui/toast';
           </div>
 
           @if (showAssign()) {
-            <div class="space-y-2 mb-3">
-              @for (student of availableStudents(); track student.id) {
-                <button (click)="assign(student.id)"
-                  class="w-full flex items-center gap-2 bg-bg-raised hover:bg-card-hover border border-border-light rounded-lg px-3 py-2 text-left transition press">
-                  <cg-avatar [name]="student.displayName" />
-                  <span class="text-sm text-text">{{ student.displayName }}</span>
-                </button>
-              } @empty {
-                <p class="text-text-muted text-xs text-center py-2">No hay alumnos disponibles para asignar</p>
+            <div class="space-y-3 mb-3">
+              <!-- Template picker -->
+              @if (templates().length > 0) {
+                <div>
+                  <span class="text-xs text-text-muted block mb-1.5">Plantilla rápida</span>
+                  <div class="flex gap-1.5 flex-wrap">
+                    @for (t of templates(); track t.id) {
+                      <button type="button" (click)="applyTemplate(t)"
+                        class="text-xs bg-bg-raised border border-border-light rounded-lg px-2.5 py-1.5 hover:border-primary/40 transition">
+                        {{ t.name }}
+                      </button>
+                    }
+                  </div>
+                </div>
               }
-              <button (click)="showAssign.set(false)" class="text-text-muted text-xs hover:text-text">Cancelar</button>
+
+              <!-- Day picker -->
+              <div>
+                <span class="text-xs text-text-muted block mb-1.5">Días sugeridos</span>
+                <div class="flex gap-1.5">
+                  @for (d of weekdayOptions; track d.value) {
+                    <button type="button" (click)="toggleDay(d.value)"
+                      class="w-9 h-9 rounded-lg text-xs font-medium transition border"
+                      [class]="selectedDays().includes(d.value)
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-bg-raised text-text-muted border-border hover:border-primary/40'">
+                      {{ d.label }}
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- Multi-select students -->
+              <div>
+                @if (availableStudents().length > 1) {
+                  <button type="button" (click)="toggleSelectAll()"
+                    class="text-xs text-primary hover:underline mb-1.5">
+                    {{ selectedStudentIds().length === availableStudents().length ? 'Deseleccionar todos' : 'Seleccionar todos' }}
+                  </button>
+                }
+                @for (student of availableStudents(); track student.id) {
+                  <label class="w-full flex items-center gap-2 bg-bg-raised hover:bg-card-hover border border-border-light rounded-lg px-3 py-2 cursor-pointer transition mb-1.5">
+                    <input type="checkbox" [checked]="selectedStudentIds().includes(student.id)"
+                      (change)="toggleStudentSelection(student.id)"
+                      class="w-4 h-4 rounded accent-primary" />
+                    <cg-avatar [name]="student.displayName" />
+                    <span class="text-sm text-text">{{ student.displayName }}</span>
+                  </label>
+                } @empty {
+                  <p class="text-text-muted text-xs text-center py-2">No hay alumnos disponibles para asignar</p>
+                }
+              </div>
+
+              <div class="flex gap-2">
+                @if (selectedStudentIds().length > 0) {
+                  <button type="button" (click)="bulkAssign()"
+                    class="bg-primary hover:bg-primary-hover text-white text-xs px-4 py-2 rounded-lg transition press">
+                    Asignar {{ selectedStudentIds().length }} alumno{{ selectedStudentIds().length > 1 ? 's' : '' }}
+                  </button>
+                }
+                <button type="button" (click)="showAssign.set(false)" class="text-text-muted text-xs hover:text-text py-2">Cancelar</button>
+              </div>
             </div>
           }
 
@@ -152,6 +209,7 @@ export class RoutineDetail implements OnInit {
   private router = inject(Router);
   private api = inject(ApiService);
   private toast = inject(ToastService);
+  groupTypeLabel = groupTypeLabel;
 
   routine = signal<RoutineDetailDto | null>(null);
   loading = signal(true);
@@ -161,8 +219,23 @@ export class RoutineDetail implements OnInit {
   allStudents = signal<StudentDto[]>([]);
   assignments = signal<AssignmentDto[]>([]);
   assignError = signal('');
+  duplicating = signal(false);
+  selectedDays = signal<number[]>([]);
+
+  weekdayOptions = [
+    { label: 'Lu', value: 1 },
+    { label: 'Ma', value: 2 },
+    { label: 'Mi', value: 3 },
+    { label: 'Ju', value: 4 },
+    { label: 'Vi', value: 5 },
+    { label: 'Sa', value: 6 },
+    { label: 'Do', value: 0 },
+  ];
 
   private routineId = '';
+
+  selectedStudentIds = signal<string[]>([]);
+  templates = signal<{ id: string; name: string; scheduledDays: number[]; durationWeeks: number | null }[]>([]);
 
   assignedStudents = signal<AssignmentDto[]>([]);
   availableStudents = signal<StudentDto[]>([]);
@@ -180,11 +253,76 @@ export class RoutineDetail implements OnInit {
 
   openAssign() {
     this.showAssign.set(true);
+    this.selectedStudentIds.set([]);
     this.api.get<StudentDto[]>('/students').subscribe({
       next: (students) => {
         this.allStudents.set(students);
         this.updateAvailable();
       },
+    });
+    this.api.get<any[]>('/assignments/templates').subscribe({
+      next: (t) => this.templates.set(t),
+      error: () => {},
+    });
+  }
+
+  toggleDay(value: number) {
+    this.selectedDays.update(days =>
+      days.includes(value) ? days.filter(d => d !== value) : [...days, value]
+    );
+  }
+
+  duplicate() {
+    this.duplicating.set(true);
+    this.api.post<RoutineDetailDto>(`/routines/${this.routineId}/duplicate`, {}).subscribe({
+      next: (copy) => {
+        this.duplicating.set(false);
+        this.toast.show('Rutina duplicada');
+        this.router.navigate(['/trainer/routines', copy.id, 'edit']);
+      },
+      error: (err) => {
+        this.duplicating.set(false);
+        this.toast.show(err.error?.error || 'No pudimos duplicar la rutina', 'error');
+      },
+    });
+  }
+
+  toggleStudentSelection(studentId: string) {
+    this.selectedStudentIds.update(ids =>
+      ids.includes(studentId) ? ids.filter(id => id !== studentId) : [...ids, studentId]
+    );
+  }
+
+  toggleSelectAll() {
+    const available = this.availableStudents();
+    if (this.selectedStudentIds().length === available.length) {
+      this.selectedStudentIds.set([]);
+    } else {
+      this.selectedStudentIds.set(available.map(s => s.id));
+    }
+  }
+
+  applyTemplate(t: { scheduledDays: number[] }) {
+    this.selectedDays.set([...t.scheduledDays]);
+  }
+
+  bulkAssign() {
+    const ids = this.selectedStudentIds();
+    if (ids.length === 0) return;
+    this.assignError.set('');
+    this.api.post('/assignments/bulk', {
+      routineId: this.routineId,
+      studentIds: ids,
+      scheduledDays: this.selectedDays(),
+    }).subscribe({
+      next: () => {
+        this.showAssign.set(false);
+        this.selectedStudentIds.set([]);
+        this.selectedDays.set([]);
+        this.loadAssignments();
+        this.toast.show(`${ids.length} alumno${ids.length > 1 ? 's' : ''} asignado${ids.length > 1 ? 's' : ''}`);
+      },
+      error: (err) => this.assignError.set(err.error?.error || 'Error al asignar'),
     });
   }
 
@@ -193,9 +331,11 @@ export class RoutineDetail implements OnInit {
     this.api.post<AssignmentDto>('/assignments', {
       routineId: this.routineId,
       studentId,
+      scheduledDays: this.selectedDays(),
     }).subscribe({
       next: () => {
         this.showAssign.set(false);
+        this.selectedDays.set([]);
         this.loadAssignments();
       },
       error: (err) => this.assignError.set(err.error?.error || 'No pudimos asignar al alumno. Intentá de nuevo.'),
@@ -228,11 +368,6 @@ export class RoutineDetail implements OnInit {
       },
       error: (err) => this.assignError.set(err.error?.error || 'No pudimos eliminar la rutina. Intentá de nuevo.'),
     });
-  }
-
-  groupTypeLabel(type: string): string {
-    const labels: Record<string, string> = { Single: 'Individual', Superset: 'Biserie', Triset: 'Triserie', Circuit: 'Circuito' };
-    return labels[type] ?? type;
   }
 
   private updateAvailable() {

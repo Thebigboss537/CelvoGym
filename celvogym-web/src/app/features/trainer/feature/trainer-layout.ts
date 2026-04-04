@@ -13,16 +13,31 @@ import { CgLogo } from '../../../shared/ui/logo';
         <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
           <cg-logo [size]="24" />
           <div class="flex items-center gap-1">
-            <nav class="flex gap-1">
+            <nav class="flex gap-0.5">
+              <a
+                routerLink="dashboard"
+                routerLinkActive="text-primary border-b-2 border-primary"
+                class="px-2 py-1.5 text-sm text-text-secondary hover:text-text transition font-medium"
+              >Inicio</a>
               <a
                 routerLink="routines"
                 routerLinkActive="text-primary border-b-2 border-primary"
-                class="px-3 py-1.5 text-sm text-text-secondary hover:text-text transition font-medium"
+                class="px-2 py-1.5 text-sm text-text-secondary hover:text-text transition font-medium"
               >Rutinas</a>
+              <a
+                routerLink="programs"
+                routerLinkActive="text-primary border-b-2 border-primary"
+                class="px-2 py-1.5 text-sm text-text-secondary hover:text-text transition font-medium"
+              >Programas</a>
+              <a
+                routerLink="catalog"
+                routerLinkActive="text-primary border-b-2 border-primary"
+                class="px-2 py-1.5 text-sm text-text-secondary hover:text-text transition font-medium"
+              >Ejercicios</a>
               <a
                 routerLink="students"
                 routerLinkActive="text-primary border-b-2 border-primary"
-                class="px-3 py-1.5 text-sm text-text-secondary hover:text-text transition font-medium"
+                class="px-2 py-1.5 text-sm text-text-secondary hover:text-text transition font-medium"
               >Alumnos</a>
             </nav>
             <button (click)="authStore.logout()"

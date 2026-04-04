@@ -4,7 +4,7 @@ namespace CelvoGym.Application.DTOs;
 
 public sealed record SetLogDto(
     Guid Id,
-    Guid SetId,
+    Guid? SetId,
     bool Completed,
     DateTimeOffset? CompletedAt,
     string? ActualWeight,

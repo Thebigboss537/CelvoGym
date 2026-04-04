@@ -10,7 +10,9 @@ public sealed record CreateRoutineCommand(
     Guid TrainerId,
     string Name,
     string? Description,
-    List<CreateDayInput> Days) : IRequest<RoutineDetailDto>;
+    List<CreateDayInput> Days,
+    List<string>? Tags = null,
+    string? Category = null) : IRequest<RoutineDetailDto>;
 
 public sealed record CreateDayInput(
     string Name,
@@ -46,6 +48,8 @@ public sealed class CreateRoutineHandler(ICelvoGymDbContext db)
             TrainerId = request.TrainerId,
             Name = request.Name,
             Description = request.Description,
+            Tags = request.Tags ?? [],
+            Category = request.Category,
             UpdatedAt = DateTimeOffset.UtcNow
         };
 
@@ -56,6 +60,6 @@ public sealed class CreateRoutineHandler(ICelvoGymDbContext db)
         await db.SaveChangesAsync(cancellationToken);
 
         return new RoutineDetailDto(routine.Id, routine.Name, routine.Description,
-            dayDtos, routine.CreatedAt, routine.UpdatedAt);
+            dayDtos, routine.Tags, routine.Category, routine.CreatedAt, routine.UpdatedAt);
     }
 }

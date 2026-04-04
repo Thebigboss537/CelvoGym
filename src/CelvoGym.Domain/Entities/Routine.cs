@@ -9,6 +9,8 @@ public class Routine : BaseEntity
     public string? Description { get; set; }
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public List<string> Tags { get; set; } = [];
+    public string? Category { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
 
     public Trainer Trainer { get; set; } = null!;

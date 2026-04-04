@@ -13,6 +13,7 @@ public class RoutineAssignmentConfiguration : IEntityTypeConfiguration<RoutineAs
         builder.HasKey(ra => ra.Id);
         builder.Property(ra => ra.Id).HasDefaultValueSql("gen_random_uuid()");
         builder.Property(ra => ra.IsActive).HasDefaultValue(true);
+        builder.Property(ra => ra.ScheduledDays).HasDefaultValueSql("ARRAY[]::integer[]");
         builder.Property(ra => ra.CreatedAt).HasDefaultValueSql("NOW()");
 
         builder.HasIndex(ra => new { ra.RoutineId, ra.StudentId }).IsUnique();
@@ -27,5 +28,10 @@ public class RoutineAssignmentConfiguration : IEntityTypeConfiguration<RoutineAs
             .WithMany(s => s.RoutineAssignments)
             .HasForeignKey(ra => ra.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(ra => ra.Program)
+            .WithMany()
+            .HasForeignKey(ra => ra.ProgramId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -38,7 +38,7 @@ public sealed class GetMyRoutineDetailHandler(ICelvoGymDbContext db)
             .Where(sl => sl.StudentId == request.StudentId && sl.RoutineId == request.RoutineId)
             .ToListAsync(cancellationToken);
 
-        var setLogMap = setLogs.ToDictionary(sl => sl.SetId);
+        var setLogMap = setLogs.Where(sl => sl.SetId.HasValue).ToDictionary(sl => sl.SetId!.Value);
 
         var allEffectiveSets = 0;
         var allCompletedEffective = 0;

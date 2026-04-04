@@ -10,7 +10,9 @@ public sealed record UpdateRoutineCommand(
     Guid TrainerId,
     string Name,
     string? Description,
-    List<CreateDayInput> Days) : IRequest<RoutineDetailDto>;
+    List<CreateDayInput> Days,
+    List<string>? Tags = null,
+    string? Category = null) : IRequest<RoutineDetailDto>;
 
 public sealed class UpdateRoutineHandler(ICelvoGymDbContext db)
     : IRequestHandler<UpdateRoutineCommand, RoutineDetailDto>
@@ -25,6 +27,8 @@ public sealed class UpdateRoutineHandler(ICelvoGymDbContext db)
 
         routine.Name = request.Name;
         routine.Description = request.Description;
+        routine.Tags = request.Tags ?? [];
+        routine.Category = request.Category;
         routine.UpdatedAt = DateTimeOffset.UtcNow;
 
         var (days, dayDtos) = RoutineBuilder.BuildDays(request.Days);
@@ -33,6 +37,6 @@ public sealed class UpdateRoutineHandler(ICelvoGymDbContext db)
         await db.SaveChangesAsync(cancellationToken);
 
         return new RoutineDetailDto(routine.Id, routine.Name, routine.Description,
-            dayDtos, routine.CreatedAt, routine.UpdatedAt);
+            dayDtos, routine.Tags, routine.Category, routine.CreatedAt, routine.UpdatedAt);
     }
 }

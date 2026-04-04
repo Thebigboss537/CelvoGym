@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
@@ -34,6 +34,30 @@ interface DayForm { name: string; groups: GroupForm[]; }
           <textarea id="routine-desc" [(ngModel)]="description" name="description" rows="2"
             class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition resize-none"
             placeholder="Descripción de la rutina"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm text-text-secondary mb-1">Categoría</label>
+            <input type="text" [(ngModel)]="category" name="category" maxlength="100"
+              class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
+              placeholder="Ej: Principiante" />
+          </div>
+          <div>
+            <label class="block text-sm text-text-secondary mb-1">Tags</label>
+            <div class="flex items-center gap-1.5 flex-wrap bg-card border border-border rounded-lg px-3 py-2 min-h-[48px]">
+              @for (tag of tags(); track tag) {
+                <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded flex items-center gap-1">
+                  {{ tag }}
+                  <button type="button" (click)="removeTag(tag)" class="hover:text-danger">×</button>
+                </span>
+              }
+              <input type="text" [(ngModel)]="tagInput" name="tagInput" maxlength="50"
+                (keydown.enter)="addTag($event)"
+                class="bg-transparent text-text text-sm flex-1 min-w-[60px] focus:outline-none"
+                placeholder="Agregar tag..." />
+            </div>
+          </div>
         </div>
 
         <!-- Days -->
@@ -74,11 +98,30 @@ interface DayForm { name: string; groups: GroupForm[]; }
                   <!-- Exercises within group -->
                   @for (ex of group.exercises; track $index; let ei = $index) {
                     <div class="bg-card rounded-lg p-3 space-y-2.5">
-                      <!-- Exercise name + actions -->
+                      <!-- Exercise name + autocomplete -->
                       <div class="flex items-center gap-2">
-                        <input type="text" [(ngModel)]="ex.name" [name]="'ex-' + di + '-' + gi + '-' + ei"
-                          class="flex-1 bg-transparent text-sm font-medium text-text focus:outline-none border-b border-border-light focus:border-primary pb-0.5"
-                          placeholder="Nombre del ejercicio" />
+                        <div class="flex-1 relative">
+                          <input type="text" [(ngModel)]="ex.name" [name]="'ex-' + di + '-' + gi + '-' + ei"
+                            (input)="searchCatalog(ex)"
+                            (focus)="searchCatalog(ex)"
+                            (blur)="hideSuggestionsDelayed()"
+                            autocomplete="off"
+                            class="w-full bg-transparent text-sm font-medium text-text focus:outline-none border-b border-border-light focus:border-primary pb-0.5"
+                            placeholder="Nombre del ejercicio" />
+                          @if (catalogSuggestions().length > 0 && activeExercise === ex) {
+                            <div class="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+                              @for (s of catalogSuggestions(); track s.id) {
+                                <button type="button" (mousedown)="selectCatalogExercise(ex, s)"
+                                  class="w-full px-3 py-2 text-left text-sm hover:bg-card-hover transition flex items-center justify-between">
+                                  <span class="text-text">{{ s.name }}</span>
+                                  @if (s.muscleGroup) {
+                                    <span class="text-text-muted text-xs">{{ s.muscleGroup }}</span>
+                                  }
+                                </button>
+                              }
+                            </div>
+                          }
+                        </div>
                         <button type="button" (click)="ex.showVideo = !ex.showVideo"
                           class="text-xs px-2 py-1 rounded transition"
                           [class.text-primary]="ex.showVideo || ex.videoUrl"
@@ -191,7 +234,7 @@ interface DayForm { name: string; groups: GroupForm[]; }
     </div>
   `,
 })
-export class RoutineForm implements OnInit {
+export class RoutineForm implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);
@@ -203,9 +246,20 @@ export class RoutineForm implements OnInit {
 
   name = '';
   description = '';
+  category = '';
+  tags = signal<string[]>([]);
+  tagInput = '';
   days = signal<DayForm[]>([]);
 
+  catalogSuggestions = signal<{ id: string; name: string; muscleGroup: string | null; videoUrl: string | null; notes: string | null }[]>([]);
+  activeExercise: ExerciseForm | null = null;
+  private searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
   private routineId = '';
+
+  ngOnDestroy() {
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+  }
 
   ngOnInit() {
     this.routineId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -222,6 +276,8 @@ export class RoutineForm implements OnInit {
       next: (r) => {
         this.name = r.name;
         this.description = r.description ?? '';
+        this.category = r.category ?? '';
+        this.tags.set(r.tags ?? []);
         this.days.set(r.days.map(d => ({
           name: d.name,
           groups: d.groups.map(g => ({
@@ -257,6 +313,8 @@ export class RoutineForm implements OnInit {
     const body = {
       name: this.name,
       description: this.description || null,
+      tags: this.tags(),
+      category: this.category || null,
       days: this.days().map(d => ({
         name: d.name,
         groups: d.groups.map(g => ({
@@ -294,6 +352,51 @@ export class RoutineForm implements OnInit {
         this.saving.set(false);
       },
     });
+  }
+
+  searchCatalog(ex: ExerciseForm) {
+    this.activeExercise = ex;
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      const q = ex.name.trim();
+      if (q.length < 2) { this.catalogSuggestions.set([]); return; }
+      this.api.get<any[]>(`/catalog?q=${encodeURIComponent(q)}`).subscribe({
+        next: (data) => this.catalogSuggestions.set(data),
+        error: () => this.catalogSuggestions.set([]),
+      });
+    }, 300);
+  }
+
+  selectCatalogExercise(ex: ExerciseForm, catalog: any) {
+    ex.name = catalog.name;
+    if (catalog.videoUrl) {
+      ex.videoUrl = catalog.videoUrl;
+      ex.videoSource = catalog.videoSource ?? 'None';
+      ex.showVideo = catalog.videoSource !== 'None';
+    }
+    if (catalog.notes) ex.notes = catalog.notes;
+    this.catalogSuggestions.set([]);
+    this.activeExercise = null;
+  }
+
+  hideSuggestionsDelayed() {
+    setTimeout(() => {
+      this.catalogSuggestions.set([]);
+      this.activeExercise = null;
+    }, 200);
+  }
+
+  addTag(event: Event) {
+    event.preventDefault();
+    const tag = this.tagInput.trim();
+    if (tag && !this.tags().includes(tag)) {
+      this.tags.update(t => [...t, tag]);
+    }
+    this.tagInput = '';
+  }
+
+  removeTag(tag: string) {
+    this.tags.update(t => t.filter(x => x !== tag));
   }
 
   cancel() { this.router.navigate(['/trainer/routines']); }

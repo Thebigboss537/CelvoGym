@@ -24,6 +24,8 @@ public sealed class GetRoutinesHandler(ICelvoGymDbContext db)
                 r.Days.Count,
                 r.Days.SelectMany(d => d.ExerciseGroups)
                     .SelectMany(g => g.Exercises).Count(),
+                r.Tags,
+                r.Category,
                 r.CreatedAt,
                 r.UpdatedAt))
             .ToListAsync(cancellationToken);

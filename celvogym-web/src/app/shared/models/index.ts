@@ -25,6 +25,8 @@ export interface RoutineListDto {
   description: string | null;
   dayCount: number;
   exerciseCount: number;
+  tags: string[];
+  category: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -34,6 +36,8 @@ export interface RoutineDetailDto {
   name: string;
   description: string | null;
   days: DayDto[];
+  tags: string[];
+  category: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -151,6 +155,151 @@ export interface StudentDayDto {
   groups: ExerciseGroupDto[];
   setLogs: SetLogDto[];
   progress: ProgressSummaryDto;
+}
+
+// Sessions
+export interface WorkoutSessionDto {
+  id: string;
+  routineId: string;
+  dayId: string;
+  startedAt: string;
+  completedAt: string | null;
+  notes: string | null;
+}
+
+export interface SessionSummaryDto {
+  id: string;
+  date: string;
+  dayName: string;
+  status: 'completed' | 'in_progress';
+  completedSets: number;
+  totalSets: number;
+  durationMinutes: number | null;
+}
+
+// Calendar
+export interface CalendarMonthDto {
+  sessions: CalendarDayDto[];
+  suggestedDays: number[];
+  activeProgram: ActiveProgramDto | null;
+}
+
+export interface CalendarDayDto {
+  date: string;
+  dayName: string;
+  status: 'completed' | 'in_progress';
+  sessionId: string;
+  completedSets: number;
+  totalSets: number;
+  durationMinutes: number | null;
+}
+
+export interface ActiveProgramDto {
+  name: string;
+  currentWeek: number;
+  totalWeeks: number;
+}
+
+// Programs
+export interface ProgramListDto {
+  id: string;
+  name: string;
+  description: string | null;
+  durationWeeks: number;
+  routineCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProgramDetailDto {
+  id: string;
+  name: string;
+  description: string | null;
+  durationWeeks: number;
+  routines: ProgramRoutineDto[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProgramRoutineDto {
+  id: string;
+  routineId: string;
+  routineName: string;
+  label: string | null;
+  sortOrder: number;
+}
+
+// Trainer Notes
+export interface TrainerNoteDto {
+  id: string;
+  text: string;
+  isPinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Personal Records
+export interface PersonalRecordDto {
+  id: string;
+  exerciseName: string;
+  weight: string;
+  reps: string | null;
+  achievedAt: string;
+}
+
+export interface NewPrDto {
+  exerciseName: string;
+  weight: string;
+  previousWeight: string | null;
+}
+
+// Body Metrics
+export interface BodyMetricDto {
+  id: string;
+  recordedAt: string;
+  weight: number | null;
+  bodyFat: number | null;
+  notes: string | null;
+  measurements: BodyMeasurementDto[];
+}
+
+export interface BodyMeasurementDto {
+  type: string;
+  value: number;
+}
+
+export interface ProgressPhotoDto {
+  id: string;
+  takenAt: string;
+  photoUrl: string;
+  angle: 'Front' | 'Side' | 'Back';
+  notes: string | null;
+}
+
+// Analytics
+export interface ExerciseProgressDto {
+  exerciseName: string;
+  dataPoints: ExerciseDataPointDto[];
+}
+
+export interface ExerciseDataPointDto {
+  date: string;
+  maxWeight: string | null;
+  totalReps: string | null;
+  sets: number;
+}
+
+export interface StudentOverviewDto {
+  totalSessions: number;
+  sessionsThisWeek: number;
+  adherencePercentage: number;
+  weeklyVolume: WeeklyVolumeDto[];
+}
+
+export interface WeeklyVolumeDto {
+  weekStart: string;
+  sessions: number;
+  completedSets: number;
 }
 
 // Comments
