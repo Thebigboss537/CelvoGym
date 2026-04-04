@@ -210,6 +210,39 @@ namespace CelvoGym.Infrastructure.Migrations
                 principalColumn: "id",
                 onDelete: ReferentialAction.SetNull);
 
+            // Data migration: create synthetic WorkoutSessions for existing SetLogs
+            migrationBuilder.Sql(@"
+                INSERT INTO gym.workout_sessions (id, student_id, assignment_id, routine_id, day_id, started_at, completed_at, created_at)
+                SELECT DISTINCT
+                    gen_random_uuid(),
+                    sl.student_id,
+                    ra.id,
+                    sl.routine_id,
+                    (SELECT d.id FROM gym.days d WHERE d.routine_id = sl.routine_id ORDER BY d.sort_order LIMIT 1),
+                    COALESCE(sl.completed_at, sl.created_at),
+                    COALESCE(sl.completed_at, sl.created_at),
+                    sl.created_at
+                FROM gym.set_logs sl
+                INNER JOIN gym.routine_assignments ra ON ra.routine_id = sl.routine_id AND ra.student_id = sl.student_id
+                WHERE sl.session_id = '00000000-0000-0000-0000-000000000000';
+            ");
+
+            // Backfill session_id on existing SetLogs
+            migrationBuilder.Sql(@"
+                UPDATE gym.set_logs sl
+                SET session_id = ws.id
+                FROM gym.workout_sessions ws
+                WHERE sl.session_id = '00000000-0000-0000-0000-000000000000'
+                  AND ws.student_id = sl.student_id
+                  AND ws.routine_id = sl.routine_id;
+            ");
+
+            // Delete any orphaned set_logs that couldn't be matched (no assignment exists)
+            migrationBuilder.Sql(@"
+                DELETE FROM gym.set_logs
+                WHERE session_id = '00000000-0000-0000-0000-000000000000';
+            ");
+
             migrationBuilder.AddForeignKey(
                 name: "fk_set_logs_workout_sessions_session_id",
                 schema: "gym",
