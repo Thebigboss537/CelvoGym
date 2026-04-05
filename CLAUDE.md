@@ -6,7 +6,7 @@ See `../CLAUDE.md` for ecosystem-wide conventions, auth flow, and infrastructure
 
 ## What This App Does
 
-Trainers create workout routines and assign them to students. Students follow routines, log progress (weight/reps/RPE per set), and communicate with their trainer via comments.
+Trainers create workout routines, group them into programs, and assign programs to students. Students follow their assigned program, log progress (weight/reps/RPE per set), and communicate with their trainer via comments.
 
 ## Architecture
 
@@ -37,6 +37,11 @@ docker compose up -d
 - **Student onboarding**: Trainer invites via email or QR code
 - **Trainer-Student**: M:N junction table, 1:1 enforced in business logic for MVP
 - **Routine structure**: Routine → Day → ExerciseGroup → Exercise → ExerciseSet
+- **Program structure**: Program → ProgramRoutine (ordered) → Routine
+- **Assignment model**: Programs are the assignment unit (not individual routines)
+- **Assignment modes**: Rotation (routines cycle A→B→C→A) or Fixed (routine mapped to specific weekdays)
+- **Program lifecycle**: Active → Completed/Cancelled, with duration in weeks and training day schedule
+- **RotationIndex**: Tracks which routine is next in rotation mode, incremented on session complete
 - **Set types**: Warmup, Effective, DropSet, RestPause, AMRAP
 - **Exercise grouping**: Single, Superset, Triset, Circuit
 - **Videos**: YouTube embed or trainer upload (MinIO bucket `celvogym-videos`)
@@ -44,8 +49,8 @@ docker compose up -d
 
 ## API Routes
 
-- Trainer (operator): `/api/v1/routines`, `/api/v1/students`, `/api/v1/assignments`
-- Student (end-user): `/api/v1/public/my/routines`, `/api/v1/public/my/sets/*`
+- Trainer (operator): `/api/v1/routines`, `/api/v1/students`, `/api/v1/programs`, `/api/v1/program-assignments`
+- Student (end-user): `/api/v1/public/my/program`, `/api/v1/public/my/next-workout`, `/api/v1/public/my/routines/{id}`, `/api/v1/public/my/sets/*`
 - Public: `/api/v1/health`, `/api/v1/public/invite/{token}`
 
 ## Design Context
@@ -84,4 +89,6 @@ Full design context: `celvogym-web/.impeccable.md`
 - **Animations**: `.animate-fade-up`, `.animate-check`, `.animate-complete`, `.animate-badge`, `.stagger`, `.press`, `.skeleton` — all respect `prefers-reduced-motion`
 - **Collapse/expand**: Use `.collapse-content` + `.expanded` parent class (CSS grid trick for height:auto transitions)
 - **Hover token**: Use `hover:bg-primary-hover` (not `hover:bg-primary-dark`)
+- **Select styling**: Use `.select-styled` class for dark-themed native selects (defined in `styles.css`)
+- **Shared helpers**: `ProgramWeekHelper.CalculateCurrentWeek()` for week progress calculation — do not inline
 - **Brand assets**: SVG logos in `celvogym-web/public/`, brand guidelines in `celvogym-web/brand-guidelines.md`
