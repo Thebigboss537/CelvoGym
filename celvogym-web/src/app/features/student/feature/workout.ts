@@ -402,8 +402,18 @@ export class Workout implements OnInit, OnDestroy {
     const r = this.routine();
     if (!r) return;
     const logMap = this.setLogMap();
-    let totalEff = 0, completedEff = 0;
 
+    // Quick count to bail early if nothing changed
+    let completed = 0;
+    for (const d of r.days)
+      for (const g of d.groups)
+        for (const ex of g.exercises)
+          for (const s of ex.sets)
+            if (s.setType !== 'Warmup' && logMap.get(s.id)?.completed) completed++;
+
+    if (completed === r.progress.completedEffectiveSets) return;
+
+    let totalEff = 0, completedEff = 0;
     const days = r.days.map(day => {
       let dayEff = 0, dayComp = 0;
       for (const g of day.groups)
@@ -417,8 +427,6 @@ export class Workout implements OnInit, OnDestroy {
       completedEff += dayComp;
       return { ...day, progress: { totalEffectiveSets: dayEff, completedEffectiveSets: dayComp, percentage: dayEff > 0 ? Math.floor(dayComp * 100 / dayEff) : 0 } };
     });
-
-    if (completedEff === r.progress.completedEffectiveSets) return;
 
     this.routine.set({ ...r, days, progress: {
       totalEffectiveSets: totalEff, completedEffectiveSets: completedEff,
