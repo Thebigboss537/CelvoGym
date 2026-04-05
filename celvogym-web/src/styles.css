@@ -137,6 +137,19 @@ body::before {
   border-radius: 0.5rem;
 }
 
+/* Native select/option dark theme */
+select {
+  color-scheme: dark;
+}
+select option {
+  background-color: var(--color-card);
+  color: var(--color-text);
+}
+select option:checked {
+  background-color: var(--color-primary);
+  color: white;
+}
+
 .press { transition: transform 0.1s ease; }
 .press:active { transform: scale(0.96); }
 

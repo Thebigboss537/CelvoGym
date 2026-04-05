@@ -28,13 +28,14 @@ public sealed class GetStudentOverviewHandler(ICelvoGymDbContext db)
         var totalSessions = sessions.Count;
         var sessionsThisWeek = sessions.Count(s => s.StartedAt >= weekAgo);
 
-        // Adherence: sessions per week vs expected (from assignment)
-        var assignment = await db.RoutineAssignments
+        // Adherence: sessions per week vs expected (from ProgramAssignment)
+        var programAssignment = await db.ProgramAssignments
             .AsNoTracking()
-            .Where(ra => ra.StudentId == request.StudentId && ra.IsActive)
+            .Where(pa => pa.StudentId == request.StudentId
+                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active)
             .FirstOrDefaultAsync(cancellationToken);
 
-        var expectedPerWeek = assignment?.ScheduledDays.Count ?? 3;
+        var expectedPerWeek = programAssignment?.TrainingDays.Count ?? 3;
         var weeks = Math.Max(1, (int)Math.Ceiling((now - eightWeeksAgo).TotalDays / 7.0));
         var adherence = expectedPerWeek * weeks > 0
             ? Math.Min(100, totalSessions * 100 / (expectedPerWeek * weeks))

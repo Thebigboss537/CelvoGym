@@ -62,22 +62,21 @@ public sealed class GetDashboardHandler(ICelvoGymDbContext db)
         }
 
         var today = DateOnly.FromDateTime(now.UtcDateTime);
-        var endingSoon = await db.RoutineAssignments
+        var endingSoon = await db.ProgramAssignments
             .AsNoTracking()
-            .Include(ra => ra.Student)
-            .Where(ra => ra.IsActive && ra.ProgramId != null
-                && ra.EndDate != null
-                && ra.EndDate.Value <= today.AddDays(7)
-                && ra.EndDate.Value >= today
-                && studentIds.Contains(ra.StudentId))
+            .Include(pa => pa.Student)
+            .Where(pa => pa.Status == Domain.Enums.ProgramAssignmentStatus.Active
+                && pa.EndDate <= today.AddDays(7)
+                && pa.EndDate >= today
+                && studentIds.Contains(pa.StudentId))
             .ToListAsync(cancellationToken);
 
-        foreach (var ra in endingSoon)
+        foreach (var pa in endingSoon)
         {
-            var daysLeft = ra.EndDate!.Value.DayNumber - today.DayNumber;
+            var daysLeft = pa.EndDate.DayNumber - today.DayNumber;
             alerts.Add(new AlertDto("program_ending",
-                $"Programa de {ra.Student.DisplayName} termina en {daysLeft} día{(daysLeft != 1 ? "s" : "")}",
-                ra.StudentId));
+                $"Programa de {pa.Student.DisplayName} termina en {daysLeft} día{(daysLeft != 1 ? "s" : "")}",
+                pa.StudentId));
         }
 
         // Pinned notes

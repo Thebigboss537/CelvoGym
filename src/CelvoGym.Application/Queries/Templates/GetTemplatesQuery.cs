@@ -20,7 +20,6 @@ public sealed class GetTemplatesHandler(ICelvoGymDbContext db)
             .Select(at => new AssignmentTemplateDto(
                 at.Id, at.Name,
                 at.ProgramId, at.Program != null ? at.Program.Name : null,
-                at.RoutineId, at.Routine != null ? at.Routine.Name : null,
                 at.ScheduledDays, at.DurationWeeks))
             .ToListAsync(cancellationToken);
     }

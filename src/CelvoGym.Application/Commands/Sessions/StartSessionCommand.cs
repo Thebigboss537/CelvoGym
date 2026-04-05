@@ -1,6 +1,7 @@
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using CelvoGym.Domain.Entities;
+using CelvoGym.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,20 +17,25 @@ public sealed class StartSessionHandler(ICelvoGymDbContext db)
 {
     public async Task<WorkoutSessionDto> Handle(StartSessionCommand request, CancellationToken cancellationToken)
     {
-        var assignment = await db.RoutineAssignments
-            .FirstOrDefaultAsync(ra => ra.RoutineId == request.RoutineId
-                && ra.StudentId == request.StudentId
-                && ra.IsActive, cancellationToken)
+        // Find active ProgramAssignment that contains this routine
+        var programAssignment = await db.ProgramAssignments
+            .Include(pa => pa.Program)
+                .ThenInclude(p => p.ProgramRoutines)
+            .FirstOrDefaultAsync(pa => pa.StudentId == request.StudentId
+                && pa.Status == ProgramAssignmentStatus.Active
+                && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == request.RoutineId),
+                cancellationToken)
             ?? throw new InvalidOperationException("Routine not assigned to this student");
 
         var dayExists = await db.Days
             .AnyAsync(d => d.Id == request.DayId && d.RoutineId == request.RoutineId, cancellationToken);
         if (!dayExists) throw new InvalidOperationException("Day not found in this routine");
 
+        // Check for existing active session for this day
         var activeSession = await db.WorkoutSessions
             .FirstOrDefaultAsync(ws => ws.StudentId == request.StudentId
                 && ws.DayId == request.DayId
-                && ws.AssignmentId == assignment.Id
+                && ws.ProgramAssignmentId == programAssignment.Id
                 && ws.CompletedAt == null, cancellationToken);
 
         if (activeSession is not null)
@@ -42,7 +48,7 @@ public sealed class StartSessionHandler(ICelvoGymDbContext db)
         var session = new WorkoutSession
         {
             StudentId = request.StudentId,
-            AssignmentId = assignment.Id,
+            ProgramAssignmentId = programAssignment.Id,
             RoutineId = request.RoutineId,
             DayId = request.DayId,
             StartedAt = DateTimeOffset.UtcNow

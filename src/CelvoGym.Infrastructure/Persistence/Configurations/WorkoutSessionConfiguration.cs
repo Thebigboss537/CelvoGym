@@ -18,16 +18,25 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
 
         builder.HasIndex(ws => new { ws.StudentId, ws.AssignmentId });
         builder.HasIndex(ws => new { ws.StudentId, ws.RoutineId, ws.DayId });
+        builder.HasIndex(ws => new { ws.StudentId, ws.ProgramAssignmentId });
 
         builder.HasOne(ws => ws.Student)
             .WithMany(s => s.WorkoutSessions)
             .HasForeignKey(ws => ws.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // Legacy FK — nullable for new sessions
         builder.HasOne(ws => ws.Assignment)
             .WithMany(ra => ra.WorkoutSessions)
             .HasForeignKey(ws => ws.AssignmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(ws => ws.ProgramAssignment)
+            .WithMany(pa => pa.WorkoutSessions)
+            .HasForeignKey(ws => ws.ProgramAssignmentId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(ws => ws.Routine)
             .WithMany()

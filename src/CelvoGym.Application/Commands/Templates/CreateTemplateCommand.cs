@@ -10,9 +10,9 @@ public sealed record CreateTemplateCommand(
     Guid TrainerId,
     string Name,
     Guid? ProgramId,
-    Guid? RoutineId,
     List<int> ScheduledDays,
-    int? DurationWeeks) : IRequest<AssignmentTemplateDto>;
+    int? DurationWeeks,
+    string? Mode) : IRequest<AssignmentTemplateDto>;
 
 public sealed class CreateTemplateHandler(ICelvoGymDbContext db)
     : IRequestHandler<CreateTemplateCommand, AssignmentTemplateDto>
@@ -24,7 +24,6 @@ public sealed class CreateTemplateHandler(ICelvoGymDbContext db)
             TrainerId = request.TrainerId,
             Name = request.Name,
             ProgramId = request.ProgramId,
-            RoutineId = request.RoutineId,
             ScheduledDays = request.ScheduledDays,
             DurationWeeks = request.DurationWeeks
         };
@@ -32,15 +31,12 @@ public sealed class CreateTemplateHandler(ICelvoGymDbContext db)
         db.AssignmentTemplates.Add(template);
         await db.SaveChangesAsync(cancellationToken);
 
-        // Fetch names
-        string? programName = null, routineName = null;
+        string? programName = null;
         if (request.ProgramId.HasValue)
             programName = await db.Programs.Where(p => p.Id == request.ProgramId).Select(p => p.Name).FirstOrDefaultAsync(cancellationToken);
-        if (request.RoutineId.HasValue)
-            routineName = await db.Routines.Where(r => r.Id == request.RoutineId).Select(r => r.Name).FirstOrDefaultAsync(cancellationToken);
 
         return new AssignmentTemplateDto(template.Id, template.Name,
-            template.ProgramId, programName, template.RoutineId, routineName,
+            template.ProgramId, programName,
             template.ScheduledDays, template.DurationWeeks);
     }
 }

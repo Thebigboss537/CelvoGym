@@ -21,7 +21,20 @@ public sealed class DeactivateStudentHandler(ICelvoGymDbContext db)
 
         link.IsActive = false;
 
-        // Also deactivate all routine assignments for this student from this trainer
+        // Cancel all active program assignments for this student from this trainer
+        var programAssignments = await db.ProgramAssignments
+            .Where(pa => pa.StudentId == request.StudentId
+                && pa.Program.TrainerId == request.TrainerId
+                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active)
+            .ToListAsync(cancellationToken);
+
+        foreach (var pa in programAssignments)
+        {
+            pa.Status = Domain.Enums.ProgramAssignmentStatus.Cancelled;
+            pa.CompletedAt = DateTimeOffset.UtcNow;
+        }
+
+        // Also deactivate legacy routine assignments
         var assignments = await db.RoutineAssignments
             .Where(ra => ra.StudentId == request.StudentId
                 && ra.Routine.TrainerId == request.TrainerId

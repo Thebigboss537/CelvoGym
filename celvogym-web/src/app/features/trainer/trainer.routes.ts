@@ -31,6 +31,10 @@ export const TRAINER_ROUTES: Routes = [
       },
       {
         path: 'programs/:id',
+        loadComponent: () => import('./programs/feature/program-detail').then(m => m.ProgramDetail),
+      },
+      {
+        path: 'programs/:id/edit',
         loadComponent: () => import('./programs/feature/program-form').then(m => m.ProgramForm),
       },
       {

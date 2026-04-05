@@ -1,6 +1,7 @@
 using CelvoGym.Application.Common.Helpers;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
+using CelvoGym.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,14 +20,16 @@ public sealed class GetCalendarHandler(ICelvoGymDbContext db)
         var monthStart = new DateTimeOffset(request.Year, request.Month, 1, 0, 0, 0, TimeSpan.Zero);
         var monthEnd = monthStart.AddMonths(1);
 
-        // Get active assignment with scheduled days
-        var assignment = await db.RoutineAssignments
+        // Get active ProgramAssignment
+        var assignment = await db.ProgramAssignments
             .AsNoTracking()
-            .Where(ra => ra.StudentId == request.StudentId && ra.IsActive)
-            .OrderByDescending(ra => ra.CreatedAt)
+            .Include(pa => pa.Program)
+            .Where(pa => pa.StudentId == request.StudentId
+                && pa.Status == ProgramAssignmentStatus.Active)
+            .OrderByDescending(pa => pa.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
 
-        var suggestedDays = assignment?.ScheduledDays ?? [];
+        var suggestedDays = assignment?.TrainingDays ?? [];
 
         // Get all sessions in the month
         var sessions = await db.WorkoutSessions
@@ -39,7 +42,6 @@ public sealed class GetCalendarHandler(ICelvoGymDbContext db)
             .ToListAsync(cancellationToken);
 
         var sessionIds = sessions.Select(s => s.Id).ToList();
-
         var statsMap = await SetLogStatsHelper.GetEffectiveSetStatsAsync(db, sessionIds, cancellationToken);
 
         var calendarDays = sessions.Select(s =>
@@ -61,18 +63,14 @@ public sealed class GetCalendarHandler(ICelvoGymDbContext db)
 
         // Program info
         ActiveProgramDto? activeProgram = null;
-        if (assignment?.ProgramId is not null && assignment.StartDate.HasValue)
+        if (assignment is not null)
         {
-            var program = await db.Programs
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == assignment.ProgramId && p.IsActive, cancellationToken);
-
-            if (program is not null)
-            {
-                var daysSinceStart = DateOnly.FromDateTime(DateTime.UtcNow).DayNumber - assignment.StartDate.Value.DayNumber;
-                var currentWeek = Math.Max(1, (int)Math.Ceiling((daysSinceStart + 1) / 7.0));
-                activeProgram = new ActiveProgramDto(program.Name, currentWeek, program.DurationWeeks);
-            }
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var daysSinceStart = today.DayNumber - assignment.StartDate.DayNumber;
+            var currentWeek = daysSinceStart < 0 ? 1 : Math.Max(1, (int)Math.Ceiling((daysSinceStart + 1) / 7.0));
+            activeProgram = new ActiveProgramDto(
+                assignment.Program.Name, currentWeek, assignment.Program.DurationWeeks,
+                assignment.Mode.ToString(), assignment.Status.ToString());
         }
 
         return new CalendarMonthDto(calendarDays, suggestedDays, activeProgram);

@@ -198,6 +198,56 @@ export interface ActiveProgramDto {
   name: string;
   currentWeek: number;
   totalWeeks: number;
+  mode: ProgramAssignmentMode;
+  status: ProgramAssignmentStatus;
+}
+
+// Program Assignments
+export type ProgramAssignmentMode = 'Rotation' | 'Fixed';
+export type ProgramAssignmentStatus = 'Active' | 'Completed' | 'Cancelled';
+
+export interface ProgramAssignmentDto {
+  id: string;
+  programId: string;
+  programName: string;
+  studentId: string;
+  studentName: string;
+  mode: ProgramAssignmentMode;
+  status: ProgramAssignmentStatus;
+  trainingDays: number[];
+  startDate: string;
+  endDate: string;
+  currentWeek: number;
+  totalWeeks: number;
+  createdAt: string;
+}
+
+export interface FixedScheduleEntry {
+  routineId: string;
+  days: number[];
+}
+
+export interface NextWorkoutDto {
+  routineId: string;
+  routineName: string;
+  dayId: string;
+  dayName: string;
+  programName: string;
+  currentWeek: number;
+  totalWeeks: number;
+}
+
+export interface MyProgramDto {
+  programId: string;
+  programName: string;
+  description: string | null;
+  mode: ProgramAssignmentMode;
+  status: ProgramAssignmentStatus;
+  currentWeek: number;
+  totalWeeks: number;
+  routines: StudentRoutineListDto[];
+  startDate: string;
+  endDate: string;
 }
 
 // Programs

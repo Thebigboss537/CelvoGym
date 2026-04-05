@@ -5,7 +5,5 @@ public sealed record AssignmentTemplateDto(
     string Name,
     Guid? ProgramId,
     string? ProgramName,
-    Guid? RoutineId,
-    string? RoutineName,
     List<int> ScheduledDays,
     int? DurationWeeks);

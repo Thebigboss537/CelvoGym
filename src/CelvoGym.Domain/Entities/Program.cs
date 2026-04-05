@@ -13,4 +13,5 @@ public class Program : BaseEntity
 
     public Trainer Trainer { get; set; } = null!;
     public ICollection<ProgramRoutine> ProgramRoutines { get; set; } = [];
+    public ICollection<ProgramAssignment> ProgramAssignments { get; set; } = [];
 }

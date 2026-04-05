@@ -52,7 +52,8 @@ interface RoutineSlot {
                 <div class="flex items-center gap-2 bg-bg-raised border border-border-light rounded-lg px-3 py-2">
                   <span class="text-xs text-text-muted w-5">{{ i + 1 }}.</span>
                   <select [(ngModel)]="slot.routineId" [name]="'routine-' + i"
-                    class="flex-1 bg-transparent text-sm text-text border-none focus:outline-none">
+                    class="flex-1 bg-bg-raised text-sm text-text border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:border-primary transition appearance-none cursor-pointer"
+                    style="background-image: url('data:image/svg+xml,<%3Fxml version=%271.0%27 encoding=%27UTF-8%27%3F><svg viewBox=%270 0 24 24%27 fill=%27none%27 xmlns=%27http://www.w3.org/2000/svg%27><path d=%27M6 9l6 6 6-6%27 stroke=%27%236b7280%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1rem; padding-right: 2rem;">
                     <option value="" disabled>Seleccionar rutina</option>
                     @for (r of routines(); track r.id) {
                       <option [value]="r.id">{{ r.name }}</option>

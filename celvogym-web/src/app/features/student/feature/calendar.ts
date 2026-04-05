@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { CalendarMonthDto, CalendarDayDto, StudentRoutineListDto } from '../../../shared/models';
+import { CalendarMonthDto, CalendarDayDto, StudentRoutineListDto, NextWorkoutDto } from '../../../shared/models';
 import { CgSpinner } from '../../../shared/ui/spinner';
 import { CgEmptyState } from '../../../shared/ui/empty-state';
 import { formatDate } from '../../../shared/utils/format-date';
@@ -156,22 +156,10 @@ export class Calendar implements OnInit {
     return date.toLocaleDateString('es', { month: 'long', year: 'numeric' });
   });
 
+  nextWorkoutData = signal<NextWorkoutDto | null>(null);
   nextWorkout = computed(() => {
-    const routines = this.routines();
-    if (routines.length === 0 || this.activeSession()) return null;
-
-    const data = this.calendarData();
-    if (!data) return null;
-
-    const today = new Date().getDay();
-    const adjustedToday = today === 0 ? 6 : today - 1; // Monday = 0
-    const isSuggested = data.suggestedDays.includes(today);
-
-    if (!isSuggested) return null;
-
-    // Suggest first routine's name as a simple placeholder
-    // Full "next day" logic requires session history (will improve in Phase 2 with programs)
-    return routines[0]?.name ?? null;
+    if (this.activeSession()) return null;
+    return this.nextWorkoutData()?.routineName ?? null;
   });
 
   cells = computed(() => {
@@ -280,9 +268,9 @@ export class Calendar implements OnInit {
   }
 
   startNextWorkout() {
-    const routines = this.routines();
-    if (routines.length > 0) {
-      this.router.navigate(['/workout', routines[0].id]);
+    const nw = this.nextWorkoutData();
+    if (nw) {
+      this.router.navigate(['/workout', nw.routineId]);
     }
   }
 
@@ -306,6 +294,7 @@ export class Calendar implements OnInit {
         }
         this.loadCalendar();
         this.checkActiveSession();
+        this.loadNextWorkout();
       },
       error: () => {
         this.routines.set([]);
@@ -327,6 +316,13 @@ export class Calendar implements OnInit {
   private checkActiveSession() {
     this.api.get<{ id: string; routineId: string; dayId: string }>('/public/my/sessions/active').subscribe({
       next: (data) => this.activeSession.set(data),
+      error: () => {},
+    });
+  }
+
+  private loadNextWorkout() {
+    this.api.get<NextWorkoutDto>('/public/my/next-workout').subscribe({
+      next: (data) => this.nextWorkoutData.set(data),
       error: () => {},
     });
   }

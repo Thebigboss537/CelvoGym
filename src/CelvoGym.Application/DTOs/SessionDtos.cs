@@ -34,4 +34,6 @@ public sealed record CalendarDayDto(
 public sealed record ActiveProgramDto(
     string Name,
     int CurrentWeek,
-    int TotalWeeks);
+    int TotalWeeks,
+    string Mode,
+    string Status);

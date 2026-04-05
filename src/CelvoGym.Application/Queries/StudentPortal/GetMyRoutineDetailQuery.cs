@@ -15,11 +15,20 @@ public sealed class GetMyRoutineDetailHandler(ICelvoGymDbContext db)
 {
     public async Task<StudentRoutineDetailDto> Handle(GetMyRoutineDetailQuery request, CancellationToken cancellationToken)
     {
-        // Verify assignment
-        var hasAssignment = await db.RoutineAssignments
-            .AnyAsync(ra => ra.RoutineId == request.RoutineId
-                && ra.StudentId == request.StudentId
-                && ra.IsActive, cancellationToken);
+        // Verify assignment via ProgramAssignment or legacy RoutineAssignment
+        var hasAssignment = await db.ProgramAssignments
+            .AnyAsync(pa => pa.StudentId == request.StudentId
+                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active
+                && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == request.RoutineId),
+                cancellationToken);
+
+        if (!hasAssignment)
+        {
+            hasAssignment = await db.RoutineAssignments
+                .AnyAsync(ra => ra.RoutineId == request.RoutineId
+                    && ra.StudentId == request.StudentId
+                    && ra.IsActive, cancellationToken);
+        }
 
         if (!hasAssignment)
             throw new InvalidOperationException("Routine not assigned to this student");

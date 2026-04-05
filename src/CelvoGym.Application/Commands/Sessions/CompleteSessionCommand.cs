@@ -1,5 +1,6 @@
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
+using CelvoGym.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,26 @@ public sealed class CompleteSessionHandler(ICelvoGymDbContext db)
 
         session.CompletedAt = DateTimeOffset.UtcNow;
         session.Notes = request.Notes;
+
+        // Advance rotation index for rotation-mode programs
+        if (session.ProgramAssignmentId.HasValue)
+        {
+            var pa = await db.ProgramAssignments
+                .FirstOrDefaultAsync(p => p.Id == session.ProgramAssignmentId
+                    && p.Status == ProgramAssignmentStatus.Active, cancellationToken);
+
+            if (pa is not null && pa.Mode == ProgramAssignmentMode.Rotation)
+            {
+                pa.RotationIndex++;
+            }
+
+            // Auto-complete if past end date
+            if (pa is not null && DateOnly.FromDateTime(DateTime.UtcNow) >= pa.EndDate)
+            {
+                pa.Status = ProgramAssignmentStatus.Completed;
+                pa.CompletedAt = DateTimeOffset.UtcNow;
+            }
+        }
 
         await db.SaveChangesAsync(cancellationToken);
 
