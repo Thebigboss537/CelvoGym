@@ -19,7 +19,8 @@ public sealed class InviteStudentHandler(ICelvoGymDbContext db, IEmailService em
 {
     public async Task<StudentInvitationDto> Handle(InviteStudentCommand request, CancellationToken cancellationToken)
     {
-        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
         var tokenHash = TokenHasher.Hash(token);
 
         var invitation = new StudentInvitation

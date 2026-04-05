@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
 import { CgLogo } from '../../../shared/ui/logo';
+import { mapGuardError } from '../../../shared/utils/guard-errors';
 
 const TENANT_ID_KEY = 'celvogym_tenant_id';
 
@@ -47,6 +48,7 @@ const TENANT_ID_KEY = 'celvogym_tenant_id';
               type="password"
               [(ngModel)]="password"
               name="password"
+              autocomplete="current-password"
               class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
               placeholder="••••••••"
               required
@@ -129,7 +131,7 @@ export class Login implements OnInit {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.error || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
+      throw new Error(mapGuardError(data.error) || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
     }
 
     await this.fetchAndSetUser();
@@ -150,7 +152,7 @@ export class Login implements OnInit {
 
     if (!res.ok) {
       const data = await res.json();
-      throw new Error(data.error || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
+      throw new Error(mapGuardError(data.error) || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
     }
 
     await this.fetchAndSetUser();

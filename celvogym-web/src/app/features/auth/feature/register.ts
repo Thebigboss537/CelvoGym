@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { environment } from '../../../../environments/environment';
 import { CgLogo } from '../../../shared/ui/logo';
+import { mapGuardError } from '../../../shared/utils/guard-errors';
 
 @Component({
   selector: 'app-register',
@@ -64,6 +65,7 @@ import { CgLogo } from '../../../shared/ui/logo';
                 type="password"
                 [(ngModel)]="password"
                 name="password"
+                autocomplete="new-password"
                 class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                 placeholder="Mínimo 8 caracteres"
                 required
@@ -127,7 +129,7 @@ export class Register {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'No pudimos completar el registro. Intentá de nuevo.');
+        throw new Error(mapGuardError(data.error) || 'No pudimos completar el registro. Intentá de nuevo.');
       }
 
       // Setup trainer profile in CelvoGym API (via ApiService → CSRF interceptor)

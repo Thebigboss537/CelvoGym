@@ -6,6 +6,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { InvitationInfoDto } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
 import { CgLogo } from '../../../shared/ui/logo';
+import { mapGuardError } from '../../../shared/utils/guard-errors';
 
 @Component({
   selector: 'app-accept-invite',
@@ -75,6 +76,7 @@ import { CgLogo } from '../../../shared/ui/logo';
                   type="password"
                   [(ngModel)]="password"
                   name="password"
+                  autocomplete="new-password"
                   class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                   placeholder="Mínimo 8 caracteres"
                   required
@@ -157,7 +159,7 @@ export class AcceptInvite implements OnInit {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'No pudimos crear tu cuenta. Intentá de nuevo.');
+        throw new Error(mapGuardError(data.error) || 'No pudimos crear tu cuenta. Intentá de nuevo.');
       }
 
       const userData = await res.json();

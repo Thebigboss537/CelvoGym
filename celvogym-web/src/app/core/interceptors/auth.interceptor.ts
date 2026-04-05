@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, from, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { getCookie, CSRF_COOKIE_NAME, MUTATING_METHODS } from '../../shared/utils/cookie';
 
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
@@ -29,13 +30,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
-      // Don't retry refresh calls
       if (req.url.includes('/auth/refresh') || req.url.includes('/auth/login')) {
         router.navigate(['/auth/login']);
         return throwError(() => error);
       }
 
-      // Deduplicate concurrent refresh attempts
       if (!isRefreshing) {
         isRefreshing = true;
         refreshPromise = tryRefresh().finally(() => { isRefreshing = false; });
@@ -44,8 +43,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       return from(refreshPromise!).pipe(
         switchMap((success) => {
           if (success) {
-            // Retry the original request with fresh cookies
-            return next(req.clone());
+            const csrfToken = getCookie(CSRF_COOKIE_NAME);
+            return next(csrfToken && MUTATING_METHODS.includes(req.method)
+              ? req.clone({ setHeaders: { 'X-CSRF-Token': csrfToken } })
+              : req);
           }
           router.navigate(['/auth/login']);
           return throwError(() => error);

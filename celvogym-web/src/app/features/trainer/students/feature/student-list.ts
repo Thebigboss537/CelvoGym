@@ -8,6 +8,7 @@ import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgAvatar } from '../../../../shared/ui/avatar';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
 import { formatDate } from '../../../../shared/utils/format-date';
+import { getCookie, CSRF_COOKIE_NAME } from '../../../../shared/utils/cookie';
 
 @Component({
   selector: 'app-student-list',
@@ -288,7 +289,7 @@ export class StudentList implements OnInit, OnDestroy {
     try {
       const res = await fetch(`${environment.apiUrl}/students/qr?url=${encodeURIComponent(url)}`, {
         credentials: 'include',
-        headers: { 'X-CSRF-Token': document.cookie.match(/(^| )cg-csrf-celvogym=([^;]+)/)?.[2] ?? '' },
+        headers: { 'X-CSRF-Token': getCookie(CSRF_COOKIE_NAME) ?? '' },
       });
       if (res.ok) {
         const blob = await res.blob();

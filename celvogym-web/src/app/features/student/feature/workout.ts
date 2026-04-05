@@ -392,9 +392,38 @@ export class Workout implements OnInit, OnDestroy {
       next: (log) => {
         if (log.setId) {
           this.setLogMap.update(m => { const n = new Map(m); n.set(log.setId!, log); return n; });
+          this.recalculateProgress();
         }
       },
     });
+  }
+
+  private recalculateProgress() {
+    const r = this.routine();
+    if (!r) return;
+    const logMap = this.setLogMap();
+    let totalEff = 0, completedEff = 0;
+
+    const days = r.days.map(day => {
+      let dayEff = 0, dayComp = 0;
+      for (const g of day.groups)
+        for (const ex of g.exercises)
+          for (const s of ex.sets)
+            if (s.setType !== 'Warmup') {
+              dayEff++;
+              if (logMap.get(s.id)?.completed) dayComp++;
+            }
+      totalEff += dayEff;
+      completedEff += dayComp;
+      return { ...day, progress: { totalEffectiveSets: dayEff, completedEffectiveSets: dayComp, percentage: dayEff > 0 ? Math.floor(dayComp * 100 / dayEff) : 0 } };
+    });
+
+    if (completedEff === r.progress.completedEffectiveSets) return;
+
+    this.routine.set({ ...r, days, progress: {
+      totalEffectiveSets: totalEff, completedEffectiveSets: completedEff,
+      percentage: totalEff > 0 ? Math.floor(completedEff * 100 / totalEff) : 0,
+    }});
   }
 
   updateSetData(setId: string, routineId: string, event: Event, field: 'weight' | 'reps') {
