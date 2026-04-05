@@ -288,7 +288,7 @@ export class StudentList implements OnInit, OnDestroy {
     try {
       const res = await fetch(`${environment.apiUrl}/students/qr?url=${encodeURIComponent(url)}`, {
         credentials: 'include',
-        headers: { 'X-CSRF-Token': document.cookie.match(/(^| )cg-csrf=([^;]+)/)?.[2] ?? '' },
+        headers: { 'X-CSRF-Token': document.cookie.match(/(^| )cg-csrf-celvogym=([^;]+)/)?.[2] ?? '' },
       });
       if (res.ok) {
         const blob = await res.blob();

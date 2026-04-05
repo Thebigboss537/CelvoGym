@@ -4,7 +4,7 @@ const MUTATING_METHODS = ['POST', 'PUT', 'DELETE', 'PATCH'];
 
 export const csrfInterceptor: HttpInterceptorFn = (req, next) => {
   if (MUTATING_METHODS.includes(req.method)) {
-    const csrfToken = getCookie('cg-csrf');
+    const csrfToken = getCookie('cg-csrf-celvogym');
     if (csrfToken) {
       req = req.clone({
         setHeaders: { 'X-CSRF-Token': csrfToken },
