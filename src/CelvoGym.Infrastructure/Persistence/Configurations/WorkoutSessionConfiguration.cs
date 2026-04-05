@@ -16,7 +16,6 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
         builder.Property(ws => ws.Notes).HasMaxLength(2000);
         builder.Property(ws => ws.CreatedAt).HasDefaultValueSql("NOW()");
 
-        builder.HasIndex(ws => new { ws.StudentId, ws.AssignmentId });
         builder.HasIndex(ws => new { ws.StudentId, ws.RoutineId, ws.DayId });
         builder.HasIndex(ws => new { ws.StudentId, ws.ProgramAssignmentId });
 
@@ -24,13 +23,6 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
             .WithMany(s => s.WorkoutSessions)
             .HasForeignKey(ws => ws.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // Legacy FK — nullable for new sessions
-        builder.HasOne(ws => ws.Assignment)
-            .WithMany(ra => ra.WorkoutSessions)
-            .HasForeignKey(ws => ws.AssignmentId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasOne(ws => ws.ProgramAssignment)
             .WithMany(pa => pa.WorkoutSessions)

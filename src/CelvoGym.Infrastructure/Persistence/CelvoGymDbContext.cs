@@ -18,7 +18,6 @@ public class CelvoGymDbContext(DbContextOptions<CelvoGymDbContext> options)
     public DbSet<ExerciseSet> ExerciseSets => Set<ExerciseSet>();
     public DbSet<Program> Programs => Set<Program>();
     public DbSet<ProgramRoutine> ProgramRoutines => Set<ProgramRoutine>();
-    public DbSet<RoutineAssignment> RoutineAssignments => Set<RoutineAssignment>();
     public DbSet<ProgramAssignment> ProgramAssignments => Set<ProgramAssignment>();
     public DbSet<WorkoutSession> WorkoutSessions => Set<WorkoutSession>();
     public DbSet<SetLog> SetLogs => Set<SetLog>();

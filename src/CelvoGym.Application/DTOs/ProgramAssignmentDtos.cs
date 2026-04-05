@@ -35,6 +35,10 @@ public sealed record FixedScheduleEntryDto(
     string RoutineName,
     List<int> Days);
 
+public sealed record FixedScheduleInput(
+    Guid RoutineId,
+    List<int> Days);
+
 public sealed record NextWorkoutDto(
     Guid RoutineId,
     string RoutineName,

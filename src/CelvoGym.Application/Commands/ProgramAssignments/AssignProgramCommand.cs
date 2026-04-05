@@ -1,3 +1,4 @@
+using CelvoGym.Application.Common.Helpers;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using CelvoGym.Domain.Entities;
@@ -15,8 +16,6 @@ public sealed record AssignProgramCommand(
     List<int>? TrainingDays = null,
     List<FixedScheduleInput>? FixedSchedule = null,
     DateOnly? StartDate = null) : IRequest<ProgramAssignmentDto>;
-
-public sealed record FixedScheduleInput(Guid RoutineId, List<int> Days);
 
 public sealed class AssignProgramHandler(ICelvoGymDbContext db)
     : IRequestHandler<AssignProgramCommand, ProgramAssignmentDto>
@@ -47,12 +46,12 @@ public sealed class AssignProgramHandler(ICelvoGymDbContext db)
             throw new InvalidOperationException("This program is already assigned to this student");
 
         if (request.Mode == ProgramAssignmentMode.Rotation && (request.TrainingDays is null || request.TrainingDays.Count == 0))
-            throw new FluentValidation.ValidationException("Training days are required for rotation mode");
+            throw new InvalidOperationException("Training days are required for rotation mode");
 
         if (request.Mode == ProgramAssignmentMode.Fixed)
         {
             if (request.FixedSchedule is null || request.FixedSchedule.Count == 0)
-                throw new FluentValidation.ValidationException("Fixed schedule is required for fixed mode");
+                throw new InvalidOperationException("Fixed schedule is required for fixed mode");
 
             var programRoutineIds = program.ProgramRoutines.Select(pr => pr.RoutineId).ToHashSet();
             var invalidRoutines = request.FixedSchedule.Where(fs => !programRoutineIds.Contains(fs.RoutineId)).ToList();
@@ -86,21 +85,13 @@ public sealed class AssignProgramHandler(ICelvoGymDbContext db)
         db.ProgramAssignments.Add(assignment);
         await db.SaveChangesAsync(cancellationToken);
 
-        var currentWeek = CalculateCurrentWeek(startDate);
-
         return new ProgramAssignmentDto(
             assignment.Id, program.Id, program.Name,
             trainerStudent.StudentId, trainerStudent.Student.DisplayName,
             assignment.Mode.ToString(), assignment.Status.ToString(),
             assignment.TrainingDays, startDate.ToString("yyyy-MM-dd"),
-            endDate.ToString("yyyy-MM-dd"), currentWeek, program.DurationWeeks,
+            endDate.ToString("yyyy-MM-dd"),
+            ProgramWeekHelper.CalculateCurrentWeek(startDate), program.DurationWeeks,
             assignment.CreatedAt);
-    }
-
-    internal static int CalculateCurrentWeek(DateOnly startDate)
-    {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var daysSinceStart = today.DayNumber - startDate.DayNumber;
-        return daysSinceStart < 0 ? 1 : Math.Max(1, (int)Math.Ceiling((daysSinceStart + 1) / 7.0));
     }
 }

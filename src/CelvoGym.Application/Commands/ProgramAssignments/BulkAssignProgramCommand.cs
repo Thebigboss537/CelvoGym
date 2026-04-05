@@ -1,3 +1,4 @@
+using CelvoGym.Application.Common.Helpers;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using CelvoGym.Domain.Entities;
@@ -64,7 +65,7 @@ public sealed class BulkAssignProgramHandler(ICelvoGymDbContext db)
         }
 
         var results = new List<ProgramAssignmentDto>();
-        var currentWeek = AssignProgramHandler.CalculateCurrentWeek(startDate);
+        var currentWeek = ProgramWeekHelper.CalculateCurrentWeek(startDate);
 
         foreach (var ts in linkedStudents)
         {

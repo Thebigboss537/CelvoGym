@@ -27,10 +27,5 @@ public class AssignmentTemplateConfiguration : IEntityTypeConfiguration<Assignme
             .WithMany()
             .HasForeignKey(at => at.ProgramId)
             .OnDelete(DeleteBehavior.SetNull);
-
-        builder.HasOne(at => at.Routine)
-            .WithMany()
-            .HasForeignKey(at => at.RoutineId)
-            .OnDelete(DeleteBehavior.SetNull);
     }
 }

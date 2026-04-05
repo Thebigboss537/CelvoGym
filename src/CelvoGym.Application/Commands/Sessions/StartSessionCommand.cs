@@ -19,8 +19,7 @@ public sealed class StartSessionHandler(ICelvoGymDbContext db)
     {
         // Find active ProgramAssignment that contains this routine
         var programAssignment = await db.ProgramAssignments
-            .Include(pa => pa.Program)
-                .ThenInclude(p => p.ProgramRoutines)
+            .AsNoTracking()
             .FirstOrDefaultAsync(pa => pa.StudentId == request.StudentId
                 && pa.Status == ProgramAssignmentStatus.Active
                 && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == request.RoutineId),

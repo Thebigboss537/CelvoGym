@@ -17,7 +17,6 @@ public interface ICelvoGymDbContext
     DbSet<ExerciseSet> ExerciseSets { get; }
     DbSet<Program> Programs { get; }
     DbSet<ProgramRoutine> ProgramRoutines { get; }
-    DbSet<RoutineAssignment> RoutineAssignments { get; }
     DbSet<ProgramAssignment> ProgramAssignments { get; }
     DbSet<WorkoutSession> WorkoutSessions { get; }
     DbSet<SetLog> SetLogs { get; }

@@ -141,6 +141,14 @@ body::before {
 select {
   color-scheme: dark;
 }
+select.select-styled {
+  appearance: none;
+  background-image: url('data:image/svg+xml,<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="%236b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+  padding-right: 2rem;
+}
 select option {
   background-color: var(--color-card);
   color: var(--color-text);

@@ -15,5 +15,4 @@ public class Routine : BaseEntity
 
     public Trainer Trainer { get; set; } = null!;
     public ICollection<Day> Days { get; set; } = [];
-    public ICollection<RoutineAssignment> Assignments { get; set; } = [];
 }

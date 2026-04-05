@@ -1,5 +1,6 @@
 using CelvoGym.Api.Extensions;
 using CelvoGym.Application.Commands.ProgramAssignments;
+using CelvoGym.Application.DTOs;
 using CelvoGym.Application.Queries.ProgramAssignments;
 using CelvoGym.Domain.Enums;
 using MediatR;
@@ -23,7 +24,8 @@ public class ProgramAssignmentsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Assign([FromBody] AssignProgramRequest request, CancellationToken ct)
     {
         HttpContext.RequirePermission(Permissions.GymManage);
-        var mode = Enum.Parse<ProgramAssignmentMode>(request.Mode, ignoreCase: true);
+        if (!Enum.TryParse<ProgramAssignmentMode>(request.Mode, ignoreCase: true, out var mode))
+            return BadRequest(new { error = "Invalid mode. Use 'Rotation' or 'Fixed'" });
         var fixedSchedule = request.FixedSchedule?.Select(fs => new FixedScheduleInput(fs.RoutineId, fs.Days)).ToList();
 
         var result = await mediator.Send(new AssignProgramCommand(
@@ -37,7 +39,8 @@ public class ProgramAssignmentsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> BulkAssign([FromBody] BulkAssignProgramRequest request, CancellationToken ct)
     {
         HttpContext.RequirePermission(Permissions.GymManage);
-        var mode = Enum.Parse<ProgramAssignmentMode>(request.Mode, ignoreCase: true);
+        if (!Enum.TryParse<ProgramAssignmentMode>(request.Mode, ignoreCase: true, out var mode))
+            return BadRequest(new { error = "Invalid mode. Use 'Rotation' or 'Fixed'" });
         var fixedSchedule = request.FixedSchedule?.Select(fs => new FixedScheduleInput(fs.RoutineId, fs.Days)).ToList();
 
         var result = await mediator.Send(new BulkAssignProgramCommand(

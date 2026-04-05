@@ -1,3 +1,4 @@
+using CelvoGym.Application.Common.Helpers;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using CelvoGym.Domain.Enums;
@@ -29,17 +30,16 @@ public sealed class GetMyProgramHandler(ICelvoGymDbContext db)
 
         if (assignment is null) return null;
 
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-        var daysSinceStart = today.DayNumber - assignment.StartDate.DayNumber;
-        var currentWeek = daysSinceStart < 0 ? 1 : Math.Max(1, (int)Math.Ceiling((daysSinceStart + 1) / 7.0));
+        var currentWeek = ProgramWeekHelper.CalculateCurrentWeek(assignment.StartDate);
 
         var routineIds = assignment.Program.ProgramRoutines.Select(pr => pr.RoutineId).ToList();
-        var setLogs = await db.SetLogs
+        var completedSetIds = await db.SetLogs
             .AsNoTracking()
-            .Where(sl => sl.StudentId == request.StudentId && routineIds.Contains(sl.RoutineId))
-            .ToListAsync(cancellationToken);
-
-        var completedSetIds = setLogs.Where(sl => sl.Completed).Select(sl => sl.SetId).ToHashSet();
+            .Where(sl => sl.StudentId == request.StudentId
+                && routineIds.Contains(sl.RoutineId)
+                && sl.Completed && sl.SetId.HasValue)
+            .Select(sl => sl.SetId!.Value)
+            .ToHashSetAsync(cancellationToken);
 
         var routines = assignment.Program.ProgramRoutines.Select(pr =>
         {

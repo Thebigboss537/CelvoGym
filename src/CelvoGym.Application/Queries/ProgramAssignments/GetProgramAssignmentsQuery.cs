@@ -1,3 +1,4 @@
+using CelvoGym.Application.Common.Helpers;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using CelvoGym.Domain.Enums;
@@ -14,8 +15,6 @@ public sealed class GetProgramAssignmentsHandler(ICelvoGymDbContext db)
 {
     public async Task<List<ProgramAssignmentDto>> Handle(GetProgramAssignmentsQuery request, CancellationToken cancellationToken)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
         var assignments = await db.ProgramAssignments
             .AsNoTracking()
             .Include(pa => pa.Program)
@@ -27,8 +26,7 @@ public sealed class GetProgramAssignmentsHandler(ICelvoGymDbContext db)
 
         return assignments.Select(pa =>
         {
-            var daysSinceStart = today.DayNumber - pa.StartDate.DayNumber;
-            var currentWeek = daysSinceStart < 0 ? 1 : Math.Max(1, (int)Math.Ceiling((daysSinceStart + 1) / 7.0));
+            var currentWeek = ProgramWeekHelper.CalculateCurrentWeek(pa.StartDate);
 
             return new ProgramAssignmentDto(
                 pa.Id, pa.ProgramId, pa.Program.Name,

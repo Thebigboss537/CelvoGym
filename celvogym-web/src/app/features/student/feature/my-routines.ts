@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { MyProgramDto, StudentRoutineListDto } from '../../../shared/models';
@@ -40,7 +40,7 @@ import { progressColor } from '../../../shared/utils/labels';
           <!-- Program progress bar -->
           <div class="mt-3 h-2 bg-bg-raised rounded-full overflow-hidden">
             <div class="h-full rounded-full bg-primary transition-all duration-500"
-              [style.width.%]="Math.min(100, (program()!.currentWeek / program()!.totalWeeks) * 100)">
+              [style.width.%]="weekProgress()">
             </div>
           </div>
         </div>
@@ -85,11 +85,16 @@ import { progressColor } from '../../../shared/utils/labels';
 export class MyRoutines implements OnInit {
   private api = inject(ApiService);
   progressColor = progressColor;
-  Math = Math;
 
   program = signal<MyProgramDto | null>(null);
   loading = signal(true);
   error = signal('');
+
+  weekProgress = computed(() => {
+    const p = this.program();
+    if (!p) return 0;
+    return Math.min(100, (p.currentWeek / p.totalWeeks) * 100);
+  });
 
   ngOnInit() {
     this.loadData();

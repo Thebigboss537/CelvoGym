@@ -34,19 +34,6 @@ public sealed class DeactivateStudentHandler(ICelvoGymDbContext db)
             pa.CompletedAt = DateTimeOffset.UtcNow;
         }
 
-        // Also deactivate legacy routine assignments
-        var assignments = await db.RoutineAssignments
-            .Where(ra => ra.StudentId == request.StudentId
-                && ra.Routine.TrainerId == request.TrainerId
-                && ra.IsActive)
-            .ToListAsync(cancellationToken);
-
-        foreach (var assignment in assignments)
-        {
-            assignment.IsActive = false;
-            assignment.DeactivatedAt = DateTimeOffset.UtcNow;
-        }
-
         // Clear active trainer if this was their only trainer
         var student = await db.Students.FindAsync([request.StudentId], cancellationToken);
         if (student is not null && student.ActiveTrainerId == request.TrainerId)

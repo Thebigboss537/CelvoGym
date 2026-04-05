@@ -173,16 +173,10 @@ public class StudentPortalController(IMediator mediator, ICelvoGymDbContext db) 
         CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
-        // Check via ProgramAssignment or legacy RoutineAssignment
         var hasAssignment = await db.ProgramAssignments
             .AnyAsync(pa => pa.StudentId == studentId
                 && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active
                 && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == routineId), ct);
-        if (!hasAssignment)
-        {
-            hasAssignment = await db.RoutineAssignments
-                .AnyAsync(ra => ra.RoutineId == routineId && ra.StudentId == studentId && ra.IsActive, ct);
-        }
         if (!hasAssignment) throw new InvalidOperationException("Routine not assigned to this student");
 
         var result = await mediator.Send(new GetCommentsQuery(routineId, dayId), ct);

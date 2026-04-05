@@ -13,7 +13,6 @@ public class Student : BaseEntity
 
     public Trainer? ActiveTrainer { get; set; }
     public ICollection<TrainerStudent> TrainerStudents { get; set; } = [];
-    public ICollection<RoutineAssignment> RoutineAssignments { get; set; } = [];
     public ICollection<ProgramAssignment> ProgramAssignments { get; set; } = [];
     public ICollection<WorkoutSession> WorkoutSessions { get; set; } = [];
     public ICollection<SetLog> SetLogs { get; set; } = [];

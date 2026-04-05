@@ -1,4 +1,5 @@
 using CelvoGym.Application.Common.Helpers;
+using static CelvoGym.Application.Common.Helpers.ProgramWeekHelper;
 using CelvoGym.Application.Common.Interfaces;
 using CelvoGym.Application.DTOs;
 using CelvoGym.Domain.Enums;
@@ -65,9 +66,7 @@ public sealed class GetCalendarHandler(ICelvoGymDbContext db)
         ActiveProgramDto? activeProgram = null;
         if (assignment is not null)
         {
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var daysSinceStart = today.DayNumber - assignment.StartDate.DayNumber;
-            var currentWeek = daysSinceStart < 0 ? 1 : Math.Max(1, (int)Math.Ceiling((daysSinceStart + 1) / 7.0));
+            var currentWeek = CalculateCurrentWeek(assignment.StartDate);
             activeProgram = new ActiveProgramDto(
                 assignment.Program.Name, currentWeek, assignment.Program.DurationWeeks,
                 assignment.Mode.ToString(), assignment.Status.ToString());

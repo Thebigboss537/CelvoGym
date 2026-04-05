@@ -1,7 +1,7 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
-import { ProgramDetailDto, StudentDto, ProgramAssignmentDto } from '../../../../shared/models';
+import { ProgramDetailDto, StudentDto, ProgramAssignmentDto, ProgramAssignmentMode, FixedScheduleEntry } from '../../../../shared/models';
 import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgAvatar } from '../../../../shared/ui/avatar';
 import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
@@ -228,8 +228,11 @@ export class ProgramDetail implements OnInit {
   showAssign = signal(false);
   allStudents = signal<StudentDto[]>([]);
   assignedStudents = signal<ProgramAssignmentDto[]>([]);
-  availableStudents = signal<StudentDto[]>([]);
   selectedStudentIds = signal<string[]>([]);
+  availableStudents = computed(() => {
+    const assignedIds = new Set(this.assignedStudents().map(a => a.studentId));
+    return this.allStudents().filter(s => !assignedIds.has(s.id));
+  });
   assignError = signal('');
 
   mode = signal<'Rotation' | 'Fixed'>('Rotation');
@@ -265,10 +268,7 @@ export class ProgramDetail implements OnInit {
     this.selectedStudentIds.set([]);
     this.fixedSchedule.set({});
     this.api.get<StudentDto[]>('/students').subscribe({
-      next: (students) => {
-        this.allStudents.set(students);
-        this.updateAvailable();
-      },
+      next: (students) => this.allStudents.set(students),
     });
   }
 
@@ -310,20 +310,20 @@ export class ProgramDetail implements OnInit {
     if (ids.length === 0) return;
     this.assignError.set('');
 
-    const body: any = {
+    const fixedSchedule: FixedScheduleEntry[] | undefined = this.mode() === 'Fixed'
+      ? Object.entries(this.fixedSchedule())
+          .filter(([_, days]) => days.length > 0)
+          .map(([routineId, days]) => ({ routineId, days }))
+      : undefined;
+
+    const body = {
       programId: this.programId,
       studentIds: ids,
       mode: this.mode(),
       startDate: this.startDate(),
+      trainingDays: this.mode() === 'Rotation' ? this.selectedDays() : undefined,
+      fixedSchedule,
     };
-
-    if (this.mode() === 'Rotation') {
-      body.trainingDays = this.selectedDays();
-    } else {
-      body.fixedSchedule = Object.entries(this.fixedSchedule())
-        .filter(([_, days]) => days.length > 0)
-        .map(([routineId, days]) => ({ routineId, days }));
-    }
 
     this.api.post('/program-assignments/bulk', body).subscribe({
       next: () => {
@@ -360,15 +360,7 @@ export class ProgramDetail implements OnInit {
 
   private loadAssignments() {
     this.api.get<ProgramAssignmentDto[]>('/program-assignments').subscribe({
-      next: (all) => {
-        this.assignedStudents.set(all.filter(a => a.programId === this.programId));
-        this.updateAvailable();
-      },
+      next: (all) => this.assignedStudents.set(all.filter(a => a.programId === this.programId)),
     });
-  }
-
-  private updateAvailable() {
-    const assignedIds = new Set(this.assignedStudents().map(a => a.studentId));
-    this.availableStudents.set(this.allStudents().filter(s => !assignedIds.has(s.id)));
   }
 }
