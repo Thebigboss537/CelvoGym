@@ -6,7 +6,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { InvitationInfoDto } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
 import { CgLogo } from '../../../shared/ui/logo';
-import { mapGuardError } from '../../../shared/utils/guard-errors';
+import { parseGuardError } from '../../../shared/utils/guard-errors';
 
 @Component({
   selector: 'app-accept-invite',
@@ -158,8 +158,7 @@ export class AcceptInvite implements OnInit {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(mapGuardError(data.error) || 'No pudimos crear tu cuenta. Intentá de nuevo.');
+        throw new Error(await parseGuardError(res, 'No pudimos crear tu cuenta. Intentá de nuevo.'));
       }
 
       const userData = await res.json();

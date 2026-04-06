@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
 import { CgLogo } from '../../../shared/ui/logo';
-import { mapGuardError } from '../../../shared/utils/guard-errors';
+import { parseGuardError } from '../../../shared/utils/guard-errors';
 
 const TENANT_ID_KEY = 'celvogym_tenant_id';
 
@@ -130,8 +130,7 @@ export class Login implements OnInit {
     });
 
     if (!res.ok) {
-      const data = await res.json();
-      throw new Error(mapGuardError(data.error) || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
+      throw new Error(await parseGuardError(res, 'No pudimos iniciar sesión. Revisá tu email y contraseña.'));
     }
 
     await this.fetchAndSetUser();
@@ -151,8 +150,7 @@ export class Login implements OnInit {
     });
 
     if (!res.ok) {
-      const data = await res.json();
-      throw new Error(mapGuardError(data.error) || 'No pudimos iniciar sesión. Revisá tu email y contraseña.');
+      throw new Error(await parseGuardError(res, 'No pudimos iniciar sesión. Revisá tu email y contraseña.'));
     }
 
     await this.fetchAndSetUser();

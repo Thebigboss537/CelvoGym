@@ -7,3 +7,12 @@ const MAP: Record<string, string> = {
 export function mapGuardError(error?: string): string | undefined {
   return error ? (MAP[error] ?? error) : undefined;
 }
+
+export async function parseGuardError(res: Response, fallback: string): Promise<string> {
+  try {
+    const data = await res.json();
+    return mapGuardError(data.error) || fallback;
+  } catch {
+    return fallback;
+  }
+}
