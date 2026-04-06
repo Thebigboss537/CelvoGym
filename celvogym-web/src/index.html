@@ -5,13 +5,30 @@
   <title>CelvoGym</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="manifest" href="manifest.webmanifest" id="cg-manifest">
+  <meta name="theme-color" content="#E62639">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CelvoGym">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var tenantId = params.get('t') || localStorage.getItem('celvogym_tenant_id');
+      if (tenantId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId)) {
+        var el = document.getElementById('cg-manifest');
+        if (el) el.setAttribute('href', '/api/v1/public/trainer/' + tenantId + '/manifest.webmanifest');
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>
+  <noscript>Para usar CelvoGym, activ&aacute; JavaScript en tu navegador.</noscript>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthStore } from './auth.store';
+import { TENANT_ID_STORAGE_KEY } from '../../features/auth/feature/login';
 
 export const trainerGuard: CanActivateFn = async () => {
   const store = inject(AuthStore);
@@ -22,7 +23,7 @@ export const studentGuard: CanActivateFn = async () => {
 
   if (store.isEndUser()) return true;
 
-  const tenantId = localStorage.getItem('celvogym_tenant_id');
+  const tenantId = localStorage.getItem(TENANT_ID_STORAGE_KEY);
   if (tenantId) {
     router.navigate(['/auth/login'], { queryParams: { t: tenantId } });
   } else {

@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app-shell",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/index.html",
+          "/favicon.ico",
+          "/favicon.svg",
+          "/icons/*.png",
+          "/*.css",
+          "/main*.js",
+          "/polyfills*.js",
+          "/chunk-*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/logo-mark*.svg",
+          "/**/*.png",
+          "/**/*.svg"
+        ],
+        "urls": [
+          "https://fonts.googleapis.com/**",
+          "https://fonts.gstatic.com/**"
+        ]
+      }
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-fresh",
+      "urls": ["/api/v1/public/my/**"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "maxSize": 50,
+        "maxAge": "1h",
+        "timeout": "5s"
+      }
+    },
+    {
+      "name": "manifest",
+      "urls": ["/api/v1/public/trainer/*/manifest.webmanifest"],
+      "cacheConfig": {
+        "strategy": "performance",
+        "maxSize": 10,
+        "maxAge": "1d"
+      }
+    }
+  ]
+}
