@@ -1,3 +1,12 @@
+// Onboarding
+export type TrainerOnboardingStatus = 'no_profile' | 'pending_approval' | 'active';
+
+export interface TrainerStatusDto {
+  status: TrainerOnboardingStatus;
+  displayName?: string;
+  trainerId?: string;
+}
+
 // Auth (matches CelvoGuard /api/v1/auth/me response)
 export interface AuthUser {
   id: string;

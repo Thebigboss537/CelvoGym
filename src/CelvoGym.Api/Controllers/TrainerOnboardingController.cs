@@ -23,6 +23,24 @@ public class TrainerController(IMediator mediator, ICelvoGymDbContext db) : Cont
         return Created($"/api/v1/onboarding/trainer/{result.Id}", result);
     }
 
+    [HttpGet("onboarding/trainer/status")]
+    public async Task<IActionResult> Status(CancellationToken ct)
+    {
+        var tenantId = (Guid)HttpContext.Items[ContextKeys.TenantId]!;
+
+        var trainer = await db.Trainers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.IsActive, ct);
+
+        if (trainer is null)
+            return Ok(new { status = "no_profile" });
+
+        if (!trainer.IsApproved)
+            return Ok(new { status = "pending_approval", displayName = trainer.DisplayName });
+
+        return Ok(new { status = "active", trainerId = trainer.Id });
+    }
+
     [HttpGet("trainer/me")]
     public async Task<IActionResult> GetMe(CancellationToken ct)
     {

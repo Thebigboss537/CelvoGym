@@ -5,6 +5,7 @@ import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
 import { CgLogo } from '../../../shared/ui/logo';
 import { parseGuardError } from '../../../shared/utils/guard-errors';
+import type { TrainerStatusDto } from '../../../shared/models';
 
 const TENANT_ID_KEY = 'celvogym_tenant_id';
 
@@ -134,6 +135,26 @@ export class Login implements OnInit {
     }
 
     await this.fetchAndSetUser();
+
+    try {
+      const statusRes = await fetch(`${environment.apiUrl}/onboarding/trainer/status`, {
+        credentials: 'include',
+      });
+      if (statusRes.ok) {
+        const data: TrainerStatusDto = await statusRes.json();
+        if (data.status === 'no_profile') {
+          this.router.navigate(['/onboarding/setup']);
+          return;
+        }
+        if (data.status === 'pending_approval') {
+          this.router.navigate(['/onboarding/pending']);
+          return;
+        }
+      }
+    } catch {
+      // Status check failed — proceed to trainer and let the guard/API handle it
+    }
+
     this.router.navigate(['/trainer']);
   }
 
