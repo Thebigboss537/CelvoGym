@@ -15,8 +15,7 @@ public class ExerciseSetConfiguration : IEntityTypeConfiguration<ExerciseSet>
         builder.Property(es => es.Id).HasDefaultValueSql("gen_random_uuid()");
         builder.Property(es => es.SetType)
             .HasConversion<string>()
-            .HasMaxLength(20)
-            .HasDefaultValue(SetType.Effective);
+            .HasMaxLength(20);
         builder.Property(es => es.TargetReps).HasMaxLength(50);
         builder.Property(es => es.TargetWeight).HasMaxLength(50);
         builder.Property(es => es.SortOrder).HasDefaultValue(0);
