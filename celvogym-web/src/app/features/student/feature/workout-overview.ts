@@ -383,10 +383,15 @@ export class WorkoutOverview implements OnInit, OnDestroy {
   }
 
   navigateToCurrent() {
-    this.router.navigate(['/workout/session/exercise', this.currentExerciseIndex()]);
+    const nw = this.nextWorkout();
+    this.router.navigate(['/workout/session/exercise', this.currentExerciseIndex()], {
+      queryParams: { routineId: nw?.routineId, dayId: nw?.dayId, sessionId: this.sessionId() },
+    });
   }
 
   navigateToComplete() {
-    this.router.navigate(['/workout/session/complete']);
+    this.router.navigate(['/workout/session/complete'], {
+      queryParams: { sessionId: this.sessionId() },
+    });
   }
 }
