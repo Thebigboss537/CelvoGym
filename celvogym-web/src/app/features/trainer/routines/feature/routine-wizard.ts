@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
@@ -223,7 +223,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                       [class.hover:text-text]="selectedDayIndex() !== di"
                       [class.hover:bg-card]="selectedDayIndex() !== di">
                       <div>{{ day.name || 'Dia ' + (di + 1) }}</div>
-                      <div class="text-xs mt-0.5" [class.text-text-muted]="selectedDayIndex() === di" [class.text-text-muted]="selectedDayIndex() !== di">
+                      <div class="text-xs mt-0.5 text-text-muted">
                         {{ countExercises(di) }} ejercicio{{ countExercises(di) !== 1 ? 's' : '' }}
                       </div>
                     </button>
@@ -564,11 +564,11 @@ export class RoutineWizard implements OnInit, OnDestroy {
   private routineId = '';
 
   // ── Computed: current day for step 3 ──
-  currentDay = () => {
+  currentDay = computed(() => {
     const d = this.days();
     const idx = this.selectedDayIndex();
     return idx >= 0 && idx < d.length ? d[idx] : null;
-  };
+  });
 
   ngOnDestroy() {
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
@@ -911,7 +911,7 @@ export class RoutineWizard implements OnInit, OnDestroy {
   countExercises(di: number): number {
     const day = this.days()[di];
     if (!day) return 0;
-    return day.groups.reduce((sum, g) => sum + g.exercises.length, 0);
+    return this.countExercisesInDay(day);
   }
 
   countExercisesInDay(day: WizardDay): number {

@@ -1,7 +1,8 @@
-import { Component, input, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, computed } from '@angular/core';
 
 @Component({
   selector: 'cg-progress-bar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div>
       @if (showLabel()) {

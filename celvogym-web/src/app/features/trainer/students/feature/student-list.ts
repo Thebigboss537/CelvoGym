@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
@@ -7,21 +7,12 @@ import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
 import { CgStudentCard } from '../../../../shared/ui/student-card';
 import { ToastService } from '../../../../shared/ui/toast';
+import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 import { StudentDetail } from './student-detail';
-
-const GRADIENTS: [string, string][] = [
-  ['#E62639', '#B31D2C'], ['#A78BFA', '#7C3AED'], ['#F59E0B', '#D97706'],
-  ['#22D3EE', '#0891B2'], ['#F472B6', '#DB2777'], ['#3B82F6', '#1D4ED8'],
-];
-
-function getInitials(displayName: string): string {
-  const parts = displayName.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return displayName.slice(0, 2).toUpperCase();
-}
 
 @Component({
   selector: 'app-student-list',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, CgSpinner, CgEmptyState, CgStudentCard, StudentDetail],
   template: `
     <div class="h-full flex">
@@ -175,7 +166,7 @@ export class StudentList implements OnInit {
     }
 
     return this.students().map((student, i) => {
-      const [from, to] = GRADIENTS[i % GRADIENTS.length];
+      const [from, to] = GRADIENT_PAIRS[i % GRADIENT_PAIRS.length];
       const studentAssignments = assignmentsByStudent.get(student.id) ?? [];
       const active = studentAssignments.find(a => a.status === 'Active');
       const status = active ? 'resting' : 'no-program';

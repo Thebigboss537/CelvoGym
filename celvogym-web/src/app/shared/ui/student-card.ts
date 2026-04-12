@@ -1,7 +1,8 @@
-import { Component, input, output, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
 
 @Component({
   selector: 'cg-student-card',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-colors"

@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal, computed, effect } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import {
@@ -13,9 +13,11 @@ import { CgProgressBar } from '../../../../shared/ui/progress-bar';
 import { CgTimeline, TimelineItem } from '../../../../shared/ui/timeline';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
 import { formatDateWithYear, formatDate } from '../../../../shared/utils/format-date';
+import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 
 @Component({
   selector: 'app-student-detail',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, CgSpinner, CgStatCard, CgBadge, CgProgressBar, CgTimeline, CgEmptyState],
   template: `
     <div class="animate-fade-up h-full overflow-y-auto">
@@ -178,20 +180,11 @@ export class StudentDetail implements OnInit {
     return 'text-danger';
   });
 
-  initials = computed(() => {
-    const name = this.student()?.displayName ?? '';
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return name.slice(0, 2).toUpperCase();
-  });
+  initials = computed(() => getInitials(this.student()?.displayName ?? ''));
 
   avatarGradient = computed(() => {
-    const gradients: [string, string][] = [
-      ['#E62639', '#B31D2C'], ['#A78BFA', '#7C3AED'], ['#F59E0B', '#D97706'],
-      ['#22D3EE', '#0891B2'], ['#F472B6', '#DB2777'], ['#3B82F6', '#1D4ED8'],
-    ];
-    const idx = this.resolvedId().split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % gradients.length;
-    const [from, to] = gradients[idx];
+    const idx = this.resolvedId().split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % GRADIENT_PAIRS.length;
+    const [from, to] = GRADIENT_PAIRS[idx];
     return `linear-gradient(135deg, ${from}, ${to})`;
   });
 

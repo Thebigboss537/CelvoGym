@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   LucideAngularModule,
@@ -10,6 +10,9 @@ import {
   BookOpen,
   Users,
   Plus,
+  ClipboardList,
+  Package,
+  Menu,
   LucideIconData,
 } from 'lucide-angular';
 import { CgLogo } from './logo';
@@ -29,16 +32,20 @@ const ICON_MAP: Record<string, LucideIconData> = {
   'book-open': BookOpen,
   'users': Users,
   'plus': Plus,
+  'clipboard-list': ClipboardList,
+  'package': Package,
+  'menu': Menu,
 };
 
 @Component({
   selector: 'cg-sidebar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, CgLogo, CgAvatar, LucideAngularModule],
   providers: [
     {
       provide: LUCIDE_ICONS,
       multi: true,
-      useValue: new LucideIconProvider({ LayoutDashboard, Dumbbell, Layers, BookOpen, Users, Plus }),
+      useValue: new LucideIconProvider({ LayoutDashboard, Dumbbell, Layers, BookOpen, Users, Plus, ClipboardList, Package, Menu }),
     },
   ],
   template: `

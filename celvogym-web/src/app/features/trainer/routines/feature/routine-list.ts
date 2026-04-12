@@ -7,18 +7,7 @@ import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
 import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
-
-function relativeDate(iso: string): string {
-  const date = new Date(iso.includes('T') ? iso : iso + 'T00:00:00');
-  const today = new Date();
-  const diffMs = today.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'hoy';
-  if (diffDays === 1) return 'ayer';
-  if (diffDays < 7) return `hace ${diffDays} días`;
-  const weeks = Math.floor(diffDays / 7);
-  return weeks === 1 ? 'hace 1 semana' : `hace ${weeks} semanas`;
-}
+import { relativeDate } from '../../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-routine-list',

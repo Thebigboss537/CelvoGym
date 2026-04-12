@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 export interface TimelineItem {
   color: 'success' | 'info' | 'neutral';
@@ -8,6 +8,7 @@ export interface TimelineItem {
 
 @Component({
   selector: 'cg-timeline',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="ml-3 border-l-2 border-border pl-5 flex flex-col gap-0">
       @for (item of items(); track $index) {

@@ -1,7 +1,8 @@
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'cg-segmented-control',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex bg-card border border-border rounded-xl p-1">
       @for (option of options(); track option) {

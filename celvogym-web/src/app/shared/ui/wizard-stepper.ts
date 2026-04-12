@@ -1,7 +1,8 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'cg-wizard-stepper',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex items-center gap-3">
       <div class="flex items-center gap-1.5 bg-primary/10 px-3.5 py-1.5 rounded-lg shrink-0">

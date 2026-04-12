@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { CgSidebar, SidebarItem } from '../ui/sidebar';
 import { CgBottomNav, NavTab } from '../ui/bottom-nav';
@@ -6,6 +6,7 @@ import { AuthStore } from '../../core/auth/auth.store';
 
 @Component({
   selector: 'cg-trainer-shell',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, CgSidebar, CgBottomNav],
   template: `
     <div class="flex min-h-screen bg-bg">

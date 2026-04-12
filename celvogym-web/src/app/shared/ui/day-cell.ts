@@ -27,9 +27,7 @@ export class CgDayCell {
   select = output<void>();
 
   onSelect(): void {
-    if (this.state() !== 'rest' && this.state() !== 'other-month') {
-      this.select.emit();
-    } else if (this.state() === 'rest') {
+    if (this.state() !== 'other-month') {
       this.select.emit();
     }
   }

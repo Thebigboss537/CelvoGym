@@ -1,16 +1,18 @@
-import { Component, input, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, computed } from '@angular/core';
+import { GRADIENT_PAIRS } from '../utils/display';
 
 const gradientMap: Record<string, [string, string]> = {
-  crimson: ['#E62639', '#B31D2C'],
-  purple: ['#A78BFA', '#7C3AED'],
-  amber: ['#F59E0B', '#D97706'],
-  cyan: ['#22D3EE', '#0891B2'],
-  pink: ['#F472B6', '#DB2777'],
-  blue: ['#3B82F6', '#1D4ED8'],
+  crimson: GRADIENT_PAIRS[0],
+  purple: GRADIENT_PAIRS[1],
+  amber: GRADIENT_PAIRS[2],
+  cyan: GRADIENT_PAIRS[3],
+  pink: GRADIENT_PAIRS[4],
+  blue: GRADIENT_PAIRS[5],
 };
 
 @Component({
   selector: 'cg-avatar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="rounded-full flex items-center justify-center font-bold shrink-0"

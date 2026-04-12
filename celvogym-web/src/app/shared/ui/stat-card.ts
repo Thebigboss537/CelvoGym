@@ -1,7 +1,8 @@
-import { Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'cg-stat-card',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-card border border-border rounded-2xl p-5 text-center">
       <p class="text-text-muted text-[11px] font-semibold tracking-wide uppercase">{{ label() }}</p>
