@@ -55,7 +55,7 @@ import { CgSpinner } from '../../../shared/ui/spinner';
             <div class="flex-1">
               <cg-stat-card
                 label="Duración"
-                [value]="durationMinutes() > 0 ? durationMinutes() + ' min' : '—'"
+                [value]="durationLabel()"
               />
             </div>
             <div class="flex-1">
@@ -120,7 +120,8 @@ export class WorkoutComplete implements OnInit {
   loading = signal(true);
   session = signal<WorkoutSessionDto | null>(null);
   prs = signal<NewPrDto[]>([]);
-  durationMinutes = signal(0);
+  durationSeconds = signal(0);
+  durationLabel = signal('—');
   completedSets = signal(0);
   totalSets = signal(0);
   totalVolume = signal(0);
@@ -145,7 +146,9 @@ export class WorkoutComplete implements OnInit {
     this.session.set(s);
     const start = new Date(s.startedAt).getTime();
     const end = s.completedAt ? new Date(s.completedAt).getTime() : Date.now();
-    this.durationMinutes.set(Math.round((end - start) / 60000));
+    const totalSec = Math.round((end - start) / 1000);
+    this.durationSeconds.set(totalSec);
+    this.durationLabel.set(totalSec >= 60 ? Math.round(totalSec / 60) + ' min' : totalSec + ' seg');
 
     // Load routine data to compute sets + volume
     this.api.get<StudentRoutineDetailDto>(`/public/my/routines/${s.routineId}`).subscribe({
