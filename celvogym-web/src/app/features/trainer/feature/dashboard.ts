@@ -2,9 +2,11 @@ import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@ang
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthStore } from '../../../core/auth/auth.store';
+import { ProgramAssignmentDto } from '../../../shared/models';
 import { CgSpinner } from '../../../shared/ui/spinner';
 import { CgStatCard } from '../../../shared/ui/stat-card';
 import { CgStudentCard } from '../../../shared/ui/student-card';
+import { GRADIENT_PAIRS, getInitials } from '../../../shared/utils/display';
 
 interface DashboardData {
   totalStudents: number;
@@ -12,23 +14,6 @@ interface DashboardData {
   recentActivity: { studentId: string; studentName: string; dayName: string; status: string; timeAgo: string }[];
   alerts: { type: string; message: string; studentId: string | null }[];
   pinnedNotes: { studentId: string; studentName: string; text: string }[];
-}
-
-const GRADIENT_PAIRS: [string, string][] = [
-  ['#E62639', '#B31D2C'],
-  ['#A78BFA', '#7C3AED'],
-  ['#F59E0B', '#D97706'],
-  ['#22D3EE', '#0891B2'],
-  ['#F472B6', '#DB2777'],
-  ['#3B82F6', '#1D4ED8'],
-];
-
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
 }
 
 function formatSpanishDate(date: Date): string {
@@ -116,14 +101,14 @@ function alertTitle(type: string): string {
             valueColor="text-text"
           />
           <cg-stat-card
-            label="PROGRAMAS"
-            value="—"
-            valueColor="text-text-muted"
+            label="PROGRAMAS ACTIVOS"
+            [value]="activePrograms().toString()"
+            valueColor="text-text"
           />
           <cg-stat-card
             label="ADHERENCIA"
-            value="—"
-            valueColor="text-text-muted"
+            [value]="adherence()"
+            [valueColor]="adherence() !== '—' ? 'text-success' : 'text-text-muted'"
           />
         </div>
 
@@ -230,6 +215,8 @@ export class Dashboard implements OnInit {
 
   data = signal<DashboardData | null>(null);
   loading = signal(true);
+  activePrograms = signal(0);
+  adherence = signal<string>('—');
 
   today = formatSpanishDate(new Date());
   greeting = getGreeting();
@@ -243,11 +230,26 @@ export class Dashboard implements OnInit {
       next: (data) => { this.data.set(data); this.loading.set(false); },
       error: () => this.loading.set(false),
     });
+
+    // Load active programs count + adherence from assignments
+    this.api.get<ProgramAssignmentDto[]>('/program-assignments').subscribe({
+      next: (assignments) => {
+        const active = assignments.filter(a => a.status === 'Active');
+        this.activePrograms.set(active.length);
+
+        // Adherence: average of (currentWeek / totalWeeks) across active assignments
+        if (active.length > 0) {
+          const totalStudents = this.data()?.totalStudents ?? 1;
+          const activeStudents = this.data()?.activeThisWeek ?? 0;
+          if (totalStudents > 0) {
+            this.adherence.set(Math.round((activeStudents / totalStudents) * 100) + '%');
+          }
+        }
+      },
+    });
   }
 
-  getInitials(name: string): string {
-    return getInitials(name);
-  }
+  getInitials = getInitials;
 
   getGradient(index: number): [string, string] {
     return GRADIENT_PAIRS[index % GRADIENT_PAIRS.length];
