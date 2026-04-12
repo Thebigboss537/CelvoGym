@@ -11,3 +11,4 @@ export { CgBadge } from './badge';
 export { CgSidebar, type SidebarItem } from './sidebar';
 export { CgBottomNav, type NavTab } from './bottom-nav';
 export { CgHeroCard } from './hero-card';
+export { CgDayCell, type DayCellState } from './day-cell';
