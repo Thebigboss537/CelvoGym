@@ -144,18 +144,18 @@ interface FlatExercise {
 
             <!-- Set rows -->
             <div class="divide-y divide-border/50 px-1">
-              @for (set of sets(); track set.id; let i = $index) {
+              @for (row of setRows(); track row.set.id; let i = $index) {
                 <cg-set-row
                   [setNumber]="i + 1"
-                  [setType]="set.setType"
-                  [state]="getSetState(set.id)"
-                  [kg]="getKg(set.id)"
-                  [reps]="getReps(set.id)"
-                  [rpe]="getRpe(set.id)"
-                  (kgChange)="onKgChange(set.id, $event)"
-                  (repsChange)="onRepsChange(set.id, $event)"
-                  (rpeChange)="onRpeChange(set.id, $event)"
-                  (complete)="onSetComplete(set)"
+                  [setType]="row.set.setType"
+                  [state]="row.state"
+                  [kg]="row.kg"
+                  [reps]="row.reps"
+                  [rpe]="row.rpe"
+                  (kgChange)="onKgChange(row.set.id, $event)"
+                  (repsChange)="onRepsChange(row.set.id, $event)"
+                  (rpeChange)="onRpeChange(row.set.id, $event)"
+                  (complete)="onSetComplete(row.set)"
                 />
               }
             </div>
@@ -280,12 +280,38 @@ export class ExerciseLogging implements OnInit {
     });
   }
 
-  // --- Set state helpers ---
+  // --- Reactive set rows (computed from signals for OnPush compatibility) ---
+
+  setRows = computed(() => {
+    const allSets = this.sets();
+    const logMap = this.setLogMap();
+    let foundActive = false;
+    return allSets.map(set => {
+      const log = logMap.get(set.id);
+      let state: string;
+      if (log?.completed) {
+        state = 'completed';
+      } else if (!foundActive) {
+        state = 'active';
+        foundActive = true;
+      } else {
+        state = 'pending';
+      }
+      return {
+        set,
+        state,
+        kg: log?.actualWeight != null ? parseFloat(log.actualWeight) : null,
+        reps: log?.actualReps != null ? parseInt(log.actualReps, 10) : null,
+        rpe: log?.actualRpe ?? null,
+      };
+    });
+  });
+
+  // --- Set state helpers (kept for internal use) ---
 
   getSetState(setId: string): string {
     const log = this.setLogMap().get(setId);
     if (log?.completed) return 'completed';
-    // First uncompleted set is active
     for (const s of this.sets()) {
       const l = this.setLogMap().get(s.id);
       if (!l?.completed) {
