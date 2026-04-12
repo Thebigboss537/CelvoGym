@@ -8,3 +8,4 @@ export { CgToast, ToastService } from './toast';
 export { CgStatCard } from './stat-card';
 export { CgProgressBar } from './progress-bar';
 export { CgBadge } from './badge';
+export { CgSidebar, type SidebarItem } from './sidebar';
