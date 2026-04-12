@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ApiService } from '../../../core/services/api.service';
-import { MyProgramDto } from '../../../shared/models';
+import { CalendarMonthDto, MyProgramDto, PersonalRecordDto } from '../../../shared/models';
 import { CgBadge } from '../../../shared/ui/badge';
 import { CgEmptyState } from '../../../shared/ui/empty-state';
 import { CgProgressBar } from '../../../shared/ui/progress-bar';
@@ -35,9 +36,9 @@ import { CgStatCard } from '../../../shared/ui/stat-card';
 
         <!-- Stats row -->
         <div class="grid grid-cols-3 gap-3">
-          <cg-stat-card label="Sesiones" value="—" />
+          <cg-stat-card label="Sesiones" [value]="sessionCount().toString()" />
           <cg-stat-card label="Racha" value="—" />
-          <cg-stat-card label="PRs" value="—" />
+          <cg-stat-card label="PRs" [value]="prCount().toString()" />
         </div>
 
         <!-- Mi Entrenador -->
@@ -126,6 +127,8 @@ export class Profile implements OnInit {
 
   loading = signal(true);
   program = signal<MyProgramDto | null>(null);
+  prCount = signal(0);
+  sessionCount = signal(0);
 
   initial = computed(() => {
     const name = this.authStore.user()?.firstName ?? this.authStore.user()?.email ?? 'A';
@@ -173,9 +176,16 @@ export class Profile implements OnInit {
   });
 
   ngOnInit() {
-    this.api.get<MyProgramDto>('/public/my/program').subscribe({
-      next: (data) => {
-        this.program.set(data);
+    const now = new Date();
+    forkJoin({
+      program: this.api.get<MyProgramDto>('/public/my/program'),
+      records: this.api.get<PersonalRecordDto[]>('/public/my/records'),
+      calendar: this.api.get<CalendarMonthDto>(`/public/my/calendar?year=${now.getFullYear()}&month=${now.getMonth() + 1}`),
+    }).subscribe({
+      next: ({ program, records, calendar }) => {
+        this.program.set(program);
+        this.prCount.set(records.length);
+        this.sessionCount.set(calendar.sessions.filter(s => s.status === 'completed').length);
         this.loading.set(false);
       },
       error: () => {

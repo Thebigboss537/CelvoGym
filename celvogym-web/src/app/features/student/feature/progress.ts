@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
@@ -17,6 +17,7 @@ import { formatDate, formatDateWithYear } from '../../../shared/utils/format-dat
 
 @Component({
   selector: 'app-progress',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, CgSegmentedControl, CgStatCard, CgSpinner, CgEmptyState, CgBadge],
   template: `
     <div class="animate-fade-up space-y-5 pb-8">
@@ -60,7 +61,7 @@ import { formatDate, formatDateWithYear } from '../../../shared/utils/format-dat
                 <div class="flex-1">
                   <cg-stat-card
                     label="Tendencia"
-                    value="—"
+                    [value]="trend()"
                     valueColor="text-text-muted" />
                 </div>
               </div>
@@ -265,6 +266,25 @@ export class Progress implements OnInit {
       const d = new Date(r.achievedAt.includes('T') ? r.achievedAt : r.achievedAt + 'T00:00:00');
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
+  });
+
+  trend = computed(() => {
+    const recs = this.records();
+    const now = new Date();
+    const thisMonth = recs.filter(r => {
+      const d = new Date(r.achievedAt.includes('T') ? r.achievedAt : r.achievedAt + 'T00:00:00');
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }).length;
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1);
+    const lastMonth = recs.filter(r => {
+      const d = new Date(r.achievedAt.includes('T') ? r.achievedAt : r.achievedAt + 'T00:00:00');
+      return d.getMonth() === prev.getMonth() && d.getFullYear() === prev.getFullYear();
+    }).length;
+    if (thisMonth === 0 && lastMonth === 0) return '—';
+    const diff = thisMonth - lastMonth;
+    if (diff > 0) return '+' + diff;
+    if (diff < 0) return String(diff);
+    return '=';
   });
 
   latestMetric = computed(() =>
