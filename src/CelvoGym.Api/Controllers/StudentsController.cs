@@ -29,6 +29,14 @@ public class StudentsController(IMediator mediator) : ControllerBase
         return Created($"/api/v1/students/{result.Id}", result);
     }
 
+    [HttpGet("{studentId:guid}/overview")]
+    public async Task<IActionResult> GetOverview(Guid studentId, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var result = await mediator.Send(new GetStudentOverviewQuery(HttpContext.GetTrainerId(), studentId), ct);
+        return Ok(result);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken ct)
     {
