@@ -22,9 +22,8 @@ public sealed class GetStudentOverviewHandler(ICelvoGymDbContext db)
             throw new InvalidOperationException("Student not found");
 
         var now = DateTimeOffset.UtcNow;
-        var weekStart = now.AddDays(-(int)now.DayOfWeek + (int)DayOfWeek.Monday);
-        if (now.DayOfWeek == DayOfWeek.Sunday) weekStart = weekStart.AddDays(-7);
-        var weekStartDate = weekStart.Date;
+        var daysFromMonday = ((int)now.DayOfWeek + 6) % 7; // Monday=0, Sunday=6
+        var weekStartDate = new DateTimeOffset(now.Date.AddDays(-daysFromMonday), TimeSpan.Zero);
 
         // Total completed sessions
         var totalSessions = await db.WorkoutSessions
@@ -50,7 +49,7 @@ public sealed class GetStudentOverviewHandler(ICelvoGymDbContext db)
             : 0;
 
         // Weekly volume (last 6 weeks) — materialize then group in memory
-        var sixWeeksAgo = now.AddDays(-42);
+        var sixWeeksAgo = new DateTimeOffset(now.Date.AddDays(-42), TimeSpan.Zero);
         var recentSessions = await db.WorkoutSessions
             .AsNoTracking()
             .Where(ws => ws.StudentId == request.StudentId
