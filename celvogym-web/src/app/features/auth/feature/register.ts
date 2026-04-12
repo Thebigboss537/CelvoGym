@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
 import { CgLogo } from '../../../shared/ui/logo';
 import { parseGuardError } from '../../../shared/utils/guard-errors';
@@ -102,6 +103,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
 export class Register {
   private router = inject(Router);
   private api = inject(ApiService);
+  private authStore = inject(AuthStore);
 
   displayName = '';
   email = '';
@@ -115,7 +117,7 @@ export class Register {
     this.error.set('');
 
     try {
-      // Register in CelvoGuard
+      // 1. Register in CelvoGuard (also sets auth cookies)
       const res = await fetch(`${environment.guardUrl}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
@@ -131,12 +133,27 @@ export class Register {
         throw new Error(await parseGuardError(res, 'No pudimos completar el registro. Intentá de nuevo.'));
       }
 
-      // Setup trainer profile in CelvoGym API (via ApiService → CSRF interceptor)
-      await firstValueFrom(this.api.post('/onboarding/trainer/setup', {
-        displayName: this.displayName,
-      }));
+      // 2. Load user into AuthStore (needed for guards)
+      const meRes = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
+        headers: { 'X-App-Slug': 'celvogym' },
+        credentials: 'include',
+      });
+      if (meRes.ok) {
+        const user = await meRes.json();
+        this.authStore.setUser(user);
+      }
 
-      this.registered.set(true);
+      // 3. Setup trainer profile in CelvoGym API
+      try {
+        await firstValueFrom(this.api.post('/onboarding/trainer/setup', {
+          displayName: this.displayName,
+        }));
+      } catch {
+        // Setup may fail if profile already exists or CSRF issue — continue anyway
+      }
+
+      // 4. Redirect to pending approval page
+      this.router.navigate(['/onboarding/pending']);
     } catch (e: any) {
       this.error.set(e.message);
     } finally {

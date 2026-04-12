@@ -28,9 +28,11 @@ public sealed class TrainerContextMiddleware(RequestDelegate next)
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.TenantId == tenantId.Value && t.IsActive);
 
+        var isOnboarding = context.Request.Path.StartsWithSegments("/api/v1/onboarding");
+
         if (trainer is not null)
         {
-            if (!trainer.IsApproved)
+            if (!trainer.IsApproved && !isOnboarding)
             {
                 context.Response.StatusCode = 403;
                 await context.Response.WriteAsJsonAsync(new { error = "Trainer account pending approval" });
@@ -39,7 +41,7 @@ public sealed class TrainerContextMiddleware(RequestDelegate next)
 
             context.Items[ContextKeys.TrainerId] = trainer.Id;
         }
-        else if (!context.Request.Path.StartsWithSegments("/api/v1/onboarding"))
+        else if (!isOnboarding)
         {
             context.Response.StatusCode = 403;
             await context.Response.WriteAsJsonAsync(new { error = "Trainer profile not found. Complete setup first." });
