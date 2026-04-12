@@ -5,3 +5,6 @@ export { CgPageHeader } from './page-header';
 export { CgAvatar } from './avatar';
 export { CgConfirmDialog } from './confirm-dialog';
 export { CgToast, ToastService } from './toast';
+export { CgStatCard } from './stat-card';
+export { CgProgressBar } from './progress-bar';
+export { CgBadge } from './badge';
