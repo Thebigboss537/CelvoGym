@@ -225,28 +225,33 @@ export class Dashboard implements OnInit {
     return this.authStore.user()?.firstName ?? 'Entrenador';
   }
 
+  private assignments = signal<ProgramAssignmentDto[]>([]);
+
   ngOnInit() {
     this.api.get<DashboardData>('/dashboard').subscribe({
-      next: (data) => { this.data.set(data); this.loading.set(false); },
+      next: (data) => {
+        this.data.set(data);
+        this.loading.set(false);
+        this.computeAdherence(data);
+      },
       error: () => this.loading.set(false),
     });
 
-    // Load active programs count + adherence from assignments
     this.api.get<ProgramAssignmentDto[]>('/program-assignments').subscribe({
       next: (assignments) => {
+        this.assignments.set(assignments);
         const active = assignments.filter(a => a.status === 'Active');
         this.activePrograms.set(active.length);
-
-        // Adherence: average of (currentWeek / totalWeeks) across active assignments
-        if (active.length > 0) {
-          const totalStudents = this.data()?.totalStudents ?? 1;
-          const activeStudents = this.data()?.activeThisWeek ?? 0;
-          if (totalStudents > 0) {
-            this.adherence.set(Math.round((activeStudents / totalStudents) * 100) + '%');
-          }
-        }
+        const d = this.data();
+        if (d) this.computeAdherence(d);
       },
     });
+  }
+
+  private computeAdherence(data: DashboardData): void {
+    if (data.totalStudents > 0) {
+      this.adherence.set(Math.round((data.activeThisWeek / data.totalStudents) * 100) + '%');
+    }
   }
 
   getInitials = getInitials;
