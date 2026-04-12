@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { WorkoutSessionDto, NewPrDto } from '../../../shared/models';
+import { WorkoutSessionDto, NewPrDto, StudentRoutineDetailDto, SetLogDto } from '../../../shared/models';
 import { CgStatCard } from '../../../shared/ui/stat-card';
 import { CgBadge } from '../../../shared/ui/badge';
 import { CgSpinner } from '../../../shared/ui/spinner';
@@ -61,13 +61,13 @@ import { CgSpinner } from '../../../shared/ui/spinner';
             <div class="flex-1">
               <cg-stat-card
                 label="Sets"
-                value="—"
+                [value]="completedSets() > 0 ? completedSets() + '/' + totalSets() : '—'"
               />
             </div>
             <div class="flex-1">
               <cg-stat-card
                 label="Volumen"
-                value="—"
+                [value]="totalVolume() > 0 ? totalVolume() + ' kg' : '—'"
               />
             </div>
           </div>
@@ -121,6 +121,9 @@ export class WorkoutComplete implements OnInit {
   session = signal<WorkoutSessionDto | null>(null);
   prs = signal<NewPrDto[]>([]);
   durationMinutes = signal(0);
+  completedSets = signal(0);
+  totalSets = signal(0);
+  totalVolume = signal(0);
 
   ngOnInit() {
     const sessionId = this.route.snapshot.queryParamMap.get('sessionId');
@@ -130,36 +133,53 @@ export class WorkoutComplete implements OnInit {
     }
 
     this.api.post<WorkoutSessionDto>(`/public/my/sessions/${sessionId}/complete`, {}).subscribe({
-      next: (s) => {
-        this.session.set(s);
-        const start = new Date(s.startedAt).getTime();
-        const end = s.completedAt ? new Date(s.completedAt).getTime() : Date.now();
-        this.durationMinutes.set(Math.round((end - start) / 60000));
-
-        this.api.get<NewPrDto[]>(`/public/my/records/detect?sessionId=${sessionId}`).subscribe({
-          next: (newPrs) => {
-            this.prs.set(newPrs);
-            this.loading.set(false);
-          },
-          error: () => {
-            // PRs optional — show page without them
-            this.loading.set(false);
-          },
-        });
-      },
+      next: (s) => this.handleSession(s, sessionId),
       error: () => {
-        // Session may already be completed — still show the page
-        const sessionId2 = this.route.snapshot.queryParamMap.get('sessionId')!;
-        this.api.get<NewPrDto[]>(`/public/my/records/detect?sessionId=${sessionId2}`).subscribe({
-          next: (newPrs) => {
-            this.prs.set(newPrs);
-            this.loading.set(false);
-          },
-          error: () => {
-            this.loading.set(false);
-          },
-        });
+        // Session may already be completed — still load data
+        this.loadPrsAndStats(sessionId);
       },
+    });
+  }
+
+  private handleSession(s: WorkoutSessionDto, sessionId: string): void {
+    this.session.set(s);
+    const start = new Date(s.startedAt).getTime();
+    const end = s.completedAt ? new Date(s.completedAt).getTime() : Date.now();
+    this.durationMinutes.set(Math.round((end - start) / 60000));
+
+    // Load routine data to compute sets + volume
+    this.api.get<StudentRoutineDetailDto>(`/public/my/routines/${s.routineId}`).subscribe({
+      next: (routine) => {
+        const day = routine.days.find(d => d.id === s.dayId);
+        if (day) {
+          const allSets = day.groups.flatMap(g => g.exercises.flatMap(e => e.sets));
+          this.totalSets.set(allSets.length);
+
+          const logs = day.setLogs ?? [];
+          const completedLogs = logs.filter(l => l.completed);
+          this.completedSets.set(completedLogs.length);
+
+          let volume = 0;
+          for (const log of completedLogs) {
+            const w = parseFloat(log.actualWeight ?? '0');
+            const r = parseInt(log.actualReps ?? '0', 10);
+            if (w > 0 && r > 0) volume += w * r;
+          }
+          this.totalVolume.set(Math.round(volume));
+        }
+      },
+    });
+
+    this.loadPrsAndStats(sessionId);
+  }
+
+  private loadPrsAndStats(sessionId: string): void {
+    this.api.get<NewPrDto[]>(`/public/my/records/detect?sessionId=${sessionId}`).subscribe({
+      next: (newPrs) => {
+        this.prs.set(newPrs);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
   }
 
