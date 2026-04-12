@@ -74,14 +74,30 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
               />
             </div>
 
+            <div>
+              <label class="block text-sm text-text-secondary mb-1">Confirmar contraseña</label>
+              <input
+                type="password"
+                [(ngModel)]="confirmPassword"
+                name="confirmPassword"
+                autocomplete="new-password"
+                class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
+                placeholder="Repetí tu contraseña"
+                required
+              />
+              @if (confirmPassword && password !== confirmPassword) {
+                <p class="text-danger text-xs mt-1">Las contraseñas no coinciden</p>
+              }
+            </div>
+
             @if (error()) {
               <p class="text-danger text-sm">{{ error() }}</p>
             }
 
             <button
               type="submit"
-              [disabled]="loading()"
-              class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press"
+              [disabled]="loading() || (confirmPassword !== '' && password !== confirmPassword)"
+              class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press disabled:opacity-50 disabled:cursor-not-allowed"
             >
               @if (loading()) {
                 Registrando...
@@ -108,11 +124,17 @@ export class Register {
   displayName = '';
   email = '';
   password = '';
+  confirmPassword = '';
   loading = signal(false);
   error = signal('');
   registered = signal(false);
 
   async register() {
+    if (this.password !== this.confirmPassword) {
+      this.error.set('Las contraseñas no coinciden');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 

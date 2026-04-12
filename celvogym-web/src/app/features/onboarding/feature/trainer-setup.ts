@@ -19,21 +19,22 @@ import type { TrainerStatusDto } from '../../../shared/models';
           <cg-logo [size]="36" class="flex justify-center" />
           <h1 class="text-h2 mt-3 text-text">Completa tu perfil</h1>
           <p class="text-text-secondary text-sm mt-1">
-            Configura tu perfil de entrenador para empezar a usar CelvoGym.
+            Configura cómo te verán tus alumnos en CelvoGym.
           </p>
         </div>
 
         <form (ngSubmit)="submit()" class="space-y-4">
           <div>
-            <label class="block text-sm text-text-secondary mb-1">Tu nombre</label>
+            <label class="block text-sm text-text-secondary mb-1">Nombre público</label>
             <input
               type="text"
               [(ngModel)]="displayName"
               name="displayName"
               class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
-              placeholder="Ej: Juan Pérez"
+              placeholder="Ej: Coach Juan, Juan Pérez Fitness"
               required
             />
+            <p class="text-text-muted text-xs mt-1">Este es el nombre o alias que verán tus alumnos.</p>
           </div>
 
           <div>
