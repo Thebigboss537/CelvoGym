@@ -15,3 +15,5 @@ export { CgDayCell, type DayCellState } from './day-cell';
 export { CgSetRow, type SetCompleteEvent } from './set-row';
 export { CgRestTimer } from './rest-timer';
 export { CgSegmentedControl } from './segmented-control';
+export { CgStudentCard } from './student-card';
+export { CgTimeline, type TimelineItem } from './timeline';
