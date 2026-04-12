@@ -14,3 +14,4 @@ export { CgHeroCard } from './hero-card';
 export { CgDayCell, type DayCellState } from './day-cell';
 export { CgSetRow, type SetCompleteEvent } from './set-row';
 export { CgRestTimer } from './rest-timer';
+export { CgSegmentedControl } from './segmented-control';
