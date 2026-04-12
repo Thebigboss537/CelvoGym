@@ -7,6 +7,7 @@ import { CgSpinner } from '../../../shared/ui/spinner';
 import { CgStatCard } from '../../../shared/ui/stat-card';
 import { CgStudentCard } from '../../../shared/ui/student-card';
 import { GRADIENT_PAIRS, getInitials } from '../../../shared/utils/display';
+import { formatSpanishDate } from '../../../shared/utils/format-date';
 
 interface DashboardData {
   totalStudents: number;
@@ -14,15 +15,6 @@ interface DashboardData {
   recentActivity: { studentId: string; studentName: string; dayName: string; status: string; timeAgo: string }[];
   alerts: { type: string; message: string; studentId: string | null }[];
   pinnedNotes: { studentId: string; studentName: string; text: string }[];
-}
-
-function formatSpanishDate(date: Date): string {
-  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const months = [
-    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-  ];
-  return `${days[date.getDay()]}, ${date.getDate()} de ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
 function getGreeting(): string {

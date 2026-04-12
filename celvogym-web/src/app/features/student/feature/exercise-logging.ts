@@ -280,8 +280,6 @@ export class ExerciseLogging implements OnInit {
     });
   }
 
-  // --- Reactive set rows (computed from signals for OnPush compatibility) ---
-
   setRows = computed(() => {
     const allSets = this.sets();
     const logMap = this.setLogMap();
@@ -306,36 +304,6 @@ export class ExerciseLogging implements OnInit {
       };
     });
   });
-
-  // --- Set state helpers (kept for internal use) ---
-
-  getSetState(setId: string): string {
-    const log = this.setLogMap().get(setId);
-    if (log?.completed) return 'completed';
-    for (const s of this.sets()) {
-      const l = this.setLogMap().get(s.id);
-      if (!l?.completed) {
-        return s.id === setId ? 'active' : 'pending';
-      }
-    }
-    return 'pending';
-  }
-
-  getKg(setId: string): number | null {
-    const val = this.setLogMap().get(setId)?.actualWeight;
-    return val != null ? parseFloat(val) : null;
-  }
-
-  getReps(setId: string): number | null {
-    const val = this.setLogMap().get(setId)?.actualReps;
-    return val != null ? parseInt(val, 10) : null;
-  }
-
-  getRpe(setId: string): number | null {
-    return this.setLogMap().get(setId)?.actualRpe ?? null;
-  }
-
-  // --- API calls ---
 
   onKgChange(setId: string, kg: number): void {
     this.updateSetValue(setId, { weight: String(kg) });
@@ -430,8 +398,6 @@ export class ExerciseLogging implements OnInit {
       { queryParams: { routineId: this.routineId, dayId: this.dayId, sessionId: this.sessionId } }
     );
   }
-
-  // --- Video helpers ---
 
   getEmbedUrl(url: string): SafeResourceUrl {
     const cached = this.embedUrlCache.get(url);

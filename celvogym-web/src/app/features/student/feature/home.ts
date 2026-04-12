@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ApiService } from '../../../core/services/api.service';
@@ -8,18 +9,14 @@ import { CgEmptyState } from '../../../shared/ui/empty-state';
 import { CgHeroCard } from '../../../shared/ui/hero-card';
 import { CgSpinner } from '../../../shared/ui/spinner';
 import { CgStatCard } from '../../../shared/ui/stat-card';
+import { relativeDate as relativeDateBase } from '../../../shared/utils/format-date';
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 function relativeDate(iso: string): string {
-  const date = new Date(iso.includes('T') ? iso : iso + 'T00:00:00');
-  const today = new Date();
-  const diffMs = today.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return 'Hoy';
-  if (diffDays === 1) return 'Ayer';
-  if (diffDays < 7) return `Hace ${diffDays} días`;
-  const weeks = Math.floor(diffDays / 7);
-  return weeks === 1 ? 'Hace 1 semana' : `Hace ${weeks} semanas`;
+  return capitalize(relativeDateBase(iso));
 }
 
 @Component({
@@ -121,6 +118,7 @@ export class Home implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
   private authStore = inject(AuthStore);
+  private destroyRef = inject(DestroyRef);
 
   relativeDate = relativeDate;
 
@@ -152,17 +150,17 @@ export class Home implements OnInit {
   });
 
   ngOnInit() {
-    this.api.get<NextWorkoutDto>('/public/my/next-workout').subscribe({
+    this.api.get<NextWorkoutDto>('/public/my/next-workout').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => { this.workout.set(data); this.done(); },
       error: () => this.done(),
     });
 
-    this.api.get<MyProgramDto>('/public/my/program').subscribe({
+    this.api.get<MyProgramDto>('/public/my/program').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => { this.program.set(data); this.done(); },
       error: () => this.done(),
     });
 
-    this.api.get<PersonalRecordDto[]>('/public/my/records').subscribe({
+    this.api.get<PersonalRecordDto[]>('/public/my/records').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (data) => { this.records.set(data); this.done(); },
       error: () => this.done(),
     });

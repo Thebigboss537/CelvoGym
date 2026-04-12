@@ -13,7 +13,7 @@ import { CgSegmentedControl } from '../../../shared/ui/segmented-control';
 import { CgSpinner } from '../../../shared/ui/spinner';
 import { CgStatCard } from '../../../shared/ui/stat-card';
 import { ToastService } from '../../../shared/ui/toast';
-import { formatDate, formatDateWithYear } from '../../../shared/utils/format-date';
+import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-progress',
@@ -263,7 +263,7 @@ export class Progress implements OnInit {
   recordsThisMonth = computed(() => {
     const now = new Date();
     return this.records().filter(r => {
-      const d = new Date(r.achievedAt.includes('T') ? r.achievedAt : r.achievedAt + 'T00:00:00');
+      const d = parseLocalDate(r.achievedAt);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
   });
@@ -272,12 +272,12 @@ export class Progress implements OnInit {
     const recs = this.records();
     const now = new Date();
     const thisMonth = recs.filter(r => {
-      const d = new Date(r.achievedAt.includes('T') ? r.achievedAt : r.achievedAt + 'T00:00:00');
+      const d = parseLocalDate(r.achievedAt);
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }).length;
     const prev = new Date(now.getFullYear(), now.getMonth() - 1);
     const lastMonth = recs.filter(r => {
-      const d = new Date(r.achievedAt.includes('T') ? r.achievedAt : r.achievedAt + 'T00:00:00');
+      const d = parseLocalDate(r.achievedAt);
       return d.getMonth() === prev.getMonth() && d.getFullYear() === prev.getFullYear();
     }).length;
     if (thisMonth === 0 && lastMonth === 0) return '—';

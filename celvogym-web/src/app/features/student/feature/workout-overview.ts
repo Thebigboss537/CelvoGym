@@ -191,7 +191,6 @@ export class WorkoutOverview implements OnInit, OnDestroy {
 
   private elapsedInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Flat list of exercises for the current day
   exercises = computed<ExerciseDto[]>(() => {
     const r = this.routine();
     const nw = this.nextWorkout();
@@ -361,7 +360,6 @@ export class WorkoutOverview implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  /** Returns opacity for a pending exercise based on its global index */
   pendingOpacity(globalIndex: number): number {
     const list = this.exercisesWithState();
     // Count how many pending exercises are before this one
