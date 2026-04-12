@@ -14,6 +14,14 @@ const SET_TYPE_CONFIG: Record<string, SetTypeConfig> = {
   AMRAP: { bg: '#F9731622', color: '#F97316', label: () => 'A' },
 };
 
+const SET_TYPE_NAME: Record<string, string> = {
+  Warmup: 'Calent.',
+  Effective: 'Efectiva',
+  DropSet: 'Drop',
+  RestPause: 'Rest-P',
+  AMRAP: 'AMRAP',
+};
+
 export interface SetCompleteEvent {
   kg: number;
   reps: number;
@@ -25,7 +33,7 @@ export interface SetCompleteEvent {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="grid grid-cols-[44px_1fr_1fr_1fr_48px] gap-2 py-2.5 px-1 items-center"
+      class="grid grid-cols-[44px_60px_1fr_1fr_1fr_48px] gap-2 py-2.5 px-1 items-center"
       [class]="rowClass()"
     >
       <!-- Column 1: SET label badge -->
@@ -38,6 +46,15 @@ export interface SetCompleteEvent {
           {{ badgeConfig().label(setNumber()) }}
         </span>
       </div>
+
+      <!-- Column 2: SET type name -->
+      <span
+        class="text-[10px] font-semibold text-center px-1.5 py-1 rounded-md"
+        [style.background]="badgeConfig().bg"
+        [style.color]="badgeConfig().color"
+      >
+        {{ typeName() }}
+      </span>
 
       <!-- Column 2: KG input -->
       <input
@@ -110,6 +127,10 @@ export class CgSetRow {
 
   badgeConfig = computed((): SetTypeConfig => {
     return SET_TYPE_CONFIG[this.setType()] ?? SET_TYPE_CONFIG['Effective'];
+  });
+
+  typeName = computed((): string => {
+    return SET_TYPE_NAME[this.setType()] ?? 'Efectiva';
   });
 
   rowClass = computed((): string => {

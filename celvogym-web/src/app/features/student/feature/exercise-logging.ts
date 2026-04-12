@@ -133,8 +133,9 @@ interface FlatExercise {
           <!-- Set table -->
           <div class="bg-card border border-border rounded-xl overflow-hidden">
             <!-- Header -->
-            <div class="grid grid-cols-[44px_1fr_1fr_1fr_48px] gap-2 px-1 py-2 border-b border-border">
+            <div class="grid grid-cols-[44px_60px_1fr_1fr_1fr_48px] gap-2 px-1 py-2 border-b border-border">
               <span class="text-[11px] text-text-muted text-center">SET</span>
+              <span class="text-[11px] text-text-muted text-center">TIPO</span>
               <span class="text-[11px] text-text-muted text-center">KG</span>
               <span class="text-[11px] text-text-muted text-center">REPS</span>
               <span class="text-[11px] text-text-muted text-center">RPE</span>
@@ -311,42 +312,26 @@ export class ExerciseLogging implements OnInit {
   // --- API calls ---
 
   onKgChange(setId: string, kg: number): void {
-    const current = this.setLogMap().get(setId);
-    this.api.post<SetLogDto>('/public/my/sets/update', {
-      sessionId: this.sessionId,
-      setId,
-      routineId: this.routineId,
-      weight: String(kg),
-      reps: current?.actualReps ?? null,
-      rpe: current?.actualRpe ?? null,
-    }).subscribe({
-      next: (log) => this.updateLog(log),
-    });
+    this.updateSetValue(setId, { weight: String(kg) });
   }
 
   onRepsChange(setId: string, reps: number): void {
-    const current = this.setLogMap().get(setId);
-    this.api.post<SetLogDto>('/public/my/sets/update', {
-      sessionId: this.sessionId,
-      setId,
-      routineId: this.routineId,
-      weight: current?.actualWeight ?? null,
-      reps: String(reps),
-      rpe: current?.actualRpe ?? null,
-    }).subscribe({
-      next: (log) => this.updateLog(log),
-    });
+    this.updateSetValue(setId, { reps: String(reps) });
   }
 
   onRpeChange(setId: string, rpe: number): void {
+    this.updateSetValue(setId, { rpe });
+  }
+
+  private updateSetValue(setId: string, overrides: { weight?: string; reps?: string; rpe?: number }): void {
     const current = this.setLogMap().get(setId);
     this.api.post<SetLogDto>('/public/my/sets/update', {
       sessionId: this.sessionId,
       setId,
       routineId: this.routineId,
-      weight: current?.actualWeight ?? null,
-      reps: current?.actualReps ?? null,
-      rpe,
+      weight: overrides.weight ?? current?.actualWeight ?? null,
+      reps: overrides.reps ?? current?.actualReps ?? null,
+      rpe: overrides.rpe ?? current?.actualRpe ?? null,
     }).subscribe({
       next: (log) => this.updateLog(log),
     });

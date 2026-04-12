@@ -49,15 +49,30 @@ public sealed class UpdateSetDataHandler(ICelvoGymDbContext db)
                 SnapshotTargetReps = exerciseSet?.TargetReps
             };
             db.SetLogs.Add(log);
+
+            try
+            {
+                await db.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Race condition: concurrent request already created the log — retry as update.
+                log = await db.SetLogs
+                    .FirstAsync(sl => sl.SessionId == request.SessionId
+                        && sl.SetId == request.SetId, cancellationToken);
+                log.ActualWeight = request.Weight;
+                log.ActualReps = request.Reps;
+                log.ActualRpe = request.Rpe;
+                await db.SaveChangesAsync(cancellationToken);
+            }
         }
         else
         {
             log.ActualWeight = request.Weight;
             log.ActualReps = request.Reps;
             log.ActualRpe = request.Rpe;
+            await db.SaveChangesAsync(cancellationToken);
         }
-
-        await db.SaveChangesAsync(cancellationToken);
 
         return new SetLogDto(log.Id, log.SetId, log.Completed,
             log.CompletedAt, log.ActualWeight, log.ActualReps, log.ActualRpe);
