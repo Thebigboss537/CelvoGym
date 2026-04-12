@@ -9,3 +9,4 @@ export { CgStatCard } from './stat-card';
 export { CgProgressBar } from './progress-bar';
 export { CgBadge } from './badge';
 export { CgSidebar, type SidebarItem } from './sidebar';
+export { CgBottomNav, type NavTab } from './bottom-nav';
