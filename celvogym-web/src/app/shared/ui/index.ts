@@ -17,3 +17,4 @@ export { CgRestTimer } from './rest-timer';
 export { CgSegmentedControl } from './segmented-control';
 export { CgStudentCard } from './student-card';
 export { CgTimeline, type TimelineItem } from './timeline';
+export { CgWizardStepper } from './wizard-stepper';
