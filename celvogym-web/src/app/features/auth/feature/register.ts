@@ -133,7 +133,7 @@ export class Register {
         throw new Error(await parseGuardError(res, 'No pudimos completar el registro. Intentá de nuevo.'));
       }
 
-      // 2. Load user into AuthStore (needed for guards)
+      // 2. Load user into AuthStore (needed for guards and onboarding)
       const meRes = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
         headers: { 'X-App-Slug': 'celvogym' },
         credentials: 'include',
@@ -143,17 +143,8 @@ export class Register {
         this.authStore.setUser(user);
       }
 
-      // 3. Setup trainer profile in CelvoGym API
-      try {
-        await firstValueFrom(this.api.post('/onboarding/trainer/setup', {
-          displayName: this.displayName,
-        }));
-      } catch {
-        // Setup may fail if profile already exists or CSRF issue — continue anyway
-      }
-
-      // 4. Redirect to pending approval page
-      this.router.navigate(['/onboarding/pending']);
+      // 3. Redirect to onboarding setup (trainer fills profile: name, bio)
+      this.router.navigate(['/onboarding/setup']);
     } catch (e: any) {
       this.error.set(e.message);
     } finally {
