@@ -12,3 +12,5 @@ export { CgSidebar, type SidebarItem } from './sidebar';
 export { CgBottomNav, type NavTab } from './bottom-nav';
 export { CgHeroCard } from './hero-card';
 export { CgDayCell, type DayCellState } from './day-cell';
+export { CgSetRow, type SetCompleteEvent } from './set-row';
+export { CgRestTimer } from './rest-timer';
