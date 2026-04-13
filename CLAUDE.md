@@ -73,16 +73,35 @@ docker compose up -d
 ### Reusable Components (`celvogym-web/src/app/shared/ui/`)
 - `<cg-logo>` — Logo mark + wordmark (inputs: size, showText, href)
 - `<cg-spinner>` — Loading spinner (inputs: size, containerClass)
-- `<cg-empty-state>` — Empty state with brand mark (inputs: title, subtitle, ng-content for CTAs)
+- `<cg-empty-state>` — Empty state with brand mark or Lucide icon (inputs: title, subtitle, icon)
 - `<cg-page-header>` — Page header with display font (inputs: title, subtitle, hasBack)
-- `<cg-avatar>` — Initial circle avatar (inputs: name, size)
+- `<cg-avatar>` — Initial circle avatar with optional gradient (inputs: name, size, gradient)
 - `<cg-confirm-dialog>` — Modal confirmation replacing native confirm() (inputs: open, title, message, confirmLabel, variant)
 - `<cg-toast>` + `ToastService` — Global toast notifications (placed in app root)
+- `<cg-stat-card>` — Stat card (inputs: value, label, trend, valueColor)
+- `<cg-progress-bar>` — Crimson gradient progress bar (inputs: percentage, label, showLabel, size)
+- `<cg-badge>` — Status badge with optional dot (inputs: text, variant, dot)
+- `<cg-bottom-nav>` — Bottom tab navigation (inputs: tabs[]{label, route, icon})
+- `<cg-sidebar>` — Collapsible sidebar for trainer (inputs: items, userName, userInitials; outputs: create)
+- `<cg-segmented-control>` — Pill-style tab switcher (inputs: options, selected; outputs: selectedChange)
+- `<cg-hero-card>` — Today's workout hero card (inputs: routineName, dayName, programName, week, totalWeeks, streak)
+- `<cg-set-row>` — Set logging row with inputs (inputs: setNumber, setType, state, kg, reps, rpe)
+- `<cg-rest-timer>` — Countdown rest timer (inputs: durationSeconds, active; outputs: skip, finished)
+- `<cg-day-cell>` — Calendar day cell with states (inputs: day, state; outputs: select)
+- `<cg-wizard-stepper>` — Wizard step indicator (inputs: currentStep, totalSteps)
+- `<cg-student-card>` — Student card with avatar and status (inputs: name, initials, status, statusText)
+- `<cg-timeline>` — Vertical timeline with colored dots (inputs: items[]{color, title, subtitle})
 
 Full design context: `celvogym-web/.impeccable.md`
 
 ## Frontend Conventions (Angular)
 
+- **Lucide icons in standalone components**: Use `LucideAngularModule` in imports + `{ provide: LUCIDE_ICONS, multi: true, useValue: new LucideIconProvider(icons) }` in providers. `LucideAngularModule.pick()` returns ModuleWithProviders which Angular 21 rejects in standalone imports.
+- **Lucide icon names**: Use kebab-case (`clipboard-list`, `trending-up`). Note: "home" was renamed to `house` in Lucide.
+- **Layout shells**: `StudentShell` (bottom nav, 4 tabs) and `TrainerShell` (sidebar desktop / bottom nav mobile). Workout mode routes are OUTSIDE the shell (no bottom nav).
+- **OnPush + signals**: Method calls in OnPush templates don't re-evaluate when signals change. Use `computed()` for derived state, not template methods.
+- **Subscription cleanup**: Use `takeUntilDestroyed(inject(DestroyRef))` from `@angular/core/rxjs-interop` for subscriptions in `ngOnInit`.
+- **Shared utils**: `shared/utils/display.ts` (GRADIENT_PAIRS, getInitials), `shared/utils/format-date.ts` (relativeDate, formatSpanishDate, parseLocalDate)
 - **Tailwind 4 fonts**: Use `font-display` class (not `font-[var(--font-display)]`) — registered in `@theme`
 - **Typography utilities**: `.text-display`, `.text-h1`, `.text-h2`, `.text-h3`, `.text-overline` defined in `styles.css`
 - **Set type colors**: `--color-set-warmup`, `--color-set-effective`, `--color-set-dropset`, `--color-set-restpause`, `--color-set-amrap` tokens in `@theme`
@@ -92,3 +111,12 @@ Full design context: `celvogym-web/.impeccable.md`
 - **Select styling**: Use `.select-styled` class for dark-themed native selects (defined in `styles.css`)
 - **Shared helpers**: `ProgramWeekHelper.CalculateCurrentWeek()` for week progress calculation — do not inline
 - **Brand assets**: SVG logos in `celvogym-web/public/`, brand guidelines in `celvogym-web/brand-guidelines.md`
+
+## Gotchas
+
+- **Redis password in dev**: Docker compose Redis uses `password=dev`. Both `appsettings.json` (Gym API) and CelvoGuard need `"Redis": "localhost:6379,password=dev"`.
+- **CelvoGuard app slug**: Frontend sends `X-App-Slug: 'celvogym'` — the app in CelvoGuard DB must have slug `celvogym` (not `gym`).
+- **SetLog race condition**: Concurrent `POST /public/my/sets/update` calls can hit unique constraint `ix_set_logs_session_id_set_id`. Handler catches `DbUpdateException` and retries as update.
+- **DateTimeOffset UTC in queries**: PostgreSQL requires offset 0 for timestamptz comparisons. Use `new DateTimeOffset(date, TimeSpan.Zero)`, not `DateTimeOffset.UtcNow.AddDays()`.
+- **TrainerContextMiddleware + onboarding**: Unapproved trainers can access `/api/v1/onboarding/*` endpoints — middleware allows this via `isOnboarding` check.
+- **Trainer onboarding flow**: Register → /onboarding/setup (public name + bio) → /onboarding/pending (await approval) → /trainer (after admin approves).

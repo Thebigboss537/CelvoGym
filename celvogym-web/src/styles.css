@@ -38,6 +38,17 @@
   --color-set-restpause: #22D3EE;
   --color-set-amrap: #F97316;
 
+  /* Sidebar & active state */
+  --color-bg-sidebar: #111113;
+  --color-border-active: rgba(230, 38, 57, 0.3);
+  --color-bg-active: rgba(230, 38, 57, 0.08);
+
+  /* Student status indicators */
+  --color-status-training: #22C55E;
+  --color-status-resting: #71717A;
+  --color-status-warning: #F59E0B;
+  --color-status-no-program: #A78BFA;
+
   /* Typography — font families registered for Tailwind font-display / font-body */
   --font-display: 'Syne', system-ui, sans-serif;
   --font-body: 'Outfit', system-ui, sans-serif;
