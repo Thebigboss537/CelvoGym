@@ -1,10 +1,10 @@
-# CelvoGym — Resumen para Investigación de Modelo de Negocio
+# KONDIX — Resumen para Investigación de Modelo de Negocio
 
-## Qué es CelvoGym
+## Qué es KONDIX
 
 Plataforma web para entrenadores personales que les permite crear rutinas de entrenamiento y asignarlas a sus alumnos. Los alumnos siguen las rutinas desde su celular, registran su progreso serie por serie, y se comunican con su entrenador a través de comentarios.
 
-**Dominio**: gym.celvo.dev
+**Dominio**: kondix.celvo.dev
 **Parte del ecosistema Celvo** (auth centralizada via CelvoGuard).
 
 ---
@@ -129,13 +129,13 @@ Alumno
 
 ## Contexto del Ecosistema Celvo
 
-CelvoGym es la 4ª app del ecosistema:
+KONDIX es la 4ª app del ecosistema:
 
 | App | Propósito | Estado |
 |-----|-----------|--------|
 | CelvoGuard | Auth centralizada | Producción |
 | Fidly | Tarjetas de fidelización SaaS | Producción |
 | CelvoView | Portal inmobiliario 360° | Producción |
-| **CelvoGym** | **Gestión de rutinas gym** | **MVP en desarrollo** |
+| **KONDIX** | **Gestión de rutinas gym** | **MVP en desarrollo** |
 
-Todas comparten infraestructura (PostgreSQL, Redis, MinIO, Caddy) y auth (CelvoGuard). Un usuario de Fidly que también entrena podría usar CelvoGym con la misma cuenta.
+Todas comparten infraestructura (PostgreSQL, Redis, MinIO, Caddy) y auth (CelvoGuard). Un usuario de Fidly que también entrena podría usar KONDIX con la misma cuenta.

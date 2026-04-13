@@ -1,4 +1,4 @@
-# CelvoGym Brand Guidelines
+# KONDIX Brand Guidelines
 
 ## Brand Essence
 
@@ -16,13 +16,12 @@ The mark combines an **upward chevron** (progress, growth) with a **horizontal b
 | Variant | Use |
 |---------|-----|
 | **Mark only** (`logo-mark.svg`) | Favicon, app icon, small spaces |
-| **Mark + wordmark** (`<cg-logo>`) | Headers, navigation, marketing |
-| **Wordmark only** (`<cg-logo [showText]="true" [size]="0">`) | Text-heavy contexts |
+| **Mark + wordmark** (`<kx-logo>`) | Headers, navigation, marketing |
+| **Wordmark only** (`<kx-logo [showText]="true" [size]="0">`) | Text-heavy contexts |
 
 ### Wordmark Treatment
-- "Celvo" in **text color** (Syne Bold 700)
-- "Gym" in **primary red** (Syne Bold 700)
-- This subtly references the Celvo ecosystem while giving Gym its own identity
+- "KONDIX" in **primary red** (Syne Bold 700)
+- This gives KONDIX its own strong visual identity
 
 ### Usage Rules
 - Minimum size: 24px (mark), 120px (full logo)
@@ -35,7 +34,7 @@ The mark combines an **upward chevron** (progress, growth) with a **horizontal b
 
 ## Color Palette
 
-### Primary — CelvoGym Crimson
+### Primary — KONDIX Crimson
 
 A warm, vibrant red that conveys energy and determination. Shifted from generic Tailwind red-600 to a distinctive owned hue (HSL 354, 79%, 53%).
 
@@ -123,7 +122,7 @@ Subtle blue undertones elevate the dark theme from "dark mode" to "premium dark.
 - 1500+ icons covering all UI needs
 - Consistent stroke width across all icons
 
-### Key Icons for CelvoGym
+### Key Icons for KONDIX
 
 | Context | Icon | Name |
 |---------|------|------|
@@ -205,5 +204,5 @@ public/
 └── logo-mark-white.svg  # Mark only (white for dark bg)
 
 src/app/shared/ui/
-└── logo.ts              # <cg-logo> Angular component
+└── logo.ts              # <kx-logo> Angular component
 ```

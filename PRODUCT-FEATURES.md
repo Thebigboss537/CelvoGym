@@ -1,4 +1,4 @@
-# CelvoGym — Inventario Completo de Producto
+# KONDIX — Inventario Completo de Producto
 
 > Documento base para análisis de modelo de negocio, competencia y roadmap de features.
 > Actualizado: 2026-04-07
@@ -7,9 +7,9 @@
 
 ## 1. Resumen del Producto
 
-**CelvoGym** es una plataforma SaaS de gestión de entrenamiento personal que conecta entrenadores con sus alumnos. Los entrenadores diseñan rutinas, las organizan en programas y las asignan a alumnos. Los alumnos ejecutan sus entrenamientos, registran progreso y se comunican con su entrenador.
+**KONDIX** es una plataforma SaaS de gestión de entrenamiento personal que conecta entrenadores con sus alumnos. Los entrenadores diseñan rutinas, las organizan en programas y las asignan a alumnos. Los alumnos ejecutan sus entrenamientos, registran progreso y se comunican con su entrenador.
 
-- **Dominio**: gym.celvo.dev
+- **Dominio**: kondix.celvo.dev
 - **Stack**: .NET 10 (API) + Angular 21 (SPA) + PostgreSQL + Redis + MinIO
 - **Auth**: CelvoGuard (sistema propio de auth multi-tenant)
 - **Modelo de tenancy**: 1 entrenador = 1 tenant
@@ -20,8 +20,8 @@
 
 | Rol | Permiso | Descripción |
 |-----|---------|-------------|
-| **Entrenador** (Operator) | `gym:manage` | Gestión completa: rutinas, programas, alumnos, analytics |
-| **Alumno** (EndUser) | `gym:workout` | Ejecutar entrenamientos, registrar progreso, comentar |
+| **Entrenador** (Operator) | `kondix:manage` | Gestión completa: rutinas, programas, alumnos, analytics |
+| **Alumno** (EndUser) | `kondix:workout` | Ejecutar entrenamientos, registrar progreso, comentar |
 
 - Entrenadores se registran y requieren **aprobación de admin** (`IsApproved`)
 - Alumnos solo acceden por **invitación** del entrenador (email o QR)
@@ -170,7 +170,7 @@
 
 ### Entrenador
 1. Registro (nombre, email, contraseña) → CelvoGuard
-2. Setup inicial (displayName, bio) → CelvoGym
+2. Setup inicial (displayName, bio) → KONDIX
 3. Estado "pendiente de aprobación"
 4. Admin aprueba → acceso completo
 

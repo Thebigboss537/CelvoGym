@@ -1,7 +1,7 @@
-# Reporte E2E Testing - CelvoGym
+# Reporte E2E Testing - KONDIX
 
 **Fecha:** 5-6 de abril de 2026  
-**Entorno:** Produccion (`gym.celvo.dev`)  
+**Entorno:** Produccion (`kondix.celvo.dev`)  
 **Metodo:** Playwright MCP (navegacion manual automatizada)  
 **Cuentas de prueba:**
 - Trainer: `coachtest.e2e@celvo.dev` / `TestE2E2026!`
@@ -100,7 +100,7 @@ Tras las correcciones aplicadas en el commit `40fe9f5`, se re-testearon los 4 bu
 2. Permanece inactivo por ~15+ minutos (JWT expira)
 3. Intenta hacer una accion (ej: invitar alumno)
 4. El interceptor detecta 401, intenta refresh
-5. El refresh funciona pero la cookie `cg-csrf-celvogym` se desincroniza
+5. El refresh funciona pero la cookie `cg-csrf-kondix` se desincroniza
 6. La request reintentada falla con 403 "CSRF validation failed"
 
 **Resultado:** El usuario ve "CSRF validation failed" y debe hacer logout/login manualmente  
@@ -329,39 +329,39 @@ POST /students/invite => [403]
 | guard.celvo.dev/api/v1/auth/me | GET | 200 | OK |
 | guard.celvo.dev/api/v1/enduser/login | POST | 200 | OK |
 | guard.celvo.dev/api/v1/enduser/register | POST | 200 | OK |
-| gym.celvo.dev/api/v1/onboarding/trainer/setup | POST | 201 | OK |
-| gym.celvo.dev/api/v1/dashboard | GET | 200 | OK |
-| gym.celvo.dev/api/v1/routines | GET/POST | 200/201 | OK |
-| gym.celvo.dev/api/v1/routines/{id} | GET/PUT/DELETE | 200/204 | OK |
-| gym.celvo.dev/api/v1/routines/{id}/duplicate | POST | 201 | OK |
-| gym.celvo.dev/api/v1/programs | GET/POST | 200/201 | OK |
-| gym.celvo.dev/api/v1/programs/{id} | GET | 200 | OK |
-| gym.celvo.dev/api/v1/program-assignments | GET | 200 | OK |
-| gym.celvo.dev/api/v1/program-assignments/bulk | POST | 200 | OK |
-| gym.celvo.dev/api/v1/catalog | GET/POST | 200/201 | OK |
-| gym.celvo.dev/api/v1/catalog?q={query} | GET | 200 | OK |
-| gym.celvo.dev/api/v1/catalog/{id} | PUT/DELETE | 200/204 | OK |
-| gym.celvo.dev/api/v1/students | GET | 200 | OK |
-| gym.celvo.dev/api/v1/students/invite | POST | 201 | OK |
-| gym.celvo.dev/api/v1/students/qr | GET | 200 | OK |
-| gym.celvo.dev/api/v1/students/{id}/notes | GET/POST | 200/201 | OK |
-| gym.celvo.dev/api/v1/students/{id}/notes/{id} | PUT | 200 | OK |
-| gym.celvo.dev/api/v1/trainer/me | GET | 200 | OK |
-| gym.celvo.dev/api/v1/analytics/student/{id}/overview | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/invite/{token} | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/invite/{token}/accept | POST | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/routines | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/routines/{id} | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/calendar | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/sessions/active | GET | 204 | OK |
-| gym.celvo.dev/api/v1/public/my/sessions/start | POST | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/sessions/{id}/complete | POST | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/sets/toggle | POST | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/next-workout | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/records | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/records/detect | GET | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/comments | GET/POST | 200 | OK |
-| gym.celvo.dev/api/v1/public/my/body-metrics | GET/POST | 200/201 | OK |
+| kondix.celvo.dev/api/v1/onboarding/trainer/setup | POST | 201 | OK |
+| kondix.celvo.dev/api/v1/dashboard | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/routines | GET/POST | 200/201 | OK |
+| kondix.celvo.dev/api/v1/routines/{id} | GET/PUT/DELETE | 200/204 | OK |
+| kondix.celvo.dev/api/v1/routines/{id}/duplicate | POST | 201 | OK |
+| kondix.celvo.dev/api/v1/programs | GET/POST | 200/201 | OK |
+| kondix.celvo.dev/api/v1/programs/{id} | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/program-assignments | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/program-assignments/bulk | POST | 200 | OK |
+| kondix.celvo.dev/api/v1/catalog | GET/POST | 200/201 | OK |
+| kondix.celvo.dev/api/v1/catalog?q={query} | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/catalog/{id} | PUT/DELETE | 200/204 | OK |
+| kondix.celvo.dev/api/v1/students | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/students/invite | POST | 201 | OK |
+| kondix.celvo.dev/api/v1/students/qr | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/students/{id}/notes | GET/POST | 200/201 | OK |
+| kondix.celvo.dev/api/v1/students/{id}/notes/{id} | PUT | 200 | OK |
+| kondix.celvo.dev/api/v1/trainer/me | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/analytics/student/{id}/overview | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/invite/{token} | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/invite/{token}/accept | POST | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/routines | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/routines/{id} | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/calendar | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/sessions/active | GET | 204 | OK |
+| kondix.celvo.dev/api/v1/public/my/sessions/start | POST | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/sessions/{id}/complete | POST | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/sets/toggle | POST | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/next-workout | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/records | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/records/detect | GET | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/comments | GET/POST | 200 | OK |
+| kondix.celvo.dev/api/v1/public/my/body-metrics | GET/POST | 200/201 | OK |
 
 ---
 
@@ -372,10 +372,10 @@ POST /students/invite => [403]
 | Error | Causa | Bug relacionado |
 |-------|-------|-----------------|
 | `429 @ guard.celvo.dev/auth/login` (x2) | Rate limit por intentos rapidos post-registro | BUG-004 |
-| `401 @ gym.celvo.dev/dashboard` | Sesion JWT expirada (15min inactividad) | BUG-003 |
-| `401 @ gym.celvo.dev/students/invite` | Sesion expirada, intento de refresh | BUG-003 |
-| `403 @ gym.celvo.dev/students/invite` | CSRF desincronizado post-refresh | BUG-003 |
-| `404 @ gym.celvo.dev/public/invite/...` | Token con `/` rompe path | BUG-001 |
+| `401 @ kondix.celvo.dev/dashboard` | Sesion JWT expirada (15min inactividad) | BUG-003 |
+| `401 @ kondix.celvo.dev/students/invite` | Sesion expirada, intento de refresh | BUG-003 |
+| `403 @ kondix.celvo.dev/students/invite` | CSRF desincronizado post-refresh | BUG-003 |
+| `404 @ kondix.celvo.dev/public/invite/...` | Token con `/` rompe path | BUG-001 |
 
 ### Warnings DOM (8 totales, mismo tipo)
 
