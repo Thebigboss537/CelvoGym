@@ -36,10 +36,26 @@ export const AuthStore = signalStore(
       if (store.initialized()) return;
       patchState(store, { loading: true });
       try {
-        const res = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
+        let res = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
           credentials: 'include',
           headers: { 'X-App-Slug': 'celvogym' },
         });
+
+        // Access token may have expired — try refresh before giving up
+        if (res.status === 401) {
+          const refreshRes = await fetch(`${environment.guardUrl}/api/v1/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'X-App-Slug': 'celvogym' },
+          });
+          if (refreshRes.ok) {
+            res = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
+              credentials: 'include',
+              headers: { 'X-App-Slug': 'celvogym' },
+            });
+          }
+        }
+
         if (!res.ok) throw new Error();
         const user = await res.json() as AuthUser;
         patchState(store, { user, initialized: true, loading: false });
