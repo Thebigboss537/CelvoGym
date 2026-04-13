@@ -66,7 +66,8 @@ import { StudentDetail } from './student-detail';
             </svg>
             <input
               type="search"
-              [(ngModel)]="searchQuery"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
               name="search"
               class="w-full bg-bg-raised border border-border rounded-lg pl-8 pr-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary transition"
               placeholder="Buscar alumno..." />
@@ -89,7 +90,7 @@ import { StudentDetail } from './student-detail';
               </button>
             </cg-empty-state>
           } @else if (filteredStudents().length === 0) {
-            <p class="text-center text-text-muted text-sm pt-8">Sin resultados para "{{ searchQuery }}"</p>
+            <p class="text-center text-text-muted text-sm pt-8">Sin resultados para "{{ searchQuery() }}"</p>
           } @else {
             <div class="space-y-1.5">
               @for (item of filteredStudents(); track item.student.id; let i = $index) {
@@ -148,10 +149,10 @@ export class StudentList implements OnInit {
   inviting = signal(false);
   inviteError = signal('');
 
-  searchQuery = '';
+  searchQuery = signal('');
 
   filteredStudents = computed(() => {
-    const query = this.searchQuery.trim().toLowerCase();
+    const query = this.searchQuery().trim().toLowerCase();
     const all = this.enrichedStudents();
     if (!query) return all;
     return all.filter(s => s.student.displayName.toLowerCase().includes(query));

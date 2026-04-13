@@ -54,7 +54,9 @@ public sealed class UpdateSetDataHandler(ICelvoGymDbContext db)
             {
                 await db.SaveChangesAsync(cancellationToken);
             }
-            catch (DbUpdateException) when (!cancellationToken.IsCancellationRequested)
+            catch (DbUpdateException ex) when (
+                !cancellationToken.IsCancellationRequested &&
+                ex.InnerException?.Message.Contains("ix_set_logs_session_id_set_id") == true)
             {
                 // Race condition: concurrent request already created the log — retry as update.
                 log = await db.SetLogs
