@@ -1,4 +1,4 @@
-# CelvoGym — Deploy Checklist
+# KONDIX — Deploy Checklist
 
 Run these steps **once** before the first production deploy. Order matters.
 
@@ -27,7 +27,7 @@ bash setup/03-minio-bucket.sh
 Add to celvoguard-api environment in `docker-compose.prod.yml`:
 
 ```yaml
-Cors__AllowedOrigins__3: https://gym.celvo.dev
+Cors__AllowedOrigins__3: https://kondix.celvo.dev
 ```
 
 Then restart: `docker compose -f docker-compose.prod.yml restart celvoguard-api`
@@ -37,8 +37,8 @@ Then restart: `docker compose -f docker-compose.prod.yml restart celvoguard-api`
 Add these services:
 
 ```yaml
-  celvogym-api:
-    image: ghcr.io/thebigboss537/celvogym-api:${CELVOGYM_API_TAG:-latest}
+  kondix-api:
+    image: ghcr.io/thebigboss537/kondix-api:${KONDIX_API_TAG:-latest}
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
@@ -68,8 +68,8 @@ Add these services:
     networks:
       - celvo-net
 
-  celvogym-web:
-    image: ghcr.io/thebigboss537/celvogym-web:${CELVOGYM_WEB_TAG:-latest}
+  kondix-web:
+    image: ghcr.io/thebigboss537/kondix-web:${KONDIX_WEB_TAG:-latest}
     restart: unless-stopped
     expose:
       - "80"
@@ -86,13 +86,13 @@ Add these services:
 Add this block:
 
 ```caddyfile
-gym.celvo.dev {
+kondix.celvo.dev {
     handle /api/* {
-        reverse_proxy celvogym-api:8080
+        reverse_proxy kondix-api:8080
     }
 
     handle {
-        reverse_proxy celvogym-web:80
+        reverse_proxy kondix-web:80
     }
 
     header {
@@ -110,25 +110,25 @@ gym.celvo.dev {
 Add to `/opt/celvo/.env`:
 
 ```
-CELVOGYM_API_TAG=latest
-CELVOGYM_WEB_TAG=latest
+KONDIX_API_TAG=latest
+KONDIX_WEB_TAG=latest
 ```
 
 ## 8. Caddy depends_on
 
-Add `celvogym-api` to the caddy service `depends_on` list.
+Add `kondix-api` to the caddy service `depends_on` list.
 
 ## 9. Deploy
 
 ```bash
 cd /opt/celvo
-docker compose -f docker-compose.prod.yml pull celvogym-api celvogym-web
-docker compose -f docker-compose.prod.yml up -d celvogym-api celvogym-web
+docker compose -f docker-compose.prod.yml pull kondix-api kondix-web
+docker compose -f docker-compose.prod.yml up -d kondix-api kondix-web
 ```
 
 ## 10. Verify
 
 ```bash
-curl -sf https://gym.celvo.dev/api/v1/health
+curl -sf https://kondix.celvo.dev/api/v1/health
 # Expected: {"status":"healthy","timestamp":"..."}
 ```

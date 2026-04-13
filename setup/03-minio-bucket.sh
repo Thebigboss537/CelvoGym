@@ -4,7 +4,7 @@ set -e
 MINIO_URL="${MINIO_ENDPOINT:-http://localhost:9000}"
 ACCESS_KEY="${MINIO_ACCESS_KEY:-minioadmin}"
 SECRET_KEY="${MINIO_SECRET_KEY:-minioadmin}"
-BUCKET="celvogym-videos"
+BUCKET="kondix-videos"
 
 docker run --rm \
   --entrypoint mc \
