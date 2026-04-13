@@ -7,7 +7,7 @@ import { KxLogo } from '../../../shared/ui/logo';
 import { parseGuardError } from '../../../shared/utils/guard-errors';
 import type { TrainerStatusDto } from '../../../shared/models';
 
-const TENANT_ID_KEY = 'celvogym_tenant_id';
+const TENANT_ID_KEY = 'kondix_tenant_id';
 
 @Component({
   selector: 'app-login',
@@ -125,7 +125,7 @@ export class Login implements OnInit {
   private async loginOperator() {
     const res = await fetch(`${environment.guardUrl}/api/v1/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
+      headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'kondix' },
       credentials: 'include',
       body: JSON.stringify({ email: this.email, password: this.password }),
     });
@@ -161,7 +161,7 @@ export class Login implements OnInit {
   private async loginEndUser() {
     const res = await fetch(`${environment.guardUrl}/api/v1/enduser/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
+      headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'kondix' },
       credentials: 'include',
       body: JSON.stringify({
         email: this.email,
@@ -181,7 +181,7 @@ export class Login implements OnInit {
   private async fetchAndSetUser() {
     const meRes = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
       credentials: 'include',
-      headers: { 'X-App-Slug': 'celvogym' },
+      headers: { 'X-App-Slug': 'kondix' },
     });
     if (meRes.ok) {
       const user = await meRes.json();

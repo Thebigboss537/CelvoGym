@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://gym.celvo.dev/api/v1',
+  apiUrl: 'https://kondix.celvo.dev/api/v1',
   guardUrl: 'https://guard.celvo.dev',
 };

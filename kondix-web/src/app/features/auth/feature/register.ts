@@ -142,7 +142,7 @@ export class Register {
       // 1. Register in CelvoGuard (also sets auth cookies)
       const res = await fetch(`${environment.guardUrl}/api/v1/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
+        headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'kondix' },
         credentials: 'include',
         body: JSON.stringify({
           email: this.email,
@@ -157,7 +157,7 @@ export class Register {
 
       // 2. Load user into AuthStore (needed for guards and onboarding)
       const meRes = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
-        headers: { 'X-App-Slug': 'celvogym' },
+        headers: { 'X-App-Slug': 'kondix' },
         credentials: 'include',
       });
       if (meRes.ok) {

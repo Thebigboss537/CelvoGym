@@ -19,7 +19,7 @@ import type { TrainerStatusDto } from '../../../shared/models';
           <kx-logo [size]="36" class="flex justify-center" />
           <h1 class="text-h2 mt-3 text-text">Completa tu perfil</h1>
           <p class="text-text-secondary text-sm mt-1">
-            Configura cómo te verán tus alumnos en CelvoGym.
+            Configura cómo te verán tus alumnos en KONDIX.
           </p>
         </div>
 

@@ -147,7 +147,7 @@ export class AcceptInvite implements OnInit {
       // Register as end-user in CelvoGuard
       const res = await fetch(`${environment.guardUrl}/api/v1/enduser/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'celvogym' },
+        headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'kondix' },
         credentials: 'include',
         body: JSON.stringify({
           email: this.invitation()!.email,
@@ -163,7 +163,7 @@ export class AcceptInvite implements OnInit {
 
       const userData = await res.json();
 
-      // Accept invitation in CelvoGym API
+      // Accept invitation in KONDIX API
       await firstValueFrom(this.api.post(`/public/invite/${this.token}/accept`, {
         celvoGuardUserId: userData.user.id,
         displayName: this.displayName,

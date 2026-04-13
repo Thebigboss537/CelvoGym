@@ -38,7 +38,7 @@ export const AuthStore = signalStore(
       try {
         let res = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
           credentials: 'include',
-          headers: { 'X-App-Slug': 'celvogym' },
+          headers: { 'X-App-Slug': 'kondix' },
         });
 
         // Access token may have expired — try refresh before giving up
@@ -46,12 +46,12 @@ export const AuthStore = signalStore(
           const refreshRes = await fetch(`${environment.guardUrl}/api/v1/auth/refresh`, {
             method: 'POST',
             credentials: 'include',
-            headers: { 'X-App-Slug': 'celvogym' },
+            headers: { 'X-App-Slug': 'kondix' },
           });
           if (refreshRes.ok) {
             res = await fetch(`${environment.guardUrl}/api/v1/auth/me`, {
               credentials: 'include',
-              headers: { 'X-App-Slug': 'celvogym' },
+              headers: { 'X-App-Slug': 'kondix' },
             });
           }
         }

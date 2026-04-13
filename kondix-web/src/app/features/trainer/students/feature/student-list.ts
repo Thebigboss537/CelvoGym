@@ -229,7 +229,7 @@ export class StudentList implements OnInit {
   copyAccessLink() {
     const tenantId = this.authStore.user()?.tenantId;
     if (!tenantId) return;
-    const baseUrl = environment.production ? 'https://gym.celvo.dev' : 'http://localhost:4200';
+    const baseUrl = environment.production ? 'https://kondix.celvo.dev' : 'http://localhost:4200';
     const link = `${baseUrl}/auth/login?t=${tenantId}`;
     navigator.clipboard.writeText(link).then(() => {
       this.linkCopied.set(true);

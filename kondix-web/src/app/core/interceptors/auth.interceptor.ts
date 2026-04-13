@@ -13,7 +13,7 @@ async function tryRefresh(): Promise<boolean> {
     const res = await fetch(`${environment.guardUrl}/api/v1/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'X-App-Slug': 'celvogym' },
+      headers: { 'X-App-Slug': 'kondix' },
     });
     return res.ok;
   } catch {
