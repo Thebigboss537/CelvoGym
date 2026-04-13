@@ -1,0 +1,36 @@
+name: Kondix CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet nuget update source github --username thebigboss537 --password ${{ secrets.GHCR_TOKEN }} --store-password-in-clear-text
+      - run: dotnet restore Kondix.slnx
+      - run: dotnet build Kondix.slnx --no-restore -c Release
+      - run: dotnet test Kondix.slnx --no-build -c Release
+        if: hashFiles('tests/**/*.csproj') != ''
+
+  build-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: kondix-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: kondix-web/package-lock.json
+      - run: npm ci
+      - run: npx ng build --configuration=production
