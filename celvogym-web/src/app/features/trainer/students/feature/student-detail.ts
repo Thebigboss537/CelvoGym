@@ -5,7 +5,10 @@ import {
   StudentDto,
   StudentOverviewDto,
   ProgramAssignmentDto,
+  ProgramListDto,
 } from '../../../../shared/models';
+import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../../shared/ui/toast';
 import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgStatCard } from '../../../../shared/ui/stat-card';
 import { CgBadge } from '../../../../shared/ui/badge';
@@ -18,7 +21,7 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 @Component({
   selector: 'app-student-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CgSpinner, CgStatCard, CgBadge, CgProgressBar, CgTimeline, CgEmptyState],
+  imports: [RouterLink, FormsModule, CgSpinner, CgStatCard, CgBadge, CgProgressBar, CgTimeline, CgEmptyState],
   template: `
     <div class="animate-fade-up h-full overflow-y-auto">
       <!-- Mobile back link (hidden on desktop when used as inline panel) -->
@@ -128,7 +131,66 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
           } @else {
             <div class="bg-card border border-border rounded-2xl p-4">
               <p class="text-overline text-text-secondary mb-1">PROGRAMA ACTUAL</p>
-              <p class="text-text-muted text-sm">Sin programa asignado</p>
+              @if (showAssignForm()) {
+                <div class="space-y-3 mt-2">
+                  <div>
+                    <label class="block text-xs text-text-secondary mb-1">Programa</label>
+                    <select
+                      [ngModel]="selectedProgramId()"
+                      (ngModelChange)="selectedProgramId.set($event)"
+                      class="w-full bg-bg-raised border border-border rounded-lg px-3 py-2 text-sm text-text focus:outline-none focus:border-primary select-styled">
+                      <option value="" disabled>Seleccionar programa</option>
+                      @for (p of availablePrograms(); track p.id) {
+                        <option [value]="p.id">{{ p.name }} ({{ p.durationWeeks }} sem)</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-text-secondary mb-1">Modo</label>
+                    <div class="flex gap-2">
+                      <button type="button" (click)="assignMode.set('Rotation')"
+                        class="flex-1 py-2 rounded-lg text-xs font-semibold transition"
+                        [class]="assignMode() === 'Rotation' ? 'bg-primary/10 text-primary border border-primary/30' : 'bg-bg-raised text-text-muted border border-border'">
+                        Rotación
+                      </button>
+                      <button type="button" (click)="assignMode.set('Fixed')"
+                        class="flex-1 py-2 rounded-lg text-xs font-semibold transition"
+                        [class]="assignMode() === 'Fixed' ? 'bg-primary/10 text-primary border border-primary/30' : 'bg-bg-raised text-text-muted border border-border'">
+                        Fijo
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-text-secondary mb-1">Días de entrenamiento</label>
+                    <div class="flex gap-1">
+                      @for (d of weekDays; track d.value) {
+                        <button type="button" (click)="toggleDay(d.value)"
+                          class="w-9 h-9 rounded-lg text-[10px] font-semibold transition"
+                          [class]="assignDays().includes(d.value) ? 'bg-primary/10 text-primary border border-primary/30' : 'bg-bg-raised text-text-muted border border-border'">
+                          {{ d.label }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+                  <div class="flex gap-2 pt-1">
+                    <button type="button" (click)="showAssignForm.set(false)"
+                      class="flex-1 py-2 bg-bg-raised border border-border text-text-secondary text-xs rounded-lg">
+                      Cancelar
+                    </button>
+                    <button type="button" (click)="assignProgram()"
+                      [disabled]="assigning() || !selectedProgramId() || assignDays().length === 0"
+                      class="flex-1 py-2 bg-primary text-white text-xs font-semibold rounded-lg disabled:opacity-50 press">
+                      @if (assigning()) { Asignando... } @else { Asignar }
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <p class="text-text-muted text-sm mb-3">Sin programa asignado</p>
+                <button type="button" (click)="openAssignForm()"
+                  class="w-full py-2 bg-primary/10 text-primary text-sm font-semibold rounded-lg border border-primary/20 hover:bg-primary/15 transition press">
+                  Asignar programa
+                </button>
+              }
             </div>
           }
         </div>
@@ -148,6 +210,7 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 export class StudentDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private api = inject(ApiService);
+  private toast = inject(ToastService);
 
   /** When used inline from student-list on desktop, pass the studentId as input.
    *  When used as a standalone route, it falls back to reading from route params. */
@@ -166,6 +229,20 @@ export class StudentDetail implements OnInit {
   activeAssignment = computed(() =>
     this.assignments().find(a => a.status === 'Active') ?? null
   );
+
+  // Assignment form state
+  showAssignForm = signal(false);
+  availablePrograms = signal<ProgramListDto[]>([]);
+  selectedProgramId = signal('');
+  assignMode = signal<'Rotation' | 'Fixed'>('Rotation');
+  assignDays = signal<number[]>([]);
+  assigning = signal(false);
+
+  weekDays = [
+    { label: 'LUN', value: 1 }, { label: 'MAR', value: 2 }, { label: 'MIÉ', value: 3 },
+    { label: 'JUE', value: 4 }, { label: 'VIE', value: 5 }, { label: 'SÁB', value: 6 },
+    { label: 'DOM', value: 0 },
+  ];
 
   weekProgress = computed(() => {
     const a = this.activeAssignment();
@@ -254,6 +331,49 @@ export class StudentDetail implements OnInit {
     // Assignments
     this.api.get<ProgramAssignmentDto[]>(`/program-assignments?studentId=${id}`).subscribe({
       next: (data) => this.assignments.set(data),
+    });
+  }
+
+  openAssignForm(): void {
+    this.api.get<ProgramListDto[]>('/programs').subscribe({
+      next: (programs) => {
+        this.availablePrograms.set(programs);
+        this.selectedProgramId.set('');
+        this.assignMode.set('Rotation');
+        this.assignDays.set([]);
+        this.showAssignForm.set(true);
+      },
+    });
+  }
+
+  toggleDay(day: number): void {
+    this.assignDays.update(days =>
+      days.includes(day) ? days.filter(d => d !== day) : [...days, day]
+    );
+  }
+
+  assignProgram(): void {
+    const studentId = this.resolvedId();
+    const programId = this.selectedProgramId();
+    if (!studentId || !programId) return;
+
+    this.assigning.set(true);
+    this.api.post<ProgramAssignmentDto>('/program-assignments', {
+      programId,
+      studentId,
+      mode: this.assignMode(),
+      trainingDays: this.assignDays(),
+    }).subscribe({
+      next: (assignment) => {
+        this.assignments.update(list => [...list, assignment]);
+        this.showAssignForm.set(false);
+        this.assigning.set(false);
+        this.toast.show('Programa asignado');
+      },
+      error: (err) => {
+        this.assigning.set(false);
+        this.toast.show(err.error?.error ?? 'Error al asignar programa', 'error');
+      },
     });
   }
 }
