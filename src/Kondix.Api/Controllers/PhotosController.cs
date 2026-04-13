@@ -12,7 +12,7 @@ namespace Kondix.Api.Controllers;
 [Route("api/v1/public/my/photos")]
 public class PhotosController(IStorageService storage, IMediator mediator) : ControllerBase
 {
-    private const string Bucket = "celvogym-photos";
+    private const string Bucket = "kondix-photos";
     private const long MaxSize = 10 * 1024 * 1024; // 10MB
     private static readonly string[] AllowedTypes = ["image/jpeg", "image/png", "image/webp"];
 

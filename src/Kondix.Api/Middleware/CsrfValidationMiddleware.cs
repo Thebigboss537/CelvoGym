@@ -8,7 +8,7 @@ public sealed class CsrfValidationMiddleware(RequestDelegate next)
     {
         if (MutatingMethods.Contains(context.Request.Method))
         {
-            var csrfCookie = context.Request.Cookies["cg-csrf-celvogym"];
+            var csrfCookie = context.Request.Cookies["cg-csrf-kondix"];
             var csrfHeader = context.Request.Headers["X-CSRF-Token"].FirstOrDefault();
 
             if (string.IsNullOrEmpty(csrfCookie) || string.IsNullOrEmpty(csrfHeader) || csrfCookie != csrfHeader)

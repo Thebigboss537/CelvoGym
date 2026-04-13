@@ -37,13 +37,13 @@ public sealed class InviteStudentHandler(IKondixDbContext db, IEmailService emai
 
         var trainer = await db.Trainers.FirstAsync(t => t.Id == request.TrainerId, cancellationToken);
         var encodedToken = Uri.EscapeDataString(token);
-        var inviteLink = $"https://gym.celvo.dev/invite?token={encodedToken}";
+        var inviteLink = $"https://kondix.celvo.dev/invite?token={encodedToken}";
 
         var html = $"""
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h2 style="color: #1a1a1a;">Te invitaron a entrenar</h2>
                 <p style="color: #333; font-size: 16px;">
-                    <strong>{trainer.DisplayName}</strong> te invit&oacute; a seguir tu rutina de entrenamiento en Kondix.
+                    <strong>{trainer.DisplayName}</strong> te invit&oacute; a seguir tu rutina de entrenamiento en KONDIX.
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="{inviteLink}"
@@ -57,7 +57,7 @@ public sealed class InviteStudentHandler(IKondixDbContext db, IEmailService emai
             </div>
             """;
 
-        await emailService.SendAsync(invitation.Email, "Te invitaron a entrenar en Kondix", html, cancellationToken);
+        await emailService.SendAsync(invitation.Email, "Te invitaron a entrenar en KONDIX", html, cancellationToken);
 
         return new StudentInvitationDto(invitation.Id, invitation.Email,
             invitation.FirstName, token, invitation.ExpiresAt,
