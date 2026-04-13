@@ -57,7 +57,7 @@ const ICON_MAP: Record<string, LucideIconData> = {
           <kx-logo [size]="28" [showText]="false" />
           <div class="hidden lg:flex flex-col min-w-0 overflow-hidden">
             <span class="font-display text-base font-bold leading-tight">
-              <span class="text-text">Celvo</span><span class="text-primary">Gym</span>
+              <span class="text-primary font-bold tracking-wider">KONDIX</span>
             </span>
             <span class="text-text-muted text-xs leading-tight truncate">Panel de entrenador</span>
           </div>

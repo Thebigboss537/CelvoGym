@@ -31,7 +31,7 @@ import { Component, input } from '@angular/core';
 
       @if (showText()) {
         <span class="font-display text-xl font-bold tracking-tight">
-          <span class="text-text">Celvo</span><span class="text-primary">Gym</span>
+          <span class="text-primary font-bold tracking-wider">KONDIX</span>
         </span>
       }
     </a>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* CelvoGym Crimson — warm, vibrant, owned (HSL 354, 79%, 53%) */
+  /* Kondix Crimson — warm, vibrant, owned (HSL 354, 79%, 53%) */
   --color-primary: #E62639;
   --color-primary-hover: #CF2233;
   --color-primary-active: #B31D2C;
