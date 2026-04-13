@@ -7,7 +7,9 @@ import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
 import { CgStudentCard } from '../../../../shared/ui/student-card';
 import { ToastService } from '../../../../shared/ui/toast';
+import { AuthStore } from '../../../../core/auth/auth.store';
 import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
+import { environment } from '../../../../../environments/environment';
 import { StudentDetail } from './student-detail';
 
 @Component({
@@ -55,6 +57,17 @@ import { StudentDetail } from './student-detail';
             </form>
           </div>
         }
+
+        <!-- Copy student access link -->
+        <div class="px-3 mb-2 shrink-0">
+          <button type="button" (click)="copyAccessLink()"
+            class="w-full flex items-center justify-center gap-2 py-2 bg-card border border-border rounded-lg text-xs text-text-secondary hover:text-text hover:border-primary/30 transition press">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+            </svg>
+            {{ linkCopied() ? '¡Link copiado!' : 'Copiar link de acceso para alumnos' }}
+          </button>
+        </div>
 
         <!-- Search -->
         <div class="px-3 mb-2 shrink-0">
@@ -137,6 +150,9 @@ export class StudentList implements OnInit {
   private api = inject(ApiService);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private authStore = inject(AuthStore);
+
+  linkCopied = signal(false);
 
   students = signal<StudentDto[]>([]);
   assignments = signal<ProgramAssignmentDto[]>([]);
@@ -208,6 +224,18 @@ export class StudentList implements OnInit {
     }
     // On desktop, show inline
     this.selectedStudentId.set(student.id);
+  }
+
+  copyAccessLink() {
+    const tenantId = this.authStore.user()?.tenantId;
+    if (!tenantId) return;
+    const baseUrl = environment.production ? 'https://gym.celvo.dev' : 'http://localhost:4200';
+    const link = `${baseUrl}/auth/login?t=${tenantId}`;
+    navigator.clipboard.writeText(link).then(() => {
+      this.linkCopied.set(true);
+      this.toast.show('Link copiado al portapapeles');
+      setTimeout(() => this.linkCopied.set(false), 3000);
+    });
   }
 
   invite() {
