@@ -1,18 +1,23 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { RoutineListDto } from '../../../../shared/models';
+import { CgBadge } from '../../../../shared/ui/badge';
 import { CgSpinner } from '../../../../shared/ui/spinner';
 import { CgEmptyState } from '../../../../shared/ui/empty-state';
-import { formatDateWithYear } from '../../../../shared/utils/format-date';
+import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
+import { ToastService } from '../../../../shared/ui/toast';
+import { relativeDate } from '../../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-routine-list',
-  imports: [RouterLink, CgSpinner, CgEmptyState],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, CgBadge, CgSpinner, CgEmptyState, CgConfirmDialog],
   template: `
     <div class="animate-fade-up">
+      <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="font-display text-2xl font-bold">Rutinas</h1>
+        <h1 class="font-display text-2xl font-extrabold">Rutinas</h1>
         <a
           routerLink="new"
           class="bg-primary hover:bg-primary-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition press"
@@ -28,7 +33,7 @@ import { formatDateWithYear } from '../../../../shared/utils/format-date';
         </div>
       } @else if (routines().length === 0) {
         <cg-empty-state
-          title="Aún no hay rutinas"
+          title="Sin rutinas"
           subtitle="Creá tu primera rutina para empezar">
           <a routerLink="new"
             class="inline-block mt-4 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-5 py-2 rounded-lg transition press">
@@ -36,70 +41,110 @@ import { formatDateWithYear } from '../../../../shared/utils/format-date';
           </a>
         </cg-empty-state>
       } @else {
-        <!-- Category filter -->
+        <!-- Category filter chips -->
         @if (categories().length > 0) {
           <div class="flex gap-1.5 mb-4 flex-wrap">
             <button (click)="filterCategory.set(null)"
-              class="text-xs px-2.5 py-1 rounded-full border transition"
-              [class]="!filterCategory() ? 'bg-primary text-white border-primary' : 'border-border text-text-muted hover:border-primary/40'">
+              class="text-xs px-3 py-1 rounded-full border transition"
+              [class]="!filterCategory()
+                ? 'bg-primary/10 text-primary border-primary/30'
+                : 'bg-card text-text-secondary border-border hover:border-border-light'">
               Todas
             </button>
             @for (cat of categories(); track cat) {
               <button (click)="filterCategory.set(cat)"
-                class="text-xs px-2.5 py-1 rounded-full border transition"
-                [class]="filterCategory() === cat ? 'bg-primary text-white border-primary' : 'border-border text-text-muted hover:border-primary/40'">
+                class="text-xs px-3 py-1 rounded-full border transition"
+                [class]="filterCategory() === cat
+                  ? 'bg-primary/10 text-primary border-primary/30'
+                  : 'bg-card text-text-secondary border-border hover:border-border-light'">
                 {{ cat }}
               </button>
             }
           </div>
         }
 
-        <div class="space-y-3 stagger">
+        <!-- Routine cards -->
+        <div class="flex flex-col gap-3 stagger">
           @for (routine of filtered(); track routine.id) {
-            <a
-              [routerLink]="routine.id"
-              class="block bg-card hover:bg-card-hover border border-border rounded-xl p-4 transition press"
+            <!-- Overlay to close menu on click-outside -->
+            @if (openMenuId() === routine.id) {
+              <div class="fixed inset-0 z-10" (click)="openMenuId.set(null)"></div>
+            }
+            <div
+              (click)="navigateTo(routine.id)"
+              class="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:bg-card-hover transition-colors"
             >
-              <div class="flex items-start justify-between">
-                <div>
-                  <h3 class="font-semibold text-text">{{ routine.name }}</h3>
-                  @if (routine.description) {
-                    <p class="text-text-secondary text-sm mt-0.5 line-clamp-1">{{ routine.description }}</p>
+              <!-- Top row -->
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2 flex-wrap min-w-0">
+                  <span class="font-semibold text-text truncate">{{ routine.name }}</span>
+                  @if (routine.category) {
+                    <cg-badge [text]="routine.category" variant="info" />
                   }
                 </div>
-                <span class="text-text-muted text-xs shrink-0 ml-3">{{ routine.dayCount }} días</span>
-              </div>
-              @if (routine.tags.length > 0) {
-                <div class="flex gap-1 mt-1.5 flex-wrap">
-                  @for (tag of routine.tags; track tag) {
-                    <span class="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">{{ tag }}</span>
+                <!-- Context menu -->
+                <div class="relative z-20 shrink-0">
+                  <button
+                    (click)="$event.stopPropagation(); toggleMenu(routine.id)"
+                    class="text-text-muted hover:text-text w-7 h-7 flex items-center justify-center rounded-lg hover:bg-bg-raised transition text-lg leading-none"
+                    aria-label="Más opciones"
+                  >⋯</button>
+                  @if (openMenuId() === routine.id) {
+                    <div class="absolute right-0 top-8 bg-card border border-border rounded-xl shadow-xl py-1 w-36 z-30"
+                      (click)="$event.stopPropagation()">
+                      <button
+                        (click)="openMenuId.set(null); navigateTo(routine.id + '/edit')"
+                        class="w-full text-left text-sm px-3 py-2 hover:bg-bg-raised text-text transition">
+                        Editar
+                      </button>
+                      <button
+                        (click)="openMenuId.set(null); duplicateRoutine(routine.id)"
+                        class="w-full text-left text-sm px-3 py-2 hover:bg-bg-raised text-text transition">
+                        Duplicar
+                      </button>
+                      <button
+                        (click)="openMenuId.set(null); requestDelete(routine.id)"
+                        class="w-full text-left text-sm px-3 py-2 hover:bg-bg-raised text-danger transition">
+                        Eliminar
+                      </button>
+                    </div>
                   }
                 </div>
-              }
-              <div class="flex items-center gap-3 mt-2 text-xs text-text-muted">
-                <span>{{ routine.exerciseCount }} ejercicios</span>
-                @if (routine.category) {
-                  <span>·</span>
-                  <span>{{ routine.category }}</span>
-                }
-                <span>·</span>
-                <span>{{ formatDateWithYear(routine.updatedAt) }}</span>
               </div>
-            </a>
+              <!-- Bottom row -->
+              <p class="text-xs text-text-secondary mt-2">
+                {{ routine.dayCount }} días · {{ routine.exerciseCount }} ejercicios · Editada {{ relativeDate(routine.updatedAt) }}
+              </p>
+            </div>
           }
         </div>
       }
     </div>
+
+    <!-- Delete confirm dialog -->
+    <cg-confirm-dialog
+      [open]="showDeleteDialog()"
+      title="Eliminar rutina"
+      message="Esta acción no se puede deshacer. ¿Estás seguro?"
+      confirmLabel="Eliminar"
+      variant="danger"
+      (confirmed)="confirmDelete()"
+      (cancelled)="showDeleteDialog.set(false)" />
   `,
 })
 export class RoutineList implements OnInit {
   private api = inject(ApiService);
-  formatDateWithYear = formatDateWithYear;
+  private router = inject(Router);
+  private toast = inject(ToastService);
+  relativeDate = relativeDate;
 
   routines = signal<RoutineListDto[]>([]);
   loading = signal(true);
   error = signal('');
   filterCategory = signal<string | null>(null);
+  openMenuId = signal<string | null>(null);
+  showDeleteDialog = signal(false);
+  private deleteTargetId = signal<string | null>(null);
 
   categories = computed(() => {
     const cats = new Set(this.routines().map(r => r.category).filter((c): c is string => !!c));
@@ -122,6 +167,46 @@ export class RoutineList implements OnInit {
     this.loadData();
   }
 
+  navigateTo(path: string) {
+    this.router.navigate(['/trainer/routines', path]);
+  }
+
+  toggleMenu(id: string) {
+    this.openMenuId.set(this.openMenuId() === id ? null : id);
+  }
+
+  duplicateRoutine(id: string) {
+    this.api.post<RoutineListDto>(`/routines/${id}/duplicate`, {}).subscribe({
+      next: () => {
+        this.toast.show('Rutina duplicada');
+        this.loadData();
+      },
+      error: (err) => {
+        this.toast.show(err.error?.error || 'No pudimos duplicar la rutina', 'error');
+      },
+    });
+  }
+
+  requestDelete(id: string) {
+    this.deleteTargetId.set(id);
+    this.showDeleteDialog.set(true);
+  }
+
+  confirmDelete() {
+    const id = this.deleteTargetId();
+    if (!id) return;
+    this.showDeleteDialog.set(false);
+    this.api.delete(`/routines/${id}`).subscribe({
+      next: () => {
+        this.toast.show('Rutina eliminada');
+        this.loadData();
+      },
+      error: (err) => {
+        this.toast.show(err.error?.error || 'No pudimos eliminar la rutina', 'error');
+      },
+    });
+  }
+
   private loadData() {
     this.api.get<RoutineListDto[]>('/routines').subscribe({
       next: (data) => {
@@ -134,5 +219,4 @@ export class RoutineList implements OnInit {
       },
     });
   }
-
 }
