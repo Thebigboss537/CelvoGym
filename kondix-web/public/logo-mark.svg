@@ -1,5 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <!-- CelvoGym "The Lift" mark: upward chevron (progress) + bar (strength) -->
-  <path d="M10 30 L24 14 L38 30" stroke="#E62639" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M10 38 L38 38" stroke="#E62639" stroke-width="4.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 60" fill="none">
+  <!-- KONDIX "Apex K" mark: geometric K with peak extension -->
+  <path d="M7 54V6" stroke="#E62639" stroke-width="6.5" stroke-linecap="round"/>
+  <path d="M7 32L33 6" stroke="#E62639" stroke-width="6.5" stroke-linecap="round"/>
+  <path d="M7 32L33 54" stroke="#E62639" stroke-width="6.5" stroke-linecap="round"/>
+  <path d="M33 6L43 0" stroke="#E62639" stroke-width="4.5" stroke-linecap="round" opacity="0.6"/>
 </svg>
