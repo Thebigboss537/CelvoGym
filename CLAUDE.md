@@ -1,4 +1,4 @@
-# CelvoGym
+# KONDIX
 
 Gym training management app — part of the Celvo ecosystem.
 
@@ -11,20 +11,20 @@ Trainers create workout routines, group them into programs, and assign programs 
 ## Architecture
 
 - **Backend**: .NET 10, Clean Architecture (Domain → Application → Infrastructure → Api)
-- **Frontend**: Angular SPA (`celvogym-web/`), Tailwind CSS, dark theme
+- **Frontend**: Angular SPA (`kondix-web/`), Tailwind CSS, dark theme
 - **Auth**: CelvoGuard (trainers = operators, students = end-users, both email+password)
 - **Database**: PostgreSQL schema `gym` in shared `celvo` database
-- **Domain**: `gym.celvo.dev`
+- **Domain**: `kondix.celvo.dev`
 
 ## Commands
 
 ```bash
 # Backend
-dotnet build CelvoGym.slnx
-dotnet run --project src/CelvoGym.Api
+dotnet build Kondix.slnx
+dotnet run --project src/Kondix.Api
 
 # Frontend
-cd celvogym-web && npm install && npx ng serve
+cd kondix-web && npm install && npx ng serve
 
 # Dev infrastructure
 docker compose up -d
@@ -44,7 +44,7 @@ docker compose up -d
 - **RotationIndex**: Tracks which routine is next in rotation mode, incremented on session complete
 - **Set types**: Warmup, Effective, DropSet, RestPause, AMRAP
 - **Exercise grouping**: Single, Superset, Triset, Circuit
-- **Videos**: YouTube embed or trainer upload (MinIO bucket `celvogym-videos`)
+- **Videos**: YouTube embed or trainer upload (MinIO bucket `kondix-videos`)
 - **Routine updates**: Full replace (delete old days/exercises, recreate)
 
 ## API Routes
@@ -57,7 +57,7 @@ docker compose up -d
 
 ### Brand Identity
 - **Logo:** "The Lift" — chevron (progress) + bar (strength), stroke-based SVG mark
-- **Primary color:** CelvoGym Crimson `#E62639` (HSL 354, 79%, 53%)
+- **Primary color:** KONDIX Crimson `#E62639` (HSL 354, 79%, 53%)
 - **Typography:** Syne (display/headings) + Outfit (body/UI) via Google Fonts
 - **Icons:** Lucide (outline, 1.5px stroke)
 - **Theme:** Dark only — blue-black premium (#09090B base)
@@ -70,29 +70,29 @@ docker compose up -d
 4. **Celebrate achievement** — glow, bounce, pulse for earned completions
 5. **Trust through consistency** — every element belongs to the same system
 
-### Reusable Components (`celvogym-web/src/app/shared/ui/`)
-- `<cg-logo>` — Logo mark + wordmark (inputs: size, showText, href)
-- `<cg-spinner>` — Loading spinner (inputs: size, containerClass)
-- `<cg-empty-state>` — Empty state with brand mark or Lucide icon (inputs: title, subtitle, icon)
-- `<cg-page-header>` — Page header with display font (inputs: title, subtitle, hasBack)
-- `<cg-avatar>` — Initial circle avatar with optional gradient (inputs: name, size, gradient)
-- `<cg-confirm-dialog>` — Modal confirmation replacing native confirm() (inputs: open, title, message, confirmLabel, variant)
-- `<cg-toast>` + `ToastService` — Global toast notifications (placed in app root)
-- `<cg-stat-card>` — Stat card (inputs: value, label, trend, valueColor)
-- `<cg-progress-bar>` — Crimson gradient progress bar (inputs: percentage, label, showLabel, size)
-- `<cg-badge>` — Status badge with optional dot (inputs: text, variant, dot)
-- `<cg-bottom-nav>` — Bottom tab navigation (inputs: tabs[]{label, route, icon})
-- `<cg-sidebar>` — Collapsible sidebar for trainer (inputs: items, userName, userInitials; outputs: create)
-- `<cg-segmented-control>` — Pill-style tab switcher (inputs: options, selected; outputs: selectedChange)
-- `<cg-hero-card>` — Today's workout hero card (inputs: routineName, dayName, programName, week, totalWeeks, streak)
-- `<cg-set-row>` — Set logging row with inputs (inputs: setNumber, setType, state, kg, reps, rpe)
-- `<cg-rest-timer>` — Countdown rest timer (inputs: durationSeconds, active; outputs: skip, finished)
-- `<cg-day-cell>` — Calendar day cell with states (inputs: day, state; outputs: select)
-- `<cg-wizard-stepper>` — Wizard step indicator (inputs: currentStep, totalSteps)
-- `<cg-student-card>` — Student card with avatar and status (inputs: name, initials, status, statusText)
-- `<cg-timeline>` — Vertical timeline with colored dots (inputs: items[]{color, title, subtitle})
+### Reusable Components (`kondix-web/src/app/shared/ui/`)
+- `<kx-logo>` — Logo mark + wordmark (inputs: size, showText, href)
+- `<kx-spinner>` — Loading spinner (inputs: size, containerClass)
+- `<kx-empty-state>` — Empty state with brand mark or Lucide icon (inputs: title, subtitle, icon)
+- `<kx-page-header>` — Page header with display font (inputs: title, subtitle, hasBack)
+- `<kx-avatar>` — Initial circle avatar with optional gradient (inputs: name, size, gradient)
+- `<kx-confirm-dialog>` — Modal confirmation replacing native confirm() (inputs: open, title, message, confirmLabel, variant)
+- `<kx-toast>` + `ToastService` — Global toast notifications (placed in app root)
+- `<kx-stat-card>` — Stat card (inputs: value, label, trend, valueColor)
+- `<kx-progress-bar>` — Crimson gradient progress bar (inputs: percentage, label, showLabel, size)
+- `<kx-badge>` — Status badge with optional dot (inputs: text, variant, dot)
+- `<kx-bottom-nav>` — Bottom tab navigation (inputs: tabs[]{label, route, icon})
+- `<kx-sidebar>` — Collapsible sidebar for trainer (inputs: items, userName, userInitials; outputs: create)
+- `<kx-segmented-control>` — Pill-style tab switcher (inputs: options, selected; outputs: selectedChange)
+- `<kx-hero-card>` — Today's workout hero card (inputs: routineName, dayName, programName, week, totalWeeks, streak)
+- `<kx-set-row>` — Set logging row with inputs (inputs: setNumber, setType, state, kg, reps, rpe)
+- `<kx-rest-timer>` — Countdown rest timer (inputs: durationSeconds, active; outputs: skip, finished)
+- `<kx-day-cell>` — Calendar day cell with states (inputs: day, state; outputs: select)
+- `<kx-wizard-stepper>` — Wizard step indicator (inputs: currentStep, totalSteps)
+- `<kx-student-card>` — Student card with avatar and status (inputs: name, initials, status, statusText)
+- `<kx-timeline>` — Vertical timeline with colored dots (inputs: items[]{color, title, subtitle})
 
-Full design context: `celvogym-web/.impeccable.md`
+Full design context: `kondix-web/.impeccable.md`
 
 ## Frontend Conventions (Angular)
 
@@ -110,12 +110,12 @@ Full design context: `celvogym-web/.impeccable.md`
 - **Hover token**: Use `hover:bg-primary-hover` (not `hover:bg-primary-dark`)
 - **Select styling**: Use `.select-styled` class for dark-themed native selects (defined in `styles.css`)
 - **Shared helpers**: `ProgramWeekHelper.CalculateCurrentWeek()` for week progress calculation — do not inline
-- **Brand assets**: SVG logos in `celvogym-web/public/`, brand guidelines in `celvogym-web/brand-guidelines.md`
+- **Brand assets**: SVG logos in `kondix-web/public/`, brand guidelines in `kondix-web/brand-guidelines.md`
 
 ## Gotchas
 
 - **Redis password in dev**: Docker compose Redis uses `password=dev`. Both `appsettings.json` (Gym API) and CelvoGuard need `"Redis": "localhost:6379,password=dev"`.
-- **CelvoGuard app slug**: Frontend sends `X-App-Slug: 'celvogym'` — the app in CelvoGuard DB must have slug `celvogym` (not `gym`).
+- **CelvoGuard app slug**: Frontend sends `X-App-Slug: 'kondix'` — the app in CelvoGuard DB must have slug `kondix` (not `gym`).
 - **SetLog race condition**: Concurrent `POST /public/my/sets/update` calls can hit unique constraint `ix_set_logs_session_id_set_id`. Handler catches `DbUpdateException` and retries as update.
 - **DateTimeOffset UTC in queries**: PostgreSQL requires offset 0 for timestamptz comparisons. Use `new DateTimeOffset(date, TimeSpan.Zero)`, not `DateTimeOffset.UtcNow.AddDays()`.
 - **TrainerContextMiddleware + onboarding**: Unapproved trainers can access `/api/v1/onboarding/*` endpoints — middleware allows this via `isOnboarding` check.
