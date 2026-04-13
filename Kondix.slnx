@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Kondix.Domain/Kondix.Domain.csproj" />
+    <Project Path="src/Kondix.Application/Kondix.Application.csproj" />
+    <Project Path="src/Kondix.Infrastructure/Kondix.Infrastructure.csproj" />
+    <Project Path="src/Kondix.Api/Kondix.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Kondix.ArchTests/Kondix.ArchTests.csproj" />
+    <Project Path="tests/Kondix.UnitTests/Kondix.UnitTests.csproj" />
+  </Folder>
+</Solution>
