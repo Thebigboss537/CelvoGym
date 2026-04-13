@@ -17,10 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CelvoGym.Domain\CelvoGym.Domain.csproj" />
-    <ProjectReference Include="..\..\src\CelvoGym.Application\CelvoGym.Application.csproj" />
-    <ProjectReference Include="..\..\src\CelvoGym.Infrastructure\CelvoGym.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\src\CelvoGym.Api\CelvoGym.Api.csproj" />
+    <ProjectReference Include="..\..\src\Kondix.Domain\Kondix.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Kondix.Application\Kondix.Application.csproj" />
+    <ProjectReference Include="..\..\src\Kondix.Infrastructure\Kondix.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Kondix.Api\Kondix.Api.csproj" />
   </ItemGroup>
 
 </Project>

@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CelvoGym.Application\CelvoGym.Application.csproj" />
-    <ProjectReference Include="..\CelvoGym.Infrastructure\CelvoGym.Infrastructure.csproj" />
+    <ProjectReference Include="..\Kondix.Application\Kondix.Application.csproj" />
+    <ProjectReference Include="..\Kondix.Infrastructure\Kondix.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

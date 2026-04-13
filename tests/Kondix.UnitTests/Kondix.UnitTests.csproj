@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\CelvoGym.Domain\CelvoGym.Domain.csproj" />
-    <ProjectReference Include="..\..\src\CelvoGym.Application\CelvoGym.Application.csproj" />
+    <ProjectReference Include="..\..\src\Kondix.Domain\Kondix.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Kondix.Application\Kondix.Application.csproj" />
   </ItemGroup>
 
 </Project>
