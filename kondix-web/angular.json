@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "celvogym-web": {
+    "kondix-web": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:class": {
@@ -88,10 +88,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "celvogym-web:build:production"
+              "buildTarget": "kondix-web:build:production"
             },
             "development": {
-              "buildTarget": "celvogym-web:build:development"
+              "buildTarget": "kondix-web:build:development"
             }
           },
           "defaultConfiguration": "development"
