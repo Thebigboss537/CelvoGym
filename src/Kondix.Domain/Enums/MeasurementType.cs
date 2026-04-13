@@ -1,4 +1,4 @@
-namespace CelvoGym.Domain.Enums;
+namespace Kondix.Domain.Enums;
 
 public enum MeasurementType
 {

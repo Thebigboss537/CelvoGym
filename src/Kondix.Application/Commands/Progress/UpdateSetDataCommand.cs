@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Progress;
+namespace Kondix.Application.Commands.Progress;
 
 public sealed record UpdateSetDataCommand(
     Guid StudentId,
@@ -15,7 +15,7 @@ public sealed record UpdateSetDataCommand(
     string? Reps,
     int? Rpe) : IRequest<SetLogDto>;
 
-public sealed class UpdateSetDataHandler(ICelvoGymDbContext db)
+public sealed class UpdateSetDataHandler(IKondixDbContext db)
     : IRequestHandler<UpdateSetDataCommand, SetLogDto>
 {
     public async Task<SetLogDto> Handle(UpdateSetDataCommand request, CancellationToken cancellationToken)

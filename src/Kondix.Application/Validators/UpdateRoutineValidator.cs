@@ -1,7 +1,7 @@
-using CelvoGym.Application.Commands.Routines;
+using Kondix.Application.Commands.Routines;
 using FluentValidation;
 
-namespace CelvoGym.Application.Validators;
+namespace Kondix.Application.Validators;
 
 public sealed class UpdateRoutineValidator : AbstractValidator<UpdateRoutineCommand>
 {

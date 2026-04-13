@@ -1,4 +1,4 @@
-namespace CelvoGym.Application.Common.Helpers;
+namespace Kondix.Application.Common.Helpers;
 
 public static class ProgramWeekHelper
 {

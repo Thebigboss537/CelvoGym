@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
+using Kondix.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Notes;
+namespace Kondix.Application.Commands.Notes;
 
 public sealed record DeleteNoteCommand(
     Guid NoteId,
     Guid TrainerId) : IRequest<Unit>;
 
-public sealed class DeleteNoteHandler(ICelvoGymDbContext db)
+public sealed class DeleteNoteHandler(IKondixDbContext db)
     : IRequestHandler<DeleteNoteCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)

@@ -1,13 +1,13 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.Notes;
-using CelvoGym.Application.Commands.Students;
-using CelvoGym.Application.Queries.Notes;
-using CelvoGym.Application.Queries.Students;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.Notes;
+using Kondix.Application.Commands.Students;
+using Kondix.Application.Queries.Notes;
+using Kondix.Application.Queries.Students;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using QRCoder;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/students")]

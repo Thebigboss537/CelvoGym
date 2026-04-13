@@ -1,16 +1,16 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.PersonalRecords;
+namespace Kondix.Application.Commands.PersonalRecords;
 
 public sealed record DetectNewPRsCommand(
     Guid StudentId,
     Guid SessionId) : IRequest<List<NewPrDto>>;
 
-public sealed class DetectNewPRsCommandHandler(ICelvoGymDbContext db)
+public sealed class DetectNewPRsCommandHandler(IKondixDbContext db)
     : IRequestHandler<DetectNewPRsCommand, List<NewPrDto>>
 {
     public async Task<List<NewPrDto>> Handle(DetectNewPRsCommand request, CancellationToken cancellationToken)

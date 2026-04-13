@@ -1,15 +1,15 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.Onboarding;
-using CelvoGym.Application.Common.Interfaces;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.Onboarding;
+using Kondix.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1")]
-public class TrainerController(IMediator mediator, ICelvoGymDbContext db) : ControllerBase
+public class TrainerController(IMediator mediator, IKondixDbContext db) : ControllerBase
 {
     [HttpPost("onboarding/trainer/setup")]
     public async Task<IActionResult> Setup([FromBody] SetupTrainerRequest request, CancellationToken ct)

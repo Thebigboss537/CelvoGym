@@ -1,12 +1,12 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Common.Interfaces;
+using Kondix.Api.Extensions;
+using Kondix.Application.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Api.Middleware;
+namespace Kondix.Api.Middleware;
 
 public sealed class TrainerContextMiddleware(RequestDelegate next)
 {
-    public async Task InvokeAsync(HttpContext context, ICelvoGymDbContext db)
+    public async Task InvokeAsync(HttpContext context, IKondixDbContext db)
     {
         var session = context.Items[ContextKeys.Session] as Dictionary<string, object>;
         if (session is null)

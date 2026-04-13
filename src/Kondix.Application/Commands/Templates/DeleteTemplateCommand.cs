@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
+using Kondix.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Templates;
+namespace Kondix.Application.Commands.Templates;
 
 public sealed record DeleteTemplateCommand(
     Guid TemplateId,
     Guid TrainerId) : IRequest<Unit>;
 
-public sealed class DeleteTemplateHandler(ICelvoGymDbContext db)
+public sealed class DeleteTemplateHandler(IKondixDbContext db)
     : IRequestHandler<DeleteTemplateCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteTemplateCommand request, CancellationToken cancellationToken)

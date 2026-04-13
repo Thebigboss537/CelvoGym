@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 
-namespace CelvoGym.Application.Commands.Body;
+namespace Kondix.Application.Commands.Body;
 
 public sealed record CreateProgressPhotoCommand(
     Guid StudentId,
@@ -13,7 +13,7 @@ public sealed record CreateProgressPhotoCommand(
     PhotoAngle Angle,
     string? Notes) : IRequest<ProgressPhotoDto>;
 
-public sealed class CreateProgressPhotoHandler(ICelvoGymDbContext db)
+public sealed class CreateProgressPhotoHandler(IKondixDbContext db)
     : IRequestHandler<CreateProgressPhotoCommand, ProgressPhotoDto>
 {
     public async Task<ProgressPhotoDto> Handle(CreateProgressPhotoCommand request, CancellationToken cancellationToken)

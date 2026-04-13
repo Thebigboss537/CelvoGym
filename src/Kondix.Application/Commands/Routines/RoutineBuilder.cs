@@ -1,7 +1,7 @@
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 
-namespace CelvoGym.Application.Commands.Routines;
+namespace Kondix.Application.Commands.Routines;
 
 public static class RoutineBuilder
 {

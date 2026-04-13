@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Invitations;
+namespace Kondix.Application.Queries.Invitations;
 
 public sealed record ValidateInvitationQuery(string Token) : IRequest<InvitationInfoDto>;
 
-public sealed class ValidateInvitationHandler(ICelvoGymDbContext db)
+public sealed class ValidateInvitationHandler(IKondixDbContext db)
     : IRequestHandler<ValidateInvitationQuery, InvitationInfoDto>
 {
     public async Task<InvitationInfoDto> Handle(ValidateInvitationQuery request, CancellationToken cancellationToken)

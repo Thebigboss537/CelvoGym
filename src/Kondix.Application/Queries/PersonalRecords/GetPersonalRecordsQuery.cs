@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.PersonalRecords;
+namespace Kondix.Application.Queries.PersonalRecords;
 
 public sealed record GetPersonalRecordsQuery(
     Guid StudentId) : IRequest<List<PersonalRecordDto>>;
 
-public sealed class GetPersonalRecordsHandler(ICelvoGymDbContext db)
+public sealed class GetPersonalRecordsHandler(IKondixDbContext db)
     : IRequestHandler<GetPersonalRecordsQuery, List<PersonalRecordDto>>
 {
     public async Task<List<PersonalRecordDto>> Handle(GetPersonalRecordsQuery request, CancellationToken cancellationToken)

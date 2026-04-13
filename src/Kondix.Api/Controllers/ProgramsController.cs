@@ -1,11 +1,11 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.Programs;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Application.Queries.Programs;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.Programs;
+using Kondix.Application.DTOs;
+using Kondix.Application.Queries.Programs;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/programs")]

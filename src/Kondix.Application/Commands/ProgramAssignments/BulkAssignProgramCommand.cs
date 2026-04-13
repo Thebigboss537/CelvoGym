@@ -1,12 +1,12 @@
-using CelvoGym.Application.Common.Helpers;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Helpers;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.ProgramAssignments;
+namespace Kondix.Application.Commands.ProgramAssignments;
 
 public sealed record BulkAssignProgramCommand(
     Guid TrainerId,
@@ -17,7 +17,7 @@ public sealed record BulkAssignProgramCommand(
     List<FixedScheduleInput>? FixedSchedule = null,
     DateOnly? StartDate = null) : IRequest<List<ProgramAssignmentDto>>;
 
-public sealed class BulkAssignProgramHandler(ICelvoGymDbContext db)
+public sealed class BulkAssignProgramHandler(IKondixDbContext db)
     : IRequestHandler<BulkAssignProgramCommand, List<ProgramAssignmentDto>>
 {
     public async Task<List<ProgramAssignmentDto>> Handle(BulkAssignProgramCommand request, CancellationToken cancellationToken)

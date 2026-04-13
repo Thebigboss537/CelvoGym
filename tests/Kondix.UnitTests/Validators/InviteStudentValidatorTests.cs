@@ -1,8 +1,8 @@
-using CelvoGym.Application.Commands.Students;
-using CelvoGym.Application.Validators;
+using Kondix.Application.Commands.Students;
+using Kondix.Application.Validators;
 using FluentValidation.TestHelper;
 
-namespace CelvoGym.UnitTests.Validators;
+namespace Kondix.UnitTests.Validators;
 
 public class InviteStudentValidatorTests
 {

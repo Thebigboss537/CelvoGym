@@ -1,16 +1,16 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Routines;
+namespace Kondix.Application.Commands.Routines;
 
 public sealed record DuplicateRoutineCommand(
     Guid RoutineId,
     Guid TrainerId) : IRequest<RoutineDetailDto>;
 
-public sealed class DuplicateRoutineHandler(ICelvoGymDbContext db)
+public sealed class DuplicateRoutineHandler(IKondixDbContext db)
     : IRequestHandler<DuplicateRoutineCommand, RoutineDetailDto>
 {
     public async Task<RoutineDetailDto> Handle(DuplicateRoutineCommand request, CancellationToken cancellationToken)

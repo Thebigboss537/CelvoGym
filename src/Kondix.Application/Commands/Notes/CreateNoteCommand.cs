@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Notes;
+namespace Kondix.Application.Commands.Notes;
 
 public sealed record CreateNoteCommand(
     Guid TrainerId,
@@ -12,7 +12,7 @@ public sealed record CreateNoteCommand(
     string Text,
     bool IsPinned) : IRequest<TrainerNoteDto>;
 
-public sealed class CreateNoteHandler(ICelvoGymDbContext db)
+public sealed class CreateNoteHandler(IKondixDbContext db)
     : IRequestHandler<CreateNoteCommand, TrainerNoteDto>
 {
     public async Task<TrainerNoteDto> Handle(CreateNoteCommand request, CancellationToken cancellationToken)

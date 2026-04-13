@@ -1,28 +1,28 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.Comments;
-using CelvoGym.Application.Commands.Progress;
-using CelvoGym.Application.Commands.Body;
-using CelvoGym.Application.Commands.Sessions;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Application.Queries.Analytics;
-using CelvoGym.Application.Queries.Body;
-using CelvoGym.Application.Queries.Comments;
-using CelvoGym.Application.Commands.PersonalRecords;
-using CelvoGym.Application.Queries.PersonalRecords;
-using CelvoGym.Application.Queries.Sessions;
-using CelvoGym.Application.Queries.StudentPortal;
-using CelvoGym.Domain.Enums;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.Comments;
+using Kondix.Application.Commands.Progress;
+using Kondix.Application.Commands.Body;
+using Kondix.Application.Commands.Sessions;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Application.Queries.Analytics;
+using Kondix.Application.Queries.Body;
+using Kondix.Application.Queries.Comments;
+using Kondix.Application.Commands.PersonalRecords;
+using Kondix.Application.Queries.PersonalRecords;
+using Kondix.Application.Queries.Sessions;
+using Kondix.Application.Queries.StudentPortal;
+using Kondix.Domain.Enums;
 using MediatR;
-using static CelvoGym.Domain.Enums.MeasurementType;
+using static Kondix.Domain.Enums.MeasurementType;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/public/my")]
-public class StudentPortalController(IMediator mediator, ICelvoGymDbContext db) : ControllerBase
+public class StudentPortalController(IMediator mediator, IKondixDbContext db) : ControllerBase
 {
     [HttpGet("routines")]
     public async Task<IActionResult> GetMyRoutines(CancellationToken ct)

@@ -1,4 +1,4 @@
-namespace CelvoGym.Domain.Common;
+namespace Kondix.Domain.Common;
 
 public abstract class BaseEntity
 {

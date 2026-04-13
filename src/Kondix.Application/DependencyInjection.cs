@@ -1,9 +1,9 @@
-using CelvoGym.Application.Common.Behaviors;
+using Kondix.Application.Common.Behaviors;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CelvoGym.Application;
+namespace Kondix.Application;
 
 public static class DependencyInjection
 {

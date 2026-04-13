@@ -1,8 +1,8 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Domain.Interfaces;
+using Kondix.Api.Extensions;
+using Kondix.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/videos")]

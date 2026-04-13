@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 
-namespace CelvoGym.Application.Commands.Routines;
+namespace Kondix.Application.Commands.Routines;
 
 public sealed record CreateRoutineCommand(
     Guid TrainerId,
@@ -38,7 +38,7 @@ public sealed record CreateExerciseSetInput(
     int? TargetRpe,
     int? RestSeconds);
 
-public sealed class CreateRoutineHandler(ICelvoGymDbContext db)
+public sealed class CreateRoutineHandler(IKondixDbContext db)
     : IRequestHandler<CreateRoutineCommand, RoutineDetailDto>
 {
     public async Task<RoutineDetailDto> Handle(CreateRoutineCommand request, CancellationToken cancellationToken)

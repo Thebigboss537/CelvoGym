@@ -1,7 +1,7 @@
 using FluentValidation;
 using MediatR;
 
-namespace CelvoGym.Application.Common.Behaviors;
+namespace Kondix.Application.Common.Behaviors;
 
 public sealed class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TRequest>> validators)
     : IPipelineBehavior<TRequest, TResponse>

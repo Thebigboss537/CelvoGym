@@ -1,10 +1,10 @@
-using CelvoGym.Application.Commands.Routines;
-using CelvoGym.Application.Validators;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Commands.Routines;
+using Kondix.Application.Validators;
+using Kondix.Domain.Enums;
 using FluentAssertions;
 using FluentValidation.TestHelper;
 
-namespace CelvoGym.UnitTests.Validators;
+namespace Kondix.UnitTests.Validators;
 
 public class CreateRoutineValidatorTests
 {

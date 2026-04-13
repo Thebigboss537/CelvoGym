@@ -1,13 +1,13 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Routines;
+namespace Kondix.Application.Queries.Routines;
 
 public sealed record GetRoutinesQuery(Guid TrainerId) : IRequest<List<RoutineListDto>>;
 
-public sealed class GetRoutinesHandler(ICelvoGymDbContext db)
+public sealed class GetRoutinesHandler(IKondixDbContext db)
     : IRequestHandler<GetRoutinesQuery, List<RoutineListDto>>
 {
     public async Task<List<RoutineListDto>> Handle(GetRoutinesQuery request, CancellationToken cancellationToken)

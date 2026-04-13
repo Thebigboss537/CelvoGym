@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Programs;
+namespace Kondix.Application.Commands.Programs;
 
 public sealed record CreateProgramCommand(
     Guid TrainerId,
@@ -13,7 +13,7 @@ public sealed record CreateProgramCommand(
     int DurationWeeks,
     List<CreateProgramRoutineInput> Routines) : IRequest<ProgramDetailDto>;
 
-public sealed class CreateProgramHandler(ICelvoGymDbContext db)
+public sealed class CreateProgramHandler(IKondixDbContext db)
     : IRequestHandler<CreateProgramCommand, ProgramDetailDto>
 {
     public async Task<ProgramDetailDto> Handle(CreateProgramCommand request, CancellationToken cancellationToken)

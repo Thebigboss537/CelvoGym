@@ -1,15 +1,15 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Analytics;
+namespace Kondix.Application.Queries.Analytics;
 
 public sealed record GetExerciseProgressQuery(
     Guid StudentId,
     string ExerciseName) : IRequest<ExerciseProgressDto>;
 
-public sealed class GetExerciseProgressHandler(ICelvoGymDbContext db)
+public sealed class GetExerciseProgressHandler(IKondixDbContext db)
     : IRequestHandler<GetExerciseProgressQuery, ExerciseProgressDto>
 {
     public async Task<ExerciseProgressDto> Handle(GetExerciseProgressQuery request, CancellationToken cancellationToken)

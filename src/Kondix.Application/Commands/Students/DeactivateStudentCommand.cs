@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
+using Kondix.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Students;
+namespace Kondix.Application.Commands.Students;
 
 public sealed record DeactivateStudentCommand(
     Guid StudentId,
     Guid TrainerId) : IRequest<Unit>;
 
-public sealed class DeactivateStudentHandler(ICelvoGymDbContext db)
+public sealed class DeactivateStudentHandler(IKondixDbContext db)
     : IRequestHandler<DeactivateStudentCommand, Unit>
 {
     public async Task<Unit> Handle(DeactivateStudentCommand request, CancellationToken cancellationToken)

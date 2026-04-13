@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
+using Kondix.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Catalog;
+namespace Kondix.Application.Commands.Catalog;
 
 public sealed record DeleteCatalogExerciseCommand(
     Guid ExerciseId,
     Guid TrainerId) : IRequest<Unit>;
 
-public sealed class DeleteCatalogExerciseHandler(ICelvoGymDbContext db)
+public sealed class DeleteCatalogExerciseHandler(IKondixDbContext db)
     : IRequestHandler<DeleteCatalogExerciseCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteCatalogExerciseCommand request, CancellationToken cancellationToken)

@@ -1,17 +1,17 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Sessions;
+namespace Kondix.Application.Commands.Sessions;
 
 public sealed record CompleteSessionCommand(
     Guid SessionId,
     Guid StudentId,
     string? Notes) : IRequest<WorkoutSessionDto>;
 
-public sealed class CompleteSessionHandler(ICelvoGymDbContext db)
+public sealed class CompleteSessionHandler(IKondixDbContext db)
     : IRequestHandler<CompleteSessionCommand, WorkoutSessionDto>
 {
     public async Task<WorkoutSessionDto> Handle(CompleteSessionCommand request, CancellationToken cancellationToken)

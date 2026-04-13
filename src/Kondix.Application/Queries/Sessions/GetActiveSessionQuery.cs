@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Sessions;
+namespace Kondix.Application.Queries.Sessions;
 
 public sealed record GetActiveSessionQuery(
     Guid StudentId) : IRequest<WorkoutSessionDto?>;
 
-public sealed class GetActiveSessionHandler(ICelvoGymDbContext db)
+public sealed class GetActiveSessionHandler(IKondixDbContext db)
     : IRequestHandler<GetActiveSessionQuery, WorkoutSessionDto?>
 {
     public async Task<WorkoutSessionDto?> Handle(GetActiveSessionQuery request, CancellationToken cancellationToken)

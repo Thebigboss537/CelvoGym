@@ -1,18 +1,18 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Sessions;
+namespace Kondix.Application.Commands.Sessions;
 
 public sealed record StartSessionCommand(
     Guid StudentId,
     Guid RoutineId,
     Guid DayId) : IRequest<WorkoutSessionDto>;
 
-public sealed class StartSessionHandler(ICelvoGymDbContext db)
+public sealed class StartSessionHandler(IKondixDbContext db)
     : IRequestHandler<StartSessionCommand, WorkoutSessionDto>
 {
     public async Task<WorkoutSessionDto> Handle(StartSessionCommand request, CancellationToken cancellationToken)

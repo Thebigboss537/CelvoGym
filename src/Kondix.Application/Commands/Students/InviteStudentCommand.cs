@@ -1,20 +1,20 @@
 using System.Security.Cryptography;
-using CelvoGym.Application.Common;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Interfaces;
+using Kondix.Application.Common;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Students;
+namespace Kondix.Application.Commands.Students;
 
 public sealed record InviteStudentCommand(
     Guid TrainerId,
     string Email,
     string? FirstName) : IRequest<StudentInvitationDto>;
 
-public sealed class InviteStudentHandler(ICelvoGymDbContext db, IEmailService emailService)
+public sealed class InviteStudentHandler(IKondixDbContext db, IEmailService emailService)
     : IRequestHandler<InviteStudentCommand, StudentInvitationDto>
 {
     public async Task<StudentInvitationDto> Handle(InviteStudentCommand request, CancellationToken cancellationToken)
@@ -43,7 +43,7 @@ public sealed class InviteStudentHandler(ICelvoGymDbContext db, IEmailService em
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                 <h2 style="color: #1a1a1a;">Te invitaron a entrenar</h2>
                 <p style="color: #333; font-size: 16px;">
-                    <strong>{trainer.DisplayName}</strong> te invit&oacute; a seguir tu rutina de entrenamiento en CelvoGym.
+                    <strong>{trainer.DisplayName}</strong> te invit&oacute; a seguir tu rutina de entrenamiento en Kondix.
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="{inviteLink}"
@@ -57,7 +57,7 @@ public sealed class InviteStudentHandler(ICelvoGymDbContext db, IEmailService em
             </div>
             """;
 
-        await emailService.SendAsync(invitation.Email, "Te invitaron a entrenar en CelvoGym", html, cancellationToken);
+        await emailService.SendAsync(invitation.Email, "Te invitaron a entrenar en Kondix", html, cancellationToken);
 
         return new StudentInvitationDto(invitation.Id, invitation.Email,
             invitation.FirstName, token, invitation.ExpiresAt,

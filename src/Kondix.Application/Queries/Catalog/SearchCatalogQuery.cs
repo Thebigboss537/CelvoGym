@@ -1,15 +1,15 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Catalog;
+namespace Kondix.Application.Queries.Catalog;
 
 public sealed record SearchCatalogQuery(
     Guid TrainerId,
     string? SearchTerm = null) : IRequest<List<CatalogExerciseDto>>;
 
-public sealed class SearchCatalogHandler(ICelvoGymDbContext db)
+public sealed class SearchCatalogHandler(IKondixDbContext db)
     : IRequestHandler<SearchCatalogQuery, List<CatalogExerciseDto>>
 {
     public async Task<List<CatalogExerciseDto>> Handle(SearchCatalogQuery request, CancellationToken cancellationToken)

@@ -1,9 +1,9 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Notes;
+namespace Kondix.Application.Commands.Notes;
 
 public sealed record UpdateNoteCommand(
     Guid NoteId,
@@ -11,7 +11,7 @@ public sealed record UpdateNoteCommand(
     string Text,
     bool IsPinned) : IRequest<TrainerNoteDto>;
 
-public sealed class UpdateNoteHandler(ICelvoGymDbContext db)
+public sealed class UpdateNoteHandler(IKondixDbContext db)
     : IRequestHandler<UpdateNoteCommand, TrainerNoteDto>
 {
     public async Task<TrainerNoteDto> Handle(UpdateNoteCommand request, CancellationToken cancellationToken)

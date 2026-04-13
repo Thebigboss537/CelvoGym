@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Onboarding;
+namespace Kondix.Application.Commands.Onboarding;
 
 public sealed record SetupTrainerCommand(
     Guid TenantId,
@@ -12,7 +12,7 @@ public sealed record SetupTrainerCommand(
     string DisplayName,
     string? Bio) : IRequest<TrainerDto>;
 
-public sealed class SetupTrainerHandler(ICelvoGymDbContext db)
+public sealed class SetupTrainerHandler(IKondixDbContext db)
     : IRequestHandler<SetupTrainerCommand, TrainerDto>
 {
     public async Task<TrainerDto> Handle(SetupTrainerCommand request, CancellationToken cancellationToken)

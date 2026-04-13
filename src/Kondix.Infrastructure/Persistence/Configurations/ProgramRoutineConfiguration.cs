@@ -1,8 +1,8 @@
-using CelvoGym.Domain.Entities;
+using Kondix.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CelvoGym.Infrastructure.Persistence.Configurations;
+namespace Kondix.Infrastructure.Persistence.Configurations;
 
 public class ProgramRoutineConfiguration : IEntityTypeConfiguration<ProgramRoutine>
 {

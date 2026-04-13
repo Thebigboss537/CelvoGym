@@ -1,7 +1,7 @@
-using CelvoGym.Application.Common;
+using Kondix.Application.Common;
 using FluentAssertions;
 
-namespace CelvoGym.UnitTests.Common;
+namespace Kondix.UnitTests.Common;
 
 public class TokenHasherTests
 {

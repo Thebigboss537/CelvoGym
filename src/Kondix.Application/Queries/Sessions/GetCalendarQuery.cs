@@ -1,19 +1,19 @@
-using CelvoGym.Application.Common.Helpers;
-using static CelvoGym.Application.Common.Helpers.ProgramWeekHelper;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Helpers;
+using static Kondix.Application.Common.Helpers.ProgramWeekHelper;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Sessions;
+namespace Kondix.Application.Queries.Sessions;
 
 public sealed record GetCalendarQuery(
     Guid StudentId,
     int Year,
     int Month) : IRequest<CalendarMonthDto>;
 
-public sealed class GetCalendarHandler(ICelvoGymDbContext db)
+public sealed class GetCalendarHandler(IKondixDbContext db)
     : IRequestHandler<GetCalendarQuery, CalendarMonthDto>
 {
     public async Task<CalendarMonthDto> Handle(GetCalendarQuery request, CancellationToken cancellationToken)

@@ -1,7 +1,7 @@
-using CelvoGym.Api.Middleware;
-using CelvoGym.Application;
-using CelvoGym.Infrastructure;
-using CelvoGym.Infrastructure.Persistence;
+using Kondix.Api.Middleware;
+using Kondix.Application;
+using Kondix.Infrastructure;
+using Kondix.Infrastructure.Persistence;
 using CelvoGuard.Client;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -65,7 +65,7 @@ try
     // Auto-migrate on startup
     {
         using var scope = app.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<CelvoGymDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
         await dbContext.Database.MigrateAsync();
     }
 
@@ -74,7 +74,7 @@ try
         app.MapOpenApi();
         app.MapScalarApiReference(options =>
         {
-            options.WithTitle("CelvoGym API");
+            options.WithTitle("Kondix API");
             options.WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
         });
     }

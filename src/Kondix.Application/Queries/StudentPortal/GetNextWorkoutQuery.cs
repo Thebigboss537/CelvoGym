@@ -1,16 +1,16 @@
 using System.Text.Json;
-using CelvoGym.Application.Common.Helpers;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Helpers;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.StudentPortal;
+namespace Kondix.Application.Queries.StudentPortal;
 
 public sealed record GetNextWorkoutQuery(Guid StudentId) : IRequest<NextWorkoutDto?>;
 
-public sealed class GetNextWorkoutHandler(ICelvoGymDbContext db)
+public sealed class GetNextWorkoutHandler(IKondixDbContext db)
     : IRequestHandler<GetNextWorkoutQuery, NextWorkoutDto?>
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };

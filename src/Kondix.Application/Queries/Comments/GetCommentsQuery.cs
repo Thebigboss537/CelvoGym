@@ -1,16 +1,16 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Comments;
+namespace Kondix.Application.Queries.Comments;
 
 public sealed record GetCommentsQuery(
     Guid RoutineId,
     Guid DayId) : IRequest<List<CommentDto>>;
 
-public sealed class GetCommentsHandler(ICelvoGymDbContext db)
+public sealed class GetCommentsHandler(IKondixDbContext db)
     : IRequestHandler<GetCommentsQuery, List<CommentDto>>
 {
     public async Task<List<CommentDto>> Handle(GetCommentsQuery request, CancellationToken cancellationToken)

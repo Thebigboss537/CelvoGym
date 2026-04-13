@@ -1,11 +1,11 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Infrastructure.Persistence;
+namespace Kondix.Infrastructure.Persistence;
 
-public class CelvoGymDbContext(DbContextOptions<CelvoGymDbContext> options)
-    : DbContext(options), ICelvoGymDbContext
+public class KondixDbContext(DbContextOptions<KondixDbContext> options)
+    : DbContext(options), IKondixDbContext
 {
     public DbSet<Trainer> Trainers => Set<Trainer>();
     public DbSet<Student> Students => Set<Student>();
@@ -33,6 +33,6 @@ public class CelvoGymDbContext(DbContextOptions<CelvoGymDbContext> options)
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("gym");
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CelvoGymDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(KondixDbContext).Assembly);
     }
 }

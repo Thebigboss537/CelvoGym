@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CelvoGym.Infrastructure.Migrations
+namespace Kondix.Infrastructure.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

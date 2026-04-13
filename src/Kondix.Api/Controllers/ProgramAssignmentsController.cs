@@ -1,12 +1,12 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.ProgramAssignments;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Application.Queries.ProgramAssignments;
-using CelvoGym.Domain.Enums;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.ProgramAssignments;
+using Kondix.Application.DTOs;
+using Kondix.Application.Queries.ProgramAssignments;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/program-assignments")]

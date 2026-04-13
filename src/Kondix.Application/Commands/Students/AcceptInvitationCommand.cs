@@ -1,18 +1,18 @@
-using CelvoGym.Application.Common;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Students;
+namespace Kondix.Application.Commands.Students;
 
 public sealed record AcceptInvitationCommand(
     string Token,
     Guid CelvoGuardUserId,
     string DisplayName) : IRequest<StudentDto>;
 
-public sealed class AcceptInvitationHandler(ICelvoGymDbContext db)
+public sealed class AcceptInvitationHandler(IKondixDbContext db)
     : IRequestHandler<AcceptInvitationCommand, StudentDto>
 {
     public async Task<StudentDto> Handle(AcceptInvitationCommand request, CancellationToken cancellationToken)

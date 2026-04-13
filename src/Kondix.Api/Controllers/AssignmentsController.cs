@@ -1,10 +1,10 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.Templates;
-using CelvoGym.Application.Queries.Templates;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.Templates;
+using Kondix.Application.Queries.Templates;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/assignments")]

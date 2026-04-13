@@ -1,10 +1,10 @@
-using CelvoGym.Domain.Interfaces;
+using Kondix.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Minio;
 using Minio.DataModel.Args;
 
-namespace CelvoGym.Infrastructure.Services;
+namespace Kondix.Infrastructure.Services;
 
 public sealed class MinioStorageService : IStorageService
 {

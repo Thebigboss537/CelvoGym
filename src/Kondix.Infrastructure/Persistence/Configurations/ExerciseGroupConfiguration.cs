@@ -1,9 +1,9 @@
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Enums;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CelvoGym.Infrastructure.Persistence.Configurations;
+namespace Kondix.Infrastructure.Persistence.Configurations;
 
 public class ExerciseGroupConfiguration : IEntityTypeConfiguration<ExerciseGroup>
 {

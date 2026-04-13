@@ -1,17 +1,17 @@
-using CelvoGym.Application.Common.Helpers;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Helpers;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Sessions;
+namespace Kondix.Application.Queries.Sessions;
 
 public sealed record GetSessionHistoryQuery(
     Guid StudentId,
     Guid RoutineId,
     Guid DayId) : IRequest<List<SessionSummaryDto>>;
 
-public sealed class GetSessionHistoryHandler(ICelvoGymDbContext db)
+public sealed class GetSessionHistoryHandler(IKondixDbContext db)
     : IRequestHandler<GetSessionHistoryQuery, List<SessionSummaryDto>>
 {
     public async Task<List<SessionSummaryDto>> Handle(GetSessionHistoryQuery request, CancellationToken cancellationToken)

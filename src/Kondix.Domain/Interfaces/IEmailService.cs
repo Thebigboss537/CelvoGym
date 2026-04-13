@@ -1,4 +1,4 @@
-namespace CelvoGym.Domain.Interfaces;
+namespace Kondix.Domain.Interfaces;
 
 public interface IEmailService
 {

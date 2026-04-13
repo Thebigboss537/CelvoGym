@@ -1,16 +1,16 @@
-using CelvoGym.Application.Common.Helpers;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Helpers;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.ProgramAssignments;
+namespace Kondix.Application.Queries.ProgramAssignments;
 
 public sealed record GetProgramAssignmentsQuery(
     Guid TrainerId) : IRequest<List<ProgramAssignmentDto>>;
 
-public sealed class GetProgramAssignmentsHandler(ICelvoGymDbContext db)
+public sealed class GetProgramAssignmentsHandler(IKondixDbContext db)
     : IRequestHandler<GetProgramAssignmentsQuery, List<ProgramAssignmentDto>>
 {
     public async Task<List<ProgramAssignmentDto>> Handle(GetProgramAssignmentsQuery request, CancellationToken cancellationToken)

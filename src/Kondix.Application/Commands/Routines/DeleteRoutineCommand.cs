@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
+using Kondix.Application.Common.Interfaces;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Routines;
+namespace Kondix.Application.Commands.Routines;
 
 public sealed record DeleteRoutineCommand(
     Guid RoutineId,
     Guid TrainerId) : IRequest<Unit>;
 
-public sealed class DeleteRoutineHandler(ICelvoGymDbContext db)
+public sealed class DeleteRoutineHandler(IKondixDbContext db)
     : IRequestHandler<DeleteRoutineCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteRoutineCommand request, CancellationToken cancellationToken)

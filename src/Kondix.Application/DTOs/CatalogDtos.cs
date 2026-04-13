@@ -1,6 +1,6 @@
-using CelvoGym.Domain.Enums;
+using Kondix.Domain.Enums;
 
-namespace CelvoGym.Application.DTOs;
+namespace Kondix.Application.DTOs;
 
 public sealed record CatalogExerciseDto(
     Guid Id,

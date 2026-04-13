@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 
-namespace CelvoGym.Application.Commands.Catalog;
+namespace Kondix.Application.Commands.Catalog;
 
 public sealed record CreateCatalogExerciseCommand(
     Guid TrainerId,
@@ -14,7 +14,7 @@ public sealed record CreateCatalogExerciseCommand(
     string? VideoUrl,
     string? Notes) : IRequest<CatalogExerciseDto>;
 
-public sealed class CreateCatalogExerciseHandler(ICelvoGymDbContext db)
+public sealed class CreateCatalogExerciseHandler(IKondixDbContext db)
     : IRequestHandler<CreateCatalogExerciseCommand, CatalogExerciseDto>
 {
     public async Task<CatalogExerciseDto> Handle(CreateCatalogExerciseCommand request, CancellationToken cancellationToken)

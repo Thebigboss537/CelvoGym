@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Dashboard;
+namespace Kondix.Application.Queries.Dashboard;
 
 public sealed record GetDashboardQuery(
     Guid TrainerId) : IRequest<DashboardDto>;
 
-public sealed class GetDashboardHandler(ICelvoGymDbContext db)
+public sealed class GetDashboardHandler(IKondixDbContext db)
     : IRequestHandler<GetDashboardQuery, DashboardDto>
 {
     public async Task<DashboardDto> Handle(GetDashboardQuery request, CancellationToken cancellationToken)

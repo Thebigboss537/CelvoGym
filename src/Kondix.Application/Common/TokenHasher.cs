@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace CelvoGym.Application.Common;
+namespace Kondix.Application.Common;
 
 public static class TokenHasher
 {

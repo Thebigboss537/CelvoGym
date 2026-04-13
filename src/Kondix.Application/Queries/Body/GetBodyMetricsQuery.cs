@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Body;
+namespace Kondix.Application.Queries.Body;
 
 public sealed record GetBodyMetricsQuery(
     Guid StudentId) : IRequest<List<BodyMetricDto>>;
 
-public sealed class GetBodyMetricsHandler(ICelvoGymDbContext db)
+public sealed class GetBodyMetricsHandler(IKondixDbContext db)
     : IRequestHandler<GetBodyMetricsQuery, List<BodyMetricDto>>
 {
     public async Task<List<BodyMetricDto>> Handle(GetBodyMetricsQuery request, CancellationToken cancellationToken)

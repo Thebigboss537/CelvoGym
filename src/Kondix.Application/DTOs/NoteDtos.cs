@@ -1,4 +1,4 @@
-namespace CelvoGym.Application.DTOs;
+namespace Kondix.Application.DTOs;
 
 public sealed record TrainerNoteDto(
     Guid Id,

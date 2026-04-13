@@ -1,9 +1,9 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 
-namespace CelvoGym.Application.Commands.Body;
+namespace Kondix.Application.Commands.Body;
 
 public sealed record CreateBodyMetricCommand(
     Guid StudentId,
@@ -13,7 +13,7 @@ public sealed record CreateBodyMetricCommand(
     string? Notes,
     List<CreateBodyMeasurementInput> Measurements) : IRequest<BodyMetricDto>;
 
-public sealed class CreateBodyMetricHandler(ICelvoGymDbContext db)
+public sealed class CreateBodyMetricHandler(IKondixDbContext db)
     : IRequestHandler<CreateBodyMetricCommand, BodyMetricDto>
 {
     public async Task<BodyMetricDto> Handle(CreateBodyMetricCommand request, CancellationToken cancellationToken)

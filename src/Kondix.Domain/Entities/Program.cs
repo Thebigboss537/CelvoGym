@@ -1,6 +1,6 @@
-using CelvoGym.Domain.Common;
+using Kondix.Domain.Common;
 
-namespace CelvoGym.Domain.Entities;
+namespace Kondix.Domain.Entities;
 
 public class Program : BaseEntity
 {

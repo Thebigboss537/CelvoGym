@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Programs;
+namespace Kondix.Application.Commands.Programs;
 
 public sealed record UpdateProgramCommand(
     Guid ProgramId,
@@ -14,7 +14,7 @@ public sealed record UpdateProgramCommand(
     int DurationWeeks,
     List<CreateProgramRoutineInput> Routines) : IRequest<ProgramDetailDto>;
 
-public sealed class UpdateProgramHandler(ICelvoGymDbContext db)
+public sealed class UpdateProgramHandler(IKondixDbContext db)
     : IRequestHandler<UpdateProgramCommand, ProgramDetailDto>
 {
     public async Task<ProgramDetailDto> Handle(UpdateProgramCommand request, CancellationToken cancellationToken)

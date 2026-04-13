@@ -1,7 +1,7 @@
-using CelvoGym.Application.Commands.Students;
+using Kondix.Application.Commands.Students;
 using FluentValidation;
 
-namespace CelvoGym.Application.Validators;
+namespace Kondix.Application.Validators;
 
 public sealed class InviteStudentValidator : AbstractValidator<InviteStudentCommand>
 {

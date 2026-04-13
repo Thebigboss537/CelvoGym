@@ -1,15 +1,15 @@
-using CelvoGym.Application.Commands.Students;
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.Queries.Invitations;
+using Kondix.Application.Commands.Students;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.Queries.Invitations;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/public")]
-public class PublicController(IMediator mediator, ICelvoGymDbContext db) : ControllerBase
+public class PublicController(IMediator mediator, IKondixDbContext db) : ControllerBase
 {
     [HttpGet("trainer/{tenantId:guid}/manifest.webmanifest")]
     [ResponseCache(Duration = 3600)]
@@ -20,11 +20,11 @@ public class PublicController(IMediator mediator, ICelvoGymDbContext db) : Contr
             .Select(t => new { t.DisplayName, t.Bio })
             .FirstOrDefaultAsync(ct);
 
-        var name = trainer?.DisplayName ?? "CelvoGym";
+        var name = trainer?.DisplayName ?? "Kondix";
         var bio = trainer?.Bio;
         var manifest = new
         {
-            name = $"{name} \u2014 CelvoGym",
+            name = $"{name} \u2014 Kondix",
             short_name = name.Length > 12 ? name[..12].TrimEnd() : name,
             start_url = $"/auth/login?t={tenantId}",
             scope = "/",

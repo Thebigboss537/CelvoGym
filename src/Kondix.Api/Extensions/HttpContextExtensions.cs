@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace CelvoGym.Api.Extensions;
+namespace Kondix.Api.Extensions;
 
 public static class HttpContextExtensions
 {

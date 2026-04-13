@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Progress;
+namespace Kondix.Application.Commands.Progress;
 
 public sealed record ToggleSetCommand(
     Guid StudentId,
@@ -12,7 +12,7 @@ public sealed record ToggleSetCommand(
     Guid SetId,
     Guid RoutineId) : IRequest<SetLogDto>;
 
-public sealed class ToggleSetHandler(ICelvoGymDbContext db)
+public sealed class ToggleSetHandler(IKondixDbContext db)
     : IRequestHandler<ToggleSetCommand, SetLogDto>
 {
     public async Task<SetLogDto> Handle(ToggleSetCommand request, CancellationToken cancellationToken)

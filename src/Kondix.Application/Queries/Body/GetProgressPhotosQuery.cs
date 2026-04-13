@@ -1,14 +1,14 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Body;
+namespace Kondix.Application.Queries.Body;
 
 public sealed record GetProgressPhotosQuery(
     Guid StudentId) : IRequest<List<ProgressPhotoDto>>;
 
-public sealed class GetProgressPhotosHandler(ICelvoGymDbContext db)
+public sealed class GetProgressPhotosHandler(IKondixDbContext db)
     : IRequestHandler<GetProgressPhotosQuery, List<ProgressPhotoDto>>
 {
     public async Task<List<ProgressPhotoDto>> Handle(GetProgressPhotosQuery request, CancellationToken cancellationToken)

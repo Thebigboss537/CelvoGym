@@ -1,12 +1,12 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.Body;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Enums;
-using CelvoGym.Domain.Interfaces;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.Body;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Enums;
+using Kondix.Domain.Interfaces;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/public/my/photos")]

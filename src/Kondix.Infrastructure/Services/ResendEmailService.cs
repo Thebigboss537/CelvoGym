@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
-using CelvoGym.Domain.Interfaces;
+using Kondix.Domain.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace CelvoGym.Infrastructure.Services;
+namespace Kondix.Infrastructure.Services;
 
 public sealed class ResendEmailService(HttpClient httpClient, IConfiguration configuration, ILogger<ResendEmailService> logger) : IEmailService
 {

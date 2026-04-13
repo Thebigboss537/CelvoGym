@@ -1,13 +1,13 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Common.Helpers;
+namespace Kondix.Application.Common.Helpers;
 
 public static class SetLogStatsHelper
 {
     public static async Task<Dictionary<Guid, (int Total, int Completed)>> GetEffectiveSetStatsAsync(
-        ICelvoGymDbContext db, List<Guid> sessionIds, CancellationToken ct)
+        IKondixDbContext db, List<Guid> sessionIds, CancellationToken ct)
     {
         var stats = await db.SetLogs
             .AsNoTracking()

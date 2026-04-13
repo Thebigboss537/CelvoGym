@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Templates;
+namespace Kondix.Application.Commands.Templates;
 
 public sealed record CreateTemplateCommand(
     Guid TrainerId,
@@ -14,7 +14,7 @@ public sealed record CreateTemplateCommand(
     int? DurationWeeks,
     string? Mode) : IRequest<AssignmentTemplateDto>;
 
-public sealed class CreateTemplateHandler(ICelvoGymDbContext db)
+public sealed class CreateTemplateHandler(IKondixDbContext db)
     : IRequestHandler<CreateTemplateCommand, AssignmentTemplateDto>
 {
     public async Task<AssignmentTemplateDto> Handle(CreateTemplateCommand request, CancellationToken cancellationToken)

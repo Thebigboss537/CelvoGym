@@ -1,10 +1,10 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
-using CelvoGym.Domain.Entities;
-using CelvoGym.Domain.Enums;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
+using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 
-namespace CelvoGym.Application.Commands.Comments;
+namespace Kondix.Application.Commands.Comments;
 
 public sealed record CreateCommentCommand(
     Guid RoutineId,
@@ -15,7 +15,7 @@ public sealed record CreateCommentCommand(
     string AuthorName,
     string Text) : IRequest<CommentDto>;
 
-public sealed class CreateCommentHandler(ICelvoGymDbContext db)
+public sealed class CreateCommentHandler(IKondixDbContext db)
     : IRequestHandler<CreateCommentCommand, CommentDto>
 {
     public async Task<CommentDto> Handle(CreateCommentCommand request, CancellationToken cancellationToken)

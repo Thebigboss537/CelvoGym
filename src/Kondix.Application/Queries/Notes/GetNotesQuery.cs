@@ -1,15 +1,15 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Notes;
+namespace Kondix.Application.Queries.Notes;
 
 public sealed record GetNotesQuery(
     Guid TrainerId,
     Guid StudentId) : IRequest<List<TrainerNoteDto>>;
 
-public sealed class GetNotesHandler(ICelvoGymDbContext db)
+public sealed class GetNotesHandler(IKondixDbContext db)
     : IRequestHandler<GetNotesQuery, List<TrainerNoteDto>>
 {
     public async Task<List<TrainerNoteDto>> Handle(GetNotesQuery request, CancellationToken cancellationToken)

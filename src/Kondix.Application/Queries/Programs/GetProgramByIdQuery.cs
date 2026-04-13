@@ -1,15 +1,15 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Queries.Programs;
+namespace Kondix.Application.Queries.Programs;
 
 public sealed record GetProgramByIdQuery(
     Guid ProgramId,
     Guid TrainerId) : IRequest<ProgramDetailDto>;
 
-public sealed class GetProgramByIdHandler(ICelvoGymDbContext db)
+public sealed class GetProgramByIdHandler(IKondixDbContext db)
     : IRequestHandler<GetProgramByIdQuery, ProgramDetailDto>
 {
     public async Task<ProgramDetailDto> Handle(GetProgramByIdQuery request, CancellationToken cancellationToken)

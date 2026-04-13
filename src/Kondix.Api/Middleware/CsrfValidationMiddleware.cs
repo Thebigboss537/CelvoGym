@@ -1,4 +1,4 @@
-namespace CelvoGym.Api.Middleware;
+namespace Kondix.Api.Middleware;
 
 public sealed class CsrfValidationMiddleware(RequestDelegate next)
 {

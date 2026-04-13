@@ -1,10 +1,10 @@
-using CelvoGym.Domain.Entities;
+using Kondix.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace CelvoGym.Application.Common.Interfaces;
+namespace Kondix.Application.Common.Interfaces;
 
-public interface ICelvoGymDbContext
+public interface IKondixDbContext
 {
     DbSet<Trainer> Trainers { get; }
     DbSet<Student> Students { get; }

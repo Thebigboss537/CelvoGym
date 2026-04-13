@@ -1,9 +1,9 @@
-using CelvoGym.Application.Common.Interfaces;
-using CelvoGym.Application.DTOs;
+using Kondix.Application.Common.Interfaces;
+using Kondix.Application.DTOs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace CelvoGym.Application.Commands.Routines;
+namespace Kondix.Application.Commands.Routines;
 
 public sealed record UpdateRoutineCommand(
     Guid RoutineId,
@@ -14,7 +14,7 @@ public sealed record UpdateRoutineCommand(
     List<string>? Tags = null,
     string? Category = null) : IRequest<RoutineDetailDto>;
 
-public sealed class UpdateRoutineHandler(ICelvoGymDbContext db)
+public sealed class UpdateRoutineHandler(IKondixDbContext db)
     : IRequestHandler<UpdateRoutineCommand, RoutineDetailDto>
 {
     public async Task<RoutineDetailDto> Handle(UpdateRoutineCommand request, CancellationToken cancellationToken)

@@ -1,7 +1,7 @@
-using CelvoGym.Application.Commands.Onboarding;
+using Kondix.Application.Commands.Onboarding;
 using FluentValidation;
 
-namespace CelvoGym.Application.Validators;
+namespace Kondix.Application.Validators;
 
 public sealed class SetupTrainerValidator : AbstractValidator<SetupTrainerCommand>
 {

@@ -1,7 +1,7 @@
-using CelvoGym.Domain.Common;
-using CelvoGym.Domain.Enums;
+using Kondix.Domain.Common;
+using Kondix.Domain.Enums;
 
-namespace CelvoGym.Domain.Entities;
+namespace Kondix.Domain.Entities;
 
 public class ProgressPhoto : BaseEntity
 {

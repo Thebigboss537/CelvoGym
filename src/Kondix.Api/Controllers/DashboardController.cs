@@ -1,9 +1,9 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Queries.Dashboard;
+using Kondix.Api.Extensions;
+using Kondix.Application.Queries.Dashboard;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/dashboard")]

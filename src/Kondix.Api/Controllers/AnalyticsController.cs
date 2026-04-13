@@ -1,11 +1,11 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Queries.Analytics;
-using CelvoGym.Application.Queries.Body;
-using CelvoGym.Application.Queries.PersonalRecords;
+using Kondix.Api.Extensions;
+using Kondix.Application.Queries.Analytics;
+using Kondix.Application.Queries.Body;
+using Kondix.Application.Queries.PersonalRecords;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/analytics")]

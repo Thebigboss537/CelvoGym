@@ -1,17 +1,17 @@
 using System.Reflection;
-using CelvoGym.Api.Controllers;
-using CelvoGym.Application.Common;
-using CelvoGym.Domain.Common;
-using CelvoGym.Infrastructure.Persistence;
+using Kondix.Api.Controllers;
+using Kondix.Application.Common;
+using Kondix.Domain.Common;
+using Kondix.Infrastructure.Persistence;
 using NetArchTest.Rules;
 
-namespace CelvoGym.ArchTests;
+namespace Kondix.ArchTests;
 
 public class ArchitectureTests
 {
     private static readonly Assembly DomainAssembly = typeof(BaseEntity).Assembly;
     private static readonly Assembly ApplicationAssembly = typeof(TokenHasher).Assembly;
-    private static readonly Assembly InfrastructureAssembly = typeof(CelvoGymDbContext).Assembly;
+    private static readonly Assembly InfrastructureAssembly = typeof(KondixDbContext).Assembly;
     private static readonly Assembly ApiAssembly = typeof(HealthController).Assembly;
 
     [Fact]
@@ -19,7 +19,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(DomainAssembly)
             .ShouldNot()
-            .HaveDependencyOn("CelvoGym.Application")
+            .HaveDependencyOn("Kondix.Application")
             .GetResult();
 
         Assert.True(result.IsSuccessful, "Domain should not reference Application");
@@ -30,7 +30,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(DomainAssembly)
             .ShouldNot()
-            .HaveDependencyOn("CelvoGym.Infrastructure")
+            .HaveDependencyOn("Kondix.Infrastructure")
             .GetResult();
 
         Assert.True(result.IsSuccessful, "Domain should not reference Infrastructure");
@@ -41,7 +41,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(DomainAssembly)
             .ShouldNot()
-            .HaveDependencyOn("CelvoGym.Api")
+            .HaveDependencyOn("Kondix.Api")
             .GetResult();
 
         Assert.True(result.IsSuccessful, "Domain should not reference Api");
@@ -52,7 +52,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(ApplicationAssembly)
             .ShouldNot()
-            .HaveDependencyOn("CelvoGym.Infrastructure")
+            .HaveDependencyOn("Kondix.Infrastructure")
             .GetResult();
 
         Assert.True(result.IsSuccessful, "Application should not reference Infrastructure");
@@ -63,7 +63,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(ApplicationAssembly)
             .ShouldNot()
-            .HaveDependencyOn("CelvoGym.Api")
+            .HaveDependencyOn("Kondix.Api")
             .GetResult();
 
         Assert.True(result.IsSuccessful, "Application should not reference Api");
@@ -74,7 +74,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(InfrastructureAssembly)
             .ShouldNot()
-            .HaveDependencyOn("CelvoGym.Api")
+            .HaveDependencyOn("Kondix.Api")
             .GetResult();
 
         Assert.True(result.IsSuccessful, "Infrastructure should not reference Api");
@@ -85,7 +85,7 @@ public class ArchitectureTests
     {
         var result = Types.InAssembly(DomainAssembly)
             .That()
-            .ResideInNamespace("CelvoGym.Domain.Entities")
+            .ResideInNamespace("Kondix.Domain.Entities")
             .And()
             .AreClasses()
             .Should()
@@ -102,9 +102,9 @@ public class ArchitectureTests
             .That()
             .HaveNameEndingWith("Controller")
             .Should()
-            .ResideInNamespace("CelvoGym.Api.Controllers")
+            .ResideInNamespace("Kondix.Api.Controllers")
             .GetResult();
 
-        Assert.True(result.IsSuccessful, "All controllers should be in CelvoGym.Api.Controllers namespace");
+        Assert.True(result.IsSuccessful, "All controllers should be in Kondix.Api.Controllers namespace");
     }
 }

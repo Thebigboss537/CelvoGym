@@ -1,11 +1,11 @@
-using CelvoGym.Api.Extensions;
-using CelvoGym.Application.Commands.Routines;
-using CelvoGym.Application.Queries.Routines;
-using CelvoGym.Domain.Enums;
+using Kondix.Api.Extensions;
+using Kondix.Application.Commands.Routines;
+using Kondix.Application.Queries.Routines;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CelvoGym.Api.Controllers;
+namespace Kondix.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/routines")]
