@@ -1,0 +1,145 @@
+<h2>Sección 1: Estudiante — Navegación y Home</h2>
+<p class="subtitle">Nueva estructura de navegación y pantalla de inicio del estudiante</p>
+
+<!-- NAVIGATION -->
+<div class="section">
+  <h3>Navegación: Bottom Tabs (4 secciones)</h3>
+  <div class="mockup">
+    <div class="mockup-header">Bottom Navigation — Siempre visible (se oculta en workout mode)</div>
+    <div class="mockup-body" style="background:#09090B; padding:0;">
+      <!-- Phone frame -->
+      <div style="max-width:375px; margin:0 auto; border:2px solid #27272A; border-radius:24px; overflow:hidden; background:#09090B;">
+
+        <!-- Status bar -->
+        <div style="padding:8px 20px; display:flex; justify-content:space-between; font-size:11px; color:#71717A;">
+          <span>9:41</span>
+          <span>●●● WiFi 🔋</span>
+        </div>
+
+        <!-- Home screen content -->
+        <div style="padding:16px 20px; min-height:520px;">
+
+          <!-- Header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <div>
+              <p style="color:#71717A; font-size:13px; letter-spacing:0.5px;">LUNES, 12 ABR</p>
+              <h2 style="color:#F4F4F5; font-size:24px; font-weight:800; margin:4px 0 0;">Hola, Carlos 👋</h2>
+            </div>
+            <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #E62639, #B31D2C); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px;">CA</div>
+          </div>
+
+          <!-- Hero Card: Today's Workout -->
+          <div style="background:linear-gradient(135deg, #1a0a0d 0%, #16161A 100%); border:1px solid rgba(230,38,57,0.2); border-radius:20px; padding:24px; margin-bottom:20px; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-20px; right:-20px; width:120px; height:120px; background:radial-gradient(circle, rgba(230,38,57,0.08) 0%, transparent 70%);"></div>
+            <p style="color:#E62639; font-size:11px; font-weight:700; letter-spacing:1.5px; margin-bottom:12px;">TU ENTRENO DE HOY</p>
+            <h3 style="color:#F4F4F5; font-size:20px; font-weight:700; margin-bottom:6px;">Push — Pecho y Tríceps</h3>
+            <p style="color:#A1A1AA; font-size:14px; margin-bottom:16px;">6 ejercicios · ~55 min · Rutina A</p>
+
+            <div style="display:flex; gap:12px; margin-bottom:20px;">
+              <div style="background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px; flex:1; text-align:center;">
+                <p style="color:#71717A; font-size:10px; letter-spacing:0.5px;">SEMANA</p>
+                <p style="color:#F4F4F5; font-size:16px; font-weight:700;">3/8</p>
+              </div>
+              <div style="background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px; flex:1; text-align:center;">
+                <p style="color:#71717A; font-size:10px; letter-spacing:0.5px;">SESIÓN</p>
+                <p style="color:#F4F4F5; font-size:16px; font-weight:700;">12</p>
+              </div>
+              <div style="background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px; flex:1; text-align:center;">
+                <p style="color:#71717A; font-size:10px; letter-spacing:0.5px;">RACHA</p>
+                <p style="color:#E62639; font-size:16px; font-weight:700;">🔥 5</p>
+              </div>
+            </div>
+
+            <button style="width:100%; padding:14px; background:#E62639; color:white; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; letter-spacing:0.5px;">
+              Empezar Entreno →
+            </button>
+          </div>
+
+          <!-- Quick Stats Row -->
+          <div style="margin-bottom:20px;">
+            <p style="color:#71717A; font-size:11px; font-weight:600; letter-spacing:1px; margin-bottom:12px;">ESTA SEMANA</p>
+            <div style="display:flex; gap:10px;">
+              <div style="flex:1; background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+                <p style="color:#22C55E; font-size:22px; font-weight:800;">3/4</p>
+                <p style="color:#71717A; font-size:11px; margin-top:4px;">Entrenos</p>
+              </div>
+              <div style="flex:1; background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+                <p style="color:#E62639; font-size:22px; font-weight:800;">2</p>
+                <p style="color:#71717A; font-size:11px; margin-top:4px;">PRs nuevos</p>
+              </div>
+              <div style="flex:1; background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+                <p style="color:#A78BFA; font-size:22px; font-weight:800;">4.2t</p>
+                <p style="color:#71717A; font-size:11px; margin-top:4px;">Volumen</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent PRs -->
+          <div>
+            <p style="color:#71717A; font-size:11px; font-weight:600; letter-spacing:1px; margin-bottom:12px;">PRs RECIENTES 🏆</p>
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <p style="color:#F4F4F5; font-size:14px; font-weight:600;">Press Banca</p>
+                  <p style="color:#71717A; font-size:12px;">Hace 2 días</p>
+                </div>
+                <div style="background:rgba(34,197,94,0.1); color:#22C55E; padding:6px 12px; border-radius:8px; font-size:14px; font-weight:700;">
+                  85kg × 6
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div style="padding:8px 20px 24px; background:#111113; border-top:1px solid #1E1E22; display:flex; justify-content:space-around; align-items:center;">
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; background:#E62639; border-radius:6px;"></div>
+            <p style="color:#E62639; font-size:10px; font-weight:600;">Hoy</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Calendario</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Progreso</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Perfil</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- KEY CHANGES -->
+<div class="section" style="margin-top:24px;">
+  <h3>Cambios clave vs. diseño actual</h3>
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:12px;">
+    <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.15); border-radius:12px; padding:16px;">
+      <p style="color:#EF4444; font-size:12px; font-weight:700; letter-spacing:1px; margin-bottom:8px;">ANTES</p>
+      <ul style="color:#A1A1AA; font-size:13px; line-height:2;">
+        <li>Tabs superiores genéricos (Calendario, Records, Cuerpo)</li>
+        <li>Calendario como pantalla principal (no muestra qué hacer HOY)</li>
+        <li>Stats dispersos en diferentes pantallas</li>
+        <li>Sin hero card ni CTA claro para empezar</li>
+        <li>Navegación lineal sin jerarquía</li>
+      </ul>
+    </div>
+    <div style="background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.15); border-radius:12px; padding:16px;">
+      <p style="color:#22C55E; font-size:12px; font-weight:700; letter-spacing:1px; margin-bottom:8px;">DESPUÉS</p>
+      <ul style="color:#A1A1AA; font-size:13px; line-height:2;">
+        <li>Bottom nav con 4 tabs claros (Hoy, Calendario, Progreso, Perfil)</li>
+        <li>"Hoy" como home — muestra QUÉ hacer y motiva a empezar</li>
+        <li>Stats consolidados en home + pestaña Progreso dedicada</li>
+        <li>Hero card con CTA prominente "Empezar Entreno"</li>
+        <li>Jerarquía visual: lo importante primero</li>
+      </ul>
+    </div>
+  </div>
+</div>

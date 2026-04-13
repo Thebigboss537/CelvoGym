@@ -1,0 +1,105 @@
+<h2>Rediseño CelvoGym — 3 Enfoques</h2>
+<p class="subtitle">Compara las direcciones de diseño. Haz click en la que más te convenza.</p>
+
+<div class="options">
+
+  <!-- APPROACH A -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>🏋️ "Immersive Flow" — Mobile-native, full-screen</h3>
+      <p><strong>Idea central:</strong> La app desaparece cuando estás entrenando. Pantalla completa, gestos táctiles, cero distracciones.</p>
+      <div style="margin-top:12px; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+        <p style="color:#a1a1aa; font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Estudiante</p>
+        <ul style="color:#d4d4d8; font-size:14px; line-height:1.8;">
+          <li>Hero card "Tu entreno de hoy" → tap → pantalla completa de logging</li>
+          <li>Swipe horizontal entre ejercicios, swipe vertical entre sets</li>
+          <li>Bottom sheet para navegación (se oculta durante workout)</li>
+          <li>Animaciones de celebración al completar (confetti, glow)</li>
+          <li>4 tabs: Hoy · Calendario · Progreso · Perfil</li>
+        </ul>
+        <p style="color:#a1a1aa; font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-top:16px; margin-bottom:8px;">Entrenador</p>
+        <ul style="color:#d4d4d8; font-size:14px; line-height:1.8;">
+          <li>Bottom tabs en móvil, sidebar en desktop</li>
+          <li>FAB (Floating Action Button) para crear rutina/programa</li>
+          <li>Wizard paso a paso para creación de rutinas (no formulario gigante)</li>
+          <li>Vista de alumnos como cards con estado del entreno en tiempo real</li>
+        </ul>
+      </div>
+      <div style="margin-top:12px;">
+        <span style="background:#22c55e22; color:#22c55e; padding:4px 10px; border-radius:6px; font-size:12px;">Máxima UX en gym</span>
+        <span style="background:#f59e0b22; color:#f59e0b; padding:4px 10px; border-radius:6px; font-size:12px; margin-left:6px;">Mayor cambio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROACH B -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>📊 "Command Center" — Dashboard inteligente</h3>
+      <p><strong>Idea central:</strong> Todo empieza desde un dashboard que te muestra exactamente lo que necesitas. Información densa pero organizada.</p>
+      <div style="margin-top:12px; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+        <p style="color:#a1a1aa; font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Estudiante</p>
+        <ul style="color:#d4d4d8; font-size:14px; line-height:1.8;">
+          <li>Dashboard: próximo entreno, racha, PRs recientes, progreso semanal</li>
+          <li>Widgets modulares tipo Notion (reordenables)</li>
+          <li>Workout logging en la misma página (no pantalla completa)</li>
+          <li>Bottom nav persistente: Home · Entreno · Stats · Cuerpo · Perfil</li>
+        </ul>
+        <p style="color:#a1a1aa; font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-top:16px; margin-bottom:8px;">Entrenador</p>
+        <ul style="color:#d4d4d8; font-size:14px; line-height:1.8;">
+          <li>Sidebar colapsable con iconos (Notion/Linear style)</li>
+          <li>Dashboard con métricas de alumnos, actividad reciente, alertas</li>
+          <li>Inline editing en tablas para rutinas (editar sin navegar)</li>
+          <li>Command palette (Ctrl+K) para búsqueda rápida</li>
+        </ul>
+      </div>
+      <div style="margin-top:12px;">
+        <span style="background:#3b82f622; color:#3b82f6; padding:4px 10px; border-radius:6px; font-size:12px;">Info-dense, power user</span>
+        <span style="background:#a78bfa22; color:#a78bfa; padding:4px 10px; border-radius:6px; font-size:12px; margin-left:6px;">Más productivo</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROACH C -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>✨ "Hybrid Premium" — Lo mejor de A + B</h3>
+      <p><strong>Idea central:</strong> Experiencia immersiva para el estudiante en el gym + workspace potente para el entrenador. Cada rol tiene su diseño optimizado.</p>
+      <div style="margin-top:12px; padding:16px; background:rgba(255,255,255,0.03); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+        <p style="color:#a1a1aa; font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Estudiante (Mobile-first, immersive)</p>
+        <ul style="color:#d4d4d8; font-size:14px; line-height:1.8;">
+          <li>Pantalla de inicio con hero card del entreno de hoy + stats rápidos</li>
+          <li>Workout mode: full-screen, ejercicio por ejercicio, logging rápido</li>
+          <li>Bottom nav con 4 tabs: Hoy · Calendario · Progreso · Perfil</li>
+          <li>Micro-animaciones y feedback háptico (vibración en completar set)</li>
+          <li>Transiciones suaves entre secciones</li>
+        </ul>
+        <p style="color:#a1a1aa; font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-top:16px; margin-bottom:8px;">Entrenador (Desktop-first, workspace)</p>
+        <ul style="color:#d4d4d8; font-size:14px; line-height:1.8;">
+          <li>Sidebar con navegación clara + estado de alumnos</li>
+          <li>Routine builder: wizard guiado paso a paso (Día → Ejercicios → Sets)</li>
+          <li>Vista de alumno con timeline de actividad y progreso</li>
+          <li>Responsive: sidebar colapsa a bottom tabs en móvil</li>
+          <li>Quick actions y atajos de teclado</li>
+        </ul>
+      </div>
+      <div style="margin-top:12px;">
+        <span style="background:#e6263922; color:#E62639; padding:4px 10px; border-radius:6px; font-size:12px;">⭐ Recomendado</span>
+        <span style="background:#22c55e22; color:#22c55e; padding:4px 10px; border-radius:6px; font-size:12px; margin-left:6px;">Mejor de ambos mundos</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:32px; padding:20px; background:rgba(230,38,57,0.06); border:1px solid rgba(230,38,57,0.15); border-radius:12px;">
+  <h3 style="color:#E62639; margin-bottom:8px;">Mi recomendación: Opción C — Hybrid Premium</h3>
+  <p style="color:#a1a1aa; font-size:14px; line-height:1.7;">
+    Cada rol tiene necesidades distintas. El estudiante necesita una experiencia mobile-first que sea rápida y satisfactoria en el gym.
+    El entrenador necesita un workspace productivo donde crear rutinas y gestionar alumnos sea eficiente.
+    Combinar ambos enfoques nos da el máximo impacto sin sacrificar la experiencia de ningún usuario.
+  </p>
+</div>

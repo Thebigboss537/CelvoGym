@@ -1,0 +1,329 @@
+<h2>Sección 4: Estudiante — Progreso y Perfil</h2>
+<p class="subtitle">Pestaña Progreso unifica Records + Body Tracking. Perfil consolida la info personal.</p>
+
+<div class="split">
+
+  <!-- SCREEN 1: Progress -->
+  <div class="mockup">
+    <div class="mockup-header">Pantalla 1: Progreso (3 sub-tabs)</div>
+    <div class="mockup-body" style="background:#09090B; padding:0;">
+      <div style="max-width:375px; margin:0 auto; border:2px solid #27272A; border-radius:24px; overflow:hidden; background:#09090B;">
+        <div style="padding:8px 20px; display:flex; justify-content:space-between; font-size:11px; color:#71717A;">
+          <span>9:41</span>
+          <span>●●● WiFi 🔋</span>
+        </div>
+
+        <div style="padding:0 20px; min-height:540px;">
+
+          <!-- Header -->
+          <div style="padding:12px 0 16px;">
+            <h2 style="color:#F4F4F5; font-size:22px; font-weight:800;">Progreso</h2>
+          </div>
+
+          <!-- Sub-tabs -->
+          <div style="display:flex; background:#16161A; border-radius:12px; padding:4px; margin-bottom:20px; border:1px solid #27272A;">
+            <button style="flex:1; padding:10px; background:#E62639; color:white; border:none; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer;">Records</button>
+            <button style="flex:1; padding:10px; background:transparent; color:#71717A; border:none; border-radius:9px; font-size:13px; cursor:pointer;">Medidas</button>
+            <button style="flex:1; padding:10px; background:transparent; color:#71717A; border:none; border-radius:9px; font-size:13px; cursor:pointer;">Fotos</button>
+          </div>
+
+          <!-- Stats summary -->
+          <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <div style="flex:1; background:linear-gradient(135deg, #1a0a0d, #16161A); border:1px solid rgba(230,38,57,0.15); border-radius:14px; padding:14px; text-align:center;">
+              <p style="color:#E62639; font-size:24px; font-weight:800;">12</p>
+              <p style="color:#71717A; font-size:10px; margin-top:2px;">PRs totales</p>
+            </div>
+            <div style="flex:1; background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+              <p style="color:#22C55E; font-size:24px; font-weight:800;">3</p>
+              <p style="color:#71717A; font-size:10px; margin-top:2px;">Este mes</p>
+            </div>
+            <div style="flex:1; background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+              <p style="color:#A78BFA; font-size:24px; font-weight:800;">↑14%</p>
+              <p style="color:#71717A; font-size:10px; margin-top:2px;">Volumen</p>
+            </div>
+          </div>
+
+          <!-- PR Timeline -->
+          <p style="color:#71717A; font-size:11px; font-weight:600; letter-spacing:1px; margin-bottom:12px;">RECORDS PERSONALES 🏆</p>
+
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <!-- PR Item with chart preview -->
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                  <p style="color:#F4F4F5; font-size:15px; font-weight:700;">Press Banca</p>
+                  <p style="color:#71717A; font-size:12px;">Mejor: 85kg × 6 reps</p>
+                </div>
+                <div style="background:rgba(34,197,94,0.1); color:#22C55E; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:700;">
+                  +5kg ↑
+                </div>
+              </div>
+              <!-- Mini sparkline chart -->
+              <div style="height:40px; background:rgba(255,255,255,0.02); border-radius:8px; position:relative; overflow:hidden; padding:4px;">
+                <svg viewBox="0 0 200 36" style="width:100%; height:100%;" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#E62639" stop-opacity="0.3"/>
+                      <stop offset="100%" stop-color="#E62639" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,30 L33,28 L66,24 L100,22 L133,18 L166,12 L200,6" fill="none" stroke="#E62639" stroke-width="2"/>
+                  <path d="M0,30 L33,28 L66,24 L100,22 L133,18 L166,12 L200,6 L200,36 L0,36Z" fill="url(#g1)"/>
+                </svg>
+              </div>
+              <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                <span style="color:#71717A; font-size:9px;">Feb</span>
+                <span style="color:#71717A; font-size:9px;">Mar</span>
+                <span style="color:#71717A; font-size:9px;">Abr</span>
+              </div>
+            </div>
+
+            <!-- PR Item 2 -->
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <p style="color:#F4F4F5; font-size:15px; font-weight:700;">Sentadilla</p>
+                  <p style="color:#71717A; font-size:12px;">Mejor: 120kg × 5 reps</p>
+                </div>
+                <div style="background:rgba(34,197,94,0.1); color:#22C55E; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:700;">
+                  +10kg ↑
+                </div>
+              </div>
+            </div>
+
+            <!-- PR Item 3 -->
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <p style="color:#F4F4F5; font-size:15px; font-weight:700;">Peso Muerto</p>
+                  <p style="color:#71717A; font-size:12px;">Mejor: 140kg × 3 reps</p>
+                </div>
+                <div style="background:rgba(249,115,22,0.1); color:#F97316; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:700;">
+                  = Igual
+                </div>
+              </div>
+            </div>
+
+            <!-- PR Item 4 -->
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:16px;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <p style="color:#F4F4F5; font-size:15px; font-weight:700;">Press Militar</p>
+                  <p style="color:#71717A; font-size:12px;">Mejor: 55kg × 8 reps</p>
+                </div>
+                <div style="background:rgba(34,197,94,0.1); color:#22C55E; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:700;">
+                  +2.5kg ↑
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div style="padding:8px 20px 24px; background:#111113; border-top:1px solid #1E1E22; display:flex; justify-content:space-around; align-items:center;">
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Hoy</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Calendario</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; background:#E62639; border-radius:6px;"></div>
+            <p style="color:#E62639; font-size:10px; font-weight:600;">Progreso</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Perfil</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Profile -->
+  <div class="mockup">
+    <div class="mockup-header">Pantalla 2: Perfil del estudiante</div>
+    <div class="mockup-body" style="background:#09090B; padding:0;">
+      <div style="max-width:375px; margin:0 auto; border:2px solid #27272A; border-radius:24px; overflow:hidden; background:#09090B;">
+        <div style="padding:8px 20px; display:flex; justify-content:space-between; font-size:11px; color:#71717A;">
+          <span>9:41</span>
+          <span>●●● WiFi 🔋</span>
+        </div>
+
+        <div style="padding:0 20px; min-height:540px;">
+
+          <!-- Profile header -->
+          <div style="text-align:center; padding:20px 0 24px;">
+            <div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, #E62639, #B31D2C); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:24px; margin:0 auto 12px; box-shadow: 0 0 24px rgba(230,38,57,0.25);">CA</div>
+            <h2 style="color:#F4F4F5; font-size:20px; font-weight:800;">Carlos Almeida</h2>
+            <p style="color:#71717A; font-size:13px;">Miembro desde Febrero 2026</p>
+          </div>
+
+          <!-- Stats row -->
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:24px;">
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+              <p style="color:#F4F4F5; font-size:20px; font-weight:800;">42</p>
+              <p style="color:#71717A; font-size:10px; margin-top:2px;">Sesiones</p>
+            </div>
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+              <p style="color:#E62639; font-size:20px; font-weight:800;">🔥 5</p>
+              <p style="color:#71717A; font-size:10px; margin-top:2px;">Racha</p>
+            </div>
+            <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:14px; text-align:center;">
+              <p style="color:#F4F4F5; font-size:20px; font-weight:800;">12</p>
+              <p style="color:#71717A; font-size:10px; margin-top:2px;">PRs</p>
+            </div>
+          </div>
+
+          <!-- Trainer section -->
+          <p style="color:#71717A; font-size:11px; font-weight:600; letter-spacing:1px; margin-bottom:10px;">MI ENTRENADOR</p>
+          <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:16px; display:flex; align-items:center; gap:14px; margin-bottom:24px;">
+            <div style="width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg, #3B82F6, #1D4ED8); display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:16px; flex-shrink:0;">MR</div>
+            <div style="flex:1;">
+              <p style="color:#F4F4F5; font-size:15px; font-weight:700;">Mario Rodríguez</p>
+              <p style="color:#71717A; font-size:12px;">Entrenamiento personalizado</p>
+            </div>
+            <button style="background:rgba(230,38,57,0.1); color:#E62639; border:none; padding:8px 12px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">💬</button>
+          </div>
+
+          <!-- Current program -->
+          <p style="color:#71717A; font-size:11px; font-weight:600; letter-spacing:1px; margin-bottom:10px;">PROGRAMA ACTUAL</p>
+          <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:16px; margin-bottom:24px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+              <div>
+                <p style="color:#F4F4F5; font-size:15px; font-weight:700;">Hipertrofia 8 semanas</p>
+                <p style="color:#71717A; font-size:12px;">3 rutinas · Modo rotación</p>
+              </div>
+              <span style="background:rgba(34,197,94,0.1); color:#22C55E; padding:4px 10px; border-radius:8px; font-size:11px; font-weight:600;">Activo</span>
+            </div>
+            <div style="margin-bottom:6px; display:flex; justify-content:space-between;">
+              <span style="color:#A1A1AA; font-size:11px;">Semana 3 de 8</span>
+              <span style="color:#E62639; font-size:11px; font-weight:600;">37%</span>
+            </div>
+            <div style="height:6px; background:#27272A; border-radius:6px; overflow:hidden;">
+              <div style="width:37%; height:100%; background:linear-gradient(90deg, #B31D2C, #E62639); border-radius:6px;"></div>
+            </div>
+          </div>
+
+          <!-- Menu items -->
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 4px; border-bottom:1px solid #1E1E22;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="color:#A1A1AA; font-size:16px;">⚙️</span>
+                <span style="color:#F4F4F5; font-size:14px;">Configuración</span>
+              </div>
+              <span style="color:#71717A; font-size:14px;">›</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 4px; border-bottom:1px solid #1E1E22;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="color:#A1A1AA; font-size:16px;">🔔</span>
+                <span style="color:#F4F4F5; font-size:14px;">Notificaciones</span>
+              </div>
+              <span style="color:#71717A; font-size:14px;">›</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 4px;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <span style="color:#EF4444; font-size:16px;">🚪</span>
+                <span style="color:#EF4444; font-size:14px;">Cerrar sesión</span>
+              </div>
+              <span style="color:#71717A; font-size:14px;">›</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div style="padding:8px 20px 24px; background:#111113; border-top:1px solid #1E1E22; display:flex; justify-content:space-around; align-items:center;">
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Hoy</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Calendario</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Progreso</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; background:#E62639; border-radius:6px;"></div>
+            <p style="color:#E62639; font-size:10px; font-weight:600;">Perfil</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PROGRESS SUB-TABS EXPLANATION -->
+<div class="section" style="margin-top:32px;">
+  <h3>Sub-tabs de Progreso (lo que NO se ve arriba)</h3>
+  <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-top:12px;">
+    <div style="background:rgba(230,38,57,0.06); border:1px solid rgba(230,38,57,0.15); border-radius:14px; padding:18px;">
+      <p style="color:#E62639; font-size:13px; font-weight:700; margin-bottom:8px;">Records (mostrado)</p>
+      <ul style="color:#A1A1AA; font-size:12px; line-height:1.8; padding-left:16px;">
+        <li>Resumen: PRs totales, este mes, tendencia volumen</li>
+        <li>Lista de ejercicios con mejor marca</li>
+        <li>Mini sparkline chart por ejercicio</li>
+        <li>Badge de progreso (+kg / = Igual)</li>
+        <li>Tap → gráfico completo de evolución</li>
+      </ul>
+    </div>
+    <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:18px;">
+      <p style="color:#F4F4F5; font-size:13px; font-weight:700; margin-bottom:8px;">Medidas</p>
+      <ul style="color:#A1A1AA; font-size:12px; line-height:1.8; padding-left:16px;">
+        <li>Peso corporal con trend chart</li>
+        <li>% grasa corporal</li>
+        <li>Medidas: pecho, brazo, cintura, etc.</li>
+        <li>Selector de periodo (1m, 3m, 6m, 1a)</li>
+        <li>Botón "Registrar medida" con formulario rápido</li>
+      </ul>
+    </div>
+    <div style="background:#16161A; border:1px solid #27272A; border-radius:14px; padding:18px;">
+      <p style="color:#F4F4F5; font-size:13px; font-weight:700; margin-bottom:8px;">Fotos</p>
+      <ul style="color:#A1A1AA; font-size:12px; line-height:1.8; padding-left:16px;">
+        <li>Galería de fotos de progreso</li>
+        <li>Comparador before/after con slider</li>
+        <li>Timeline por fecha</li>
+        <li>Categorías: frente, lateral, espalda</li>
+        <li>Botón "Nueva foto" con cámara/galería</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- STUDENT DESIGN COMPLETE SUMMARY -->
+<div class="section" style="margin-top:24px;">
+  <h3>Resumen completo — Estudiante (4 tabs)</h3>
+  <div style="background:rgba(230,38,57,0.04); border:1px solid rgba(230,38,57,0.12); border-radius:14px; padding:20px; margin-top:12px;">
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;">
+      <div style="text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">🏠</div>
+        <p style="color:#E62639; font-size:12px; font-weight:700;">Hoy</p>
+        <p style="color:#71717A; font-size:10px; margin-top:4px; line-height:1.5;">Hero card, stats semana, PRs, CTA empezar</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">📅</div>
+        <p style="color:#F4F4F5; font-size:12px; font-weight:700;">Calendario</p>
+        <p style="color:#71717A; font-size:10px; margin-top:4px; line-height:1.5;">Mes, días asignados, detalle por día, progreso programa</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">📊</div>
+        <p style="color:#F4F4F5; font-size:12px; font-weight:700;">Progreso</p>
+        <p style="color:#71717A; font-size:10px; margin-top:4px; line-height:1.5;">Records, medidas corporales, fotos de progreso</p>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:24px; margin-bottom:6px;">👤</div>
+        <p style="color:#F4F4F5; font-size:12px; font-weight:700;">Perfil</p>
+        <p style="color:#71717A; font-size:10px; margin-top:4px; line-height:1.5;">Info personal, entrenador, programa actual, config</p>
+      </div>
+    </div>
+  </div>
+</div>

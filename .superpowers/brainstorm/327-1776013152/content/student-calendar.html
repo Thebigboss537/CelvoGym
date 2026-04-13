@@ -1,0 +1,409 @@
+<h2>Sección 3: Estudiante — Calendario + Detalle del Día</h2>
+<p class="subtitle">El calendario muestra el mes completo con días asignados. Tap en un día abre el detalle con la rutina que toca.</p>
+
+<div class="split">
+
+  <!-- SCREEN 1: Calendar Month View -->
+  <div class="mockup">
+    <div class="mockup-header">Pantalla 1: Calendario mensual</div>
+    <div class="mockup-body" style="background:#09090B; padding:0;">
+      <div style="max-width:375px; margin:0 auto; border:2px solid #27272A; border-radius:24px; overflow:hidden; background:#09090B;">
+        <div style="padding:8px 20px; display:flex; justify-content:space-between; font-size:11px; color:#71717A;">
+          <span>9:41</span>
+          <span>●●● WiFi 🔋</span>
+        </div>
+
+        <div style="padding:0 20px; min-height:540px;">
+
+          <!-- Page header -->
+          <div style="padding:12px 0 20px;">
+            <h2 style="color:#F4F4F5; font-size:22px; font-weight:800;">Calendario</h2>
+            <p style="color:#71717A; font-size:13px;">Programa: Hipertrofia 8 semanas · Semana 3/8</p>
+          </div>
+
+          <!-- Program progress bar -->
+          <div style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="color:#A1A1AA; font-size:11px; font-weight:600;">Progreso del programa</span>
+              <span style="color:#E62639; font-size:11px; font-weight:700;">37%</span>
+            </div>
+            <div style="height:6px; background:#27272A; border-radius:6px; overflow:hidden;">
+              <div style="width:37%; height:100%; background:linear-gradient(90deg, #B31D2C, #E62639); border-radius:6px;"></div>
+            </div>
+          </div>
+
+          <!-- Month navigation -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <button style="color:#A1A1AA; background:none; border:none; font-size:18px; cursor:pointer; padding:4px 8px;">‹</button>
+            <h3 style="color:#F4F4F5; font-size:16px; font-weight:700;">Abril 2026</h3>
+            <button style="color:#A1A1AA; background:none; border:none; font-size:18px; cursor:pointer; padding:4px 8px;">›</button>
+          </div>
+
+          <!-- Day headers -->
+          <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; margin-bottom:8px;">
+            <span style="text-align:center; color:#71717A; font-size:11px; font-weight:600;">LUN</span>
+            <span style="text-align:center; color:#71717A; font-size:11px; font-weight:600;">MAR</span>
+            <span style="text-align:center; color:#71717A; font-size:11px; font-weight:600;">MIÉ</span>
+            <span style="text-align:center; color:#71717A; font-size:11px; font-weight:600;">JUE</span>
+            <span style="text-align:center; color:#71717A; font-size:11px; font-weight:600;">VIE</span>
+            <span style="text-align:center; color:#71717A; font-size:11px; font-weight:600;">SÁB</span>
+            <span style="text-align:center; color:#71717A; font-size:11px; font-weight:600;">DOM</span>
+          </div>
+
+          <!-- Calendar grid -->
+          <div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px;">
+            <!-- Previous month filler -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; opacity:0.25;">
+              <span style="color:#71717A; font-size:13px;">30</span>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; opacity:0.25;">
+              <span style="color:#71717A; font-size:13px;">31</span>
+            </div>
+
+            <!-- Apr 1 - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">1</span>
+            </div>
+            <!-- Apr 2 - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">2</span>
+            </div>
+            <!-- Apr 3 - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">3</span>
+            </div>
+            <!-- Apr 4 - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">4</span>
+            </div>
+            <!-- Apr 5 - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">5</span>
+            </div>
+
+            <!-- Week 2: Apr 6-12 -->
+            <!-- Apr 6 Mon - Completed -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#0D3320; border:1px solid rgba(34,197,94,0.25);">
+              <span style="color:#22C55E; font-size:13px; font-weight:700;">6</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#22C55E; margin-top:3px;"></div>
+            </div>
+            <!-- Apr 7 Tue - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">7</span>
+            </div>
+            <!-- Apr 8 Wed - Completed -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#0D3320; border:1px solid rgba(34,197,94,0.25);">
+              <span style="color:#22C55E; font-size:13px; font-weight:700;">8</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#22C55E; margin-top:3px;"></div>
+            </div>
+            <!-- Apr 9 Thu - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">9</span>
+            </div>
+            <!-- Apr 10 Fri - Completed -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#0D3320; border:1px solid rgba(34,197,94,0.25);">
+              <span style="color:#22C55E; font-size:13px; font-weight:700;">10</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#22C55E; margin-top:3px;"></div>
+            </div>
+            <!-- Apr 11 Sat - Rest -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">11</span>
+            </div>
+            <!-- Apr 12 Sun - TODAY -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:rgba(230,38,57,0.12); border:1.5px solid #E62639; box-shadow: 0 0 12px rgba(230,38,57,0.2);">
+              <span style="color:#E62639; font-size:13px; font-weight:800;">12</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px;"></div>
+            </div>
+
+            <!-- Week 3: Apr 13-19 -->
+            <!-- Apr 13 Mon - Scheduled -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">13</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">14</span>
+            </div>
+            <!-- Apr 15 Wed - Scheduled -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">15</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">16</span>
+            </div>
+            <!-- Apr 17 Fri - Scheduled -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">17</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">18</span>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;">
+              <span style="color:#71717A; font-size:13px;">19</span>
+            </div>
+
+            <!-- Remaining days abbreviated -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">20</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;"><span style="color:#71717A; font-size:13px;">21</span></div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">22</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;"><span style="color:#71717A; font-size:13px;">23</span></div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">24</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;"><span style="color:#71717A; font-size:13px;">25</span></div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;"><span style="color:#71717A; font-size:13px;">26</span></div>
+
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">27</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;"><span style="color:#71717A; font-size:13px;">28</span></div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A; border:1px solid #27272A;">
+              <span style="color:#F4F4F5; font-size:13px;">29</span>
+              <div style="width:5px; height:5px; border-radius:50%; background:#E62639; margin-top:3px; opacity:0.5;"></div>
+            </div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; background:#16161A;"><span style="color:#71717A; font-size:13px;">30</span></div>
+            <!-- Next month fillers -->
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; opacity:0.25;"><span style="color:#71717A; font-size:13px;">1</span></div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; opacity:0.25;"><span style="color:#71717A; font-size:13px;">2</span></div>
+            <div style="aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; opacity:0.25;"><span style="color:#71717A; font-size:13px;">3</span></div>
+          </div>
+
+          <!-- Legend -->
+          <div style="display:flex; gap:16px; justify-content:center; margin-top:16px; padding:12px 0;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div style="width:10px; height:10px; border-radius:50%; background:#22C55E;"></div>
+              <span style="color:#71717A; font-size:11px;">Completado</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div style="width:10px; height:10px; border-radius:50%; background:#E62639;"></div>
+              <span style="color:#71717A; font-size:11px;">Hoy</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div style="width:10px; height:10px; border-radius:50%; background:#E62639; opacity:0.5;"></div>
+              <span style="color:#71717A; font-size:11px;">Programado</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <div style="width:10px; height:10px; border-radius:3px; background:#16161A; border:1px solid #27272A;"></div>
+              <span style="color:#71717A; font-size:11px;">Descanso</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div style="padding:8px 20px 24px; background:#111113; border-top:1px solid #1E1E22; display:flex; justify-content:space-around; align-items:center;">
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Hoy</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; background:#E62639; border-radius:6px;"></div>
+            <p style="color:#E62639; font-size:10px; font-weight:600;">Calendario</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Progreso</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Perfil</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Day Detail -->
+  <div class="mockup">
+    <div class="mockup-header">Pantalla 2: Detalle del día (tap en día 12)</div>
+    <div class="mockup-body" style="background:#09090B; padding:0;">
+      <div style="max-width:375px; margin:0 auto; border:2px solid #27272A; border-radius:24px; overflow:hidden; background:#09090B;">
+        <div style="padding:8px 20px; display:flex; justify-content:space-between; font-size:11px; color:#71717A;">
+          <span>9:41</span>
+          <span>●●● WiFi 🔋</span>
+        </div>
+
+        <div style="padding:0 20px; min-height:540px;">
+
+          <!-- Top bar -->
+          <div style="display:flex; align-items:center; padding:12px 0 20px; gap:12px;">
+            <button style="color:#A1A1AA; background:none; border:none; font-size:16px; cursor:pointer;">← </button>
+            <div>
+              <h2 style="color:#F4F4F5; font-size:20px; font-weight:800;">Domingo, 12 de Abril</h2>
+              <p style="color:#71717A; font-size:13px;">Semana 3 · Día de entrenamiento</p>
+            </div>
+          </div>
+
+          <!-- Assignment mode badge -->
+          <div style="display:flex; gap:8px; margin-bottom:20px;">
+            <span style="background:rgba(230,38,57,0.1); color:#E62639; padding:5px 12px; border-radius:8px; font-size:12px; font-weight:600;">Modo Rotación</span>
+            <span style="background:rgba(167,139,250,0.1); color:#A78BFA; padding:5px 12px; border-radius:8px; font-size:12px; font-weight:600;">Rutina A de 3</span>
+          </div>
+
+          <!-- Routine card -->
+          <div style="background:linear-gradient(135deg, #1a0a0d 0%, #16161A 100%); border:1px solid rgba(230,38,57,0.2); border-radius:20px; padding:24px; margin-bottom:20px; position:relative; overflow:hidden;">
+            <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:radial-gradient(circle, rgba(230,38,57,0.08) 0%, transparent 70%);"></div>
+
+            <p style="color:#E62639; font-size:11px; font-weight:700; letter-spacing:1.5px; margin-bottom:12px;">RUTINA ASIGNADA</p>
+            <h3 style="color:#F4F4F5; font-size:20px; font-weight:700; margin-bottom:4px;">Push — Pecho y Tríceps</h3>
+            <p style="color:#A1A1AA; font-size:13px; margin-bottom:20px;">Parte del programa: Hipertrofia 8 semanas</p>
+
+            <!-- Routine stats -->
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+              <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; flex:1; text-align:center;">
+                <p style="color:#F4F4F5; font-size:18px; font-weight:700;">6</p>
+                <p style="color:#71717A; font-size:10px; margin-top:2px;">Ejercicios</p>
+              </div>
+              <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; flex:1; text-align:center;">
+                <p style="color:#F4F4F5; font-size:18px; font-weight:700;">22</p>
+                <p style="color:#71717A; font-size:10px; margin-top:2px;">Sets totales</p>
+              </div>
+              <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; flex:1; text-align:center;">
+                <p style="color:#F4F4F5; font-size:18px; font-weight:700;">~55</p>
+                <p style="color:#71717A; font-size:10px; margin-top:2px;">Min</p>
+              </div>
+            </div>
+
+            <!-- Muscle groups -->
+            <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:20px;">
+              <span style="background:rgba(255,255,255,0.06); color:#A1A1AA; padding:4px 10px; border-radius:6px; font-size:11px;">Pecho</span>
+              <span style="background:rgba(255,255,255,0.06); color:#A1A1AA; padding:4px 10px; border-radius:6px; font-size:11px;">Tríceps</span>
+              <span style="background:rgba(255,255,255,0.06); color:#A1A1AA; padding:4px 10px; border-radius:6px; font-size:11px;">Hombro anterior</span>
+            </div>
+
+            <button style="width:100%; padding:14px; background:#E62639; color:white; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; letter-spacing:0.5px;">
+              Empezar Entreno →
+            </button>
+          </div>
+
+          <!-- Exercise preview list -->
+          <div>
+            <p style="color:#71717A; font-size:11px; font-weight:600; letter-spacing:1px; margin-bottom:12px;">EJERCICIOS</p>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="background:#16161A; border:1px solid #27272A; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
+                <span style="color:#F59E0B; font-size:10px; font-weight:700; background:#F59E0B18; padding:3px 6px; border-radius:4px;">W+E</span>
+                <div style="flex:1;">
+                  <p style="color:#F4F4F5; font-size:13px; font-weight:600;">Press Banca</p>
+                  <p style="color:#71717A; font-size:11px;">1 warmup + 4 efectivos</p>
+                </div>
+                <span style="color:#71717A; font-size:12px;">Anterior: 80kg</span>
+              </div>
+
+              <div style="background:#16161A; border:1px solid #27272A; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
+                <span style="color:#E62639; font-size:10px; font-weight:700; background:rgba(230,38,57,0.1); padding:3px 6px; border-radius:4px;">4×E</span>
+                <div style="flex:1;">
+                  <p style="color:#F4F4F5; font-size:13px; font-weight:600;">Press Inclinado Mancuernas</p>
+                  <p style="color:#71717A; font-size:11px;">4 sets efectivos</p>
+                </div>
+                <span style="color:#71717A; font-size:12px;">Anterior: 30kg</span>
+              </div>
+
+              <div style="background:#16161A; border:1px solid #27272A; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
+                <span style="color:#E62639; font-size:10px; font-weight:700; background:rgba(230,38,57,0.1); padding:3px 6px; border-radius:4px;">3×E</span>
+                <div style="flex:1;">
+                  <p style="color:#F4F4F5; font-size:13px; font-weight:600;">Aperturas Mancuernas</p>
+                  <p style="color:#71717A; font-size:11px;">3 sets efectivos</p>
+                </div>
+                <span style="color:#71717A; font-size:12px;">Anterior: 14kg</span>
+              </div>
+
+              <p style="color:#71717A; font-size:12px; text-align:center; padding:8px;">+ 3 ejercicios más</p>
+            </div>
+          </div>
+
+          <!-- Last session reference -->
+          <div style="margin-top:16px; background:rgba(255,255,255,0.02); border:1px solid #27272A; border-radius:12px; padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <p style="color:#71717A; font-size:11px; font-weight:600; letter-spacing:0.5px;">ÚLTIMA VEZ QUE HICISTE ESTA RUTINA</p>
+                <p style="color:#A1A1AA; font-size:13px; margin-top:4px;">Miércoles 8 de Abril · 52 min</p>
+              </div>
+              <div style="text-align:right;">
+                <p style="color:#22C55E; font-size:16px; font-weight:700;">4.8t</p>
+                <p style="color:#71717A; font-size:10px;">Volumen total</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div style="padding:8px 20px 24px; background:#111113; border-top:1px solid #1E1E22; display:flex; justify-content:space-around; align-items:center;">
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Hoy</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; background:#E62639; border-radius:6px;"></div>
+            <p style="color:#E62639; font-size:10px; font-weight:600;">Calendario</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Progreso</p>
+          </div>
+          <div style="text-align:center; flex:1;">
+            <div style="width:24px; height:24px; margin:0 auto 4px; border:1.5px solid #71717A; border-radius:6px;"></div>
+            <p style="color:#71717A; font-size:10px;">Perfil</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FLOW DIAGRAM -->
+<div class="section" style="margin-top:32px;">
+  <h3>Flujo completo del estudiante: de calendario a workout</h3>
+  <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap:6px; margin-top:16px;">
+    <div style="text-align:center; padding:14px 6px; background:#16161A; border:1px solid #27272A; border-radius:12px;">
+      <div style="font-size:20px; margin-bottom:6px;">🏠</div>
+      <p style="color:#F4F4F5; font-size:11px; font-weight:600;">Home</p>
+      <p style="color:#71717A; font-size:9px; margin-top:3px;">Hero card hoy</p>
+    </div>
+    <div style="text-align:center; padding:14px 6px; background:#16161A; border:1px solid #27272A; border-radius:12px;">
+      <div style="font-size:20px; margin-bottom:6px;">📅</div>
+      <p style="color:#F4F4F5; font-size:11px; font-weight:600;">Calendario</p>
+      <p style="color:#71717A; font-size:9px; margin-top:3px;">Mes completo</p>
+    </div>
+    <div style="text-align:center; padding:14px 6px; background:rgba(230,38,57,0.08); border:1px solid rgba(230,38,57,0.2); border-radius:12px;">
+      <div style="font-size:20px; margin-bottom:6px;">📋</div>
+      <p style="color:#E62639; font-size:11px; font-weight:700;">Detalle día</p>
+      <p style="color:#71717A; font-size:9px; margin-top:3px;">Rutina asignada</p>
+    </div>
+    <div style="text-align:center; padding:14px 6px; background:#16161A; border:1px solid #27272A; border-radius:12px;">
+      <div style="font-size:20px; margin-bottom:6px;">🏋️</div>
+      <p style="color:#F4F4F5; font-size:11px; font-weight:600;">Workout</p>
+      <p style="color:#71717A; font-size:9px; margin-top:3px;">Lista ejercicios</p>
+    </div>
+    <div style="text-align:center; padding:14px 6px; background:#16161A; border:1px solid #27272A; border-radius:12px;">
+      <div style="font-size:20px; margin-bottom:6px;">💪</div>
+      <p style="color:#F4F4F5; font-size:11px; font-weight:600;">Logging</p>
+      <p style="color:#71717A; font-size:9px; margin-top:3px;">Set por set</p>
+    </div>
+    <div style="text-align:center; padding:14px 6px; background:#16161A; border:1px solid #27272A; border-radius:12px;">
+      <div style="font-size:20px; margin-bottom:6px;">🎉</div>
+      <p style="color:#F4F4F5; font-size:11px; font-weight:600;">Resumen</p>
+      <p style="color:#71717A; font-size:9px; margin-top:3px;">Stats + PRs</p>
+    </div>
+  </div>
+  <div style="margin-top:12px; padding:12px 16px; background:rgba(255,255,255,0.02); border-radius:10px;">
+    <p style="color:#A1A1AA; font-size:12px; line-height:1.7;">
+      <strong style="color:#F4F4F5;">Atajo desde Home:</strong> El hero card ya resuelve qué rutina toca hoy → tap "Empezar" salta directo al Workout Overview.<br>
+      <strong style="color:#F4F4F5;">Desde Calendario:</strong> Tap día → ve el Detalle del Día con la rutina asignada (rotación o fijo) → tap "Empezar" → Workout.
+    </p>
+  </div>
+</div>
