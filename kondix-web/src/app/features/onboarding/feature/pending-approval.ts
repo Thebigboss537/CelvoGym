@@ -1,19 +1,19 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth.store';
-import { CgLogo } from '../../../shared/ui/logo';
-import { CgSpinner } from '../../../shared/ui/spinner';
+import { KxLogo } from '../../../shared/ui/logo';
+import { KxSpinner } from '../../../shared/ui/spinner';
 import { environment } from '../../../../environments/environment';
 import type { TrainerStatusDto } from '../../../shared/models';
 
 @Component({
   selector: 'app-pending-approval',
-  imports: [CgLogo, CgSpinner],
+  imports: [KxLogo, KxSpinner],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
         <div class="text-center mb-8">
-          <cg-logo [size]="36" class="flex justify-center" />
+          <kx-logo [size]="36" class="flex justify-center" />
         </div>
 
         <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3">
@@ -39,7 +39,7 @@ import type { TrainerStatusDto } from '../../../shared/models';
             class="w-full bg-card border border-border hover:border-primary text-text font-semibold py-3 rounded-lg transition press flex items-center justify-center gap-2"
           >
             @if (checking()) {
-              <cg-spinner size="sm" />
+              <kx-spinner size="sm" />
               Verificando...
             } @else {
               Verificar estado

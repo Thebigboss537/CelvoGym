@@ -9,10 +9,10 @@ import {
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { CalendarMonthDto } from '../../../shared/models';
-import { CgSpinner } from '../../../shared/ui/spinner';
-import { CgEmptyState } from '../../../shared/ui/empty-state';
-import { CgProgressBar } from '../../../shared/ui/progress-bar';
-import { CgDayCell, type DayCellState } from '../../../shared/ui/day-cell';
+import { KxSpinner } from '../../../shared/ui/spinner';
+import { KxEmptyState } from '../../../shared/ui/empty-state';
+import { KxProgressBar } from '../../../shared/ui/progress-bar';
+import { KxDayCell, type DayCellState } from '../../../shared/ui/day-cell';
 
 interface DayGridCell {
   day: number;
@@ -22,14 +22,14 @@ interface DayGridCell {
 
 @Component({
   selector: 'app-calendar',
-  imports: [CgSpinner, CgEmptyState, CgProgressBar, CgDayCell],
+  imports: [KxSpinner, KxEmptyState, KxProgressBar, KxDayCell],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="animate-fade-up pb-6">
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else if (!calendarData()?.activeProgram) {
-        <cg-empty-state title="Sin programa activo"
+        <kx-empty-state title="Sin programa activo"
           subtitle="Tu entrenador te asignará un programa pronto" />
       } @else {
         <!-- Page header -->
@@ -44,7 +44,7 @@ interface DayGridCell {
         @if (program(); as prog) {
           <div class="bg-card border border-border rounded-xl p-4 mb-5">
             <p class="text-overline text-text-muted mb-2">Progreso del programa</p>
-            <cg-progress-bar [percentage]="programPercentage()" size="md"
+            <kx-progress-bar [percentage]="programPercentage()" size="md"
               [label]="'Semana ' + prog.currentWeek + ' de ' + prog.totalWeeks"
               [showLabel]="true" />
           </div>
@@ -85,7 +85,7 @@ interface DayGridCell {
         <!-- Days grid -->
         <div class="grid grid-cols-7 gap-1 mb-5">
           @for (cell of daysGrid(); track $index) {
-            <cg-day-cell
+            <kx-day-cell
               [day]="cell.day"
               [state]="cell.state"
               (select)="selectDay(cell)"

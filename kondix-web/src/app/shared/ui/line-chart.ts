@@ -6,7 +6,7 @@ export interface ChartPoint {
 }
 
 @Component({
-  selector: 'cg-line-chart',
+  selector: 'kx-line-chart',
   template: `
     @if (points().length > 1) {
       <div class="relative">
@@ -35,7 +35,7 @@ export interface ChartPoint {
     }
   `,
 })
-export class CgLineChart {
+export class KxLineChart {
   points = input.required<ChartPoint[]>();
   width = 300;
   height = 120;

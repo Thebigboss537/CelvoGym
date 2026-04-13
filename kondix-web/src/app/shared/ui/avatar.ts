@@ -11,7 +11,7 @@ const gradientMap: Record<string, [string, string]> = {
 };
 
 @Component({
-  selector: 'cg-avatar',
+  selector: 'kx-avatar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -23,7 +23,7 @@ const gradientMap: Record<string, [string, string]> = {
     </div>
   `,
 })
-export class CgAvatar {
+export class KxAvatar {
   name = input.required<string>();
   size = input<'sm' | 'md'>('sm');
   gradient = input<'crimson' | 'purple' | 'amber' | 'cyan' | 'pink' | 'blue'>();

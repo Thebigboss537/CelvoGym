@@ -7,18 +7,18 @@ import {
   PersonalRecordDto,
   ProgressPhotoDto,
 } from '../../../shared/models';
-import { CgBadge } from '../../../shared/ui/badge';
-import { CgEmptyState } from '../../../shared/ui/empty-state';
-import { CgSegmentedControl } from '../../../shared/ui/segmented-control';
-import { CgSpinner } from '../../../shared/ui/spinner';
-import { CgStatCard } from '../../../shared/ui/stat-card';
+import { KxBadge } from '../../../shared/ui/badge';
+import { KxEmptyState } from '../../../shared/ui/empty-state';
+import { KxSegmentedControl } from '../../../shared/ui/segmented-control';
+import { KxSpinner } from '../../../shared/ui/spinner';
+import { KxStatCard } from '../../../shared/ui/stat-card';
 import { ToastService } from '../../../shared/ui/toast';
 import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-progress',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CgSegmentedControl, CgStatCard, CgSpinner, CgEmptyState, CgBadge],
+  imports: [FormsModule, KxSegmentedControl, KxStatCard, KxSpinner, KxEmptyState, KxBadge],
   template: `
     <div class="animate-fade-up space-y-5 pb-8">
 
@@ -29,14 +29,14 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
       </div>
 
       <!-- Segmented control -->
-      <cg-segmented-control
+      <kx-segmented-control
         [options]="['Records', 'Medidas', 'Fotos']"
         [selected]="activeTab()"
         (selectedChange)="activeTab.set($event)" />
 
       <!-- Loading -->
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else {
         @switch (activeTab()) {
 
@@ -47,19 +47,19 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
               <!-- Stats row -->
               <div class="flex gap-3">
                 <div class="flex-1">
-                  <cg-stat-card
+                  <kx-stat-card
                     label="PRs totales"
                     [value]="records().length.toString()"
                     valueColor="text-primary" />
                 </div>
                 <div class="flex-1">
-                  <cg-stat-card
+                  <kx-stat-card
                     label="Este mes"
                     [value]="recordsThisMonth().toString()"
                     valueColor="text-text" />
                 </div>
                 <div class="flex-1">
-                  <cg-stat-card
+                  <kx-stat-card
                     label="Tendencia"
                     [value]="trend()"
                     valueColor="text-text-muted" />
@@ -68,7 +68,7 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
 
               <!-- PR list -->
               @if (records().length === 0) {
-                <cg-empty-state
+                <kx-empty-state
                   title="Sin records aún"
                   subtitle="Completa entrenamientos para registrar tus PRs" />
               } @else {
@@ -84,7 +84,7 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
                         <p class="text-text-muted text-xs">{{ formatDateWithYear(pr.achievedAt) }}</p>
                       </div>
                       <div class="shrink-0">
-                        <cg-badge [text]="pr.weight + ' kg'" variant="success" />
+                        <kx-badge [text]="pr.weight + ' kg'" variant="success" />
                       </div>
                     </div>
                   }
@@ -102,7 +102,7 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
                 <div class="flex gap-3">
                   @if (latestMetric()!.weight) {
                     <div class="flex-1">
-                      <cg-stat-card
+                      <kx-stat-card
                         label="Peso actual"
                         [value]="latestMetric()!.weight + ' kg'"
                         valueColor="text-text" />
@@ -110,7 +110,7 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
                   }
                   @if (latestMetric()!.bodyFat) {
                     <div class="flex-1">
-                      <cg-stat-card
+                      <kx-stat-card
                         label="Grasa corporal"
                         [value]="latestMetric()!.bodyFat + '%'"
                         valueColor="text-text" />
@@ -156,7 +156,7 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
 
               <!-- Metrics history -->
               @if (bodyMetrics().length === 0 && !showForm()) {
-                <cg-empty-state
+                <kx-empty-state
                   title="Sin registros"
                   subtitle="Registra tu peso y medidas para ver tu progreso" />
               } @else if (bodyMetrics().length > 0) {
@@ -205,7 +205,7 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
               </label>
 
               @if (photos().length === 0) {
-                <cg-empty-state
+                <kx-empty-state
                   title="Sin fotos de progreso"
                   subtitle="Sube tu primera foto para empezar a trackear tu físico" />
               } @else {

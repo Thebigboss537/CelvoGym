@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { LucideAngularModule, LucideIconProvider, LUCIDE_ICONS, icons } from 'lucide-angular';
 
 @Component({
-  selector: 'cg-empty-state',
+  selector: 'kx-empty-state',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule],
   providers: [
@@ -35,7 +35,7 @@ import { LucideAngularModule, LucideIconProvider, LUCIDE_ICONS, icons } from 'lu
     </div>
   `,
 })
-export class CgEmptyState {
+export class KxEmptyState {
   title = input.required<string>();
   subtitle = input('');
   icon = input<string>();

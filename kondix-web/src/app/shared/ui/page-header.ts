@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'cg-page-header',
+  selector: 'kx-page-header',
   template: `
     <div class="flex items-center justify-between mb-6">
       <div>
@@ -17,7 +17,7 @@ import { Component, input } from '@angular/core';
     </div>
   `,
 })
-export class CgPageHeader {
+export class KxPageHeader {
   title = input.required<string>();
   subtitle = input('');
   hasBack = input(false);

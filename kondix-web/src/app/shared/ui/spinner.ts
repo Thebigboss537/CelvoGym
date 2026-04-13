@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'cg-spinner',
+  selector: 'kx-spinner',
   template: `
     <div class="flex justify-center" [class]="containerClass()">
       <div
@@ -16,7 +16,7 @@ import { Component, input } from '@angular/core';
     </div>
   `,
 })
-export class CgSpinner {
+export class KxSpinner {
   size = input<'sm' | 'md'>('md');
   containerClass = input('py-12');
 }

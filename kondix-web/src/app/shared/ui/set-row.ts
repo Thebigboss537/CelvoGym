@@ -29,7 +29,7 @@ export interface SetCompleteEvent {
 }
 
 @Component({
-  selector: 'cg-set-row',
+  selector: 'kx-set-row',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -111,7 +111,7 @@ export interface SetCompleteEvent {
     </div>
   `,
 })
-export class CgSetRow {
+export class KxSetRow {
   setNumber = input.required<number>();
   setType = input.required<string>();
   state = input.required<string>();

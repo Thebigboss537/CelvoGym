@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { ExerciseSetDto, RoutineDetailDto } from '../../../../shared/models';
-import { CgBadge } from '../../../../shared/ui/badge';
-import { CgSpinner } from '../../../../shared/ui/spinner';
-import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
+import { KxBadge } from '../../../../shared/ui/badge';
+import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
 import { groupTypeLabel } from '../../../../shared/utils/labels';
 
@@ -41,11 +41,11 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
 @Component({
   selector: 'app-routine-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CgBadge, CgSpinner, CgConfirmDialog],
+  imports: [RouterLink, KxBadge, KxSpinner, KxConfirmDialog],
   template: `
     <div class="animate-fade-up">
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else if (error()) {
         <div class="text-center py-12">
           <p class="text-danger">{{ error() }}</p>
@@ -65,7 +65,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
             <div class="flex items-center gap-2 flex-wrap">
               <h1 class="font-display text-xl font-extrabold text-text">{{ routine()!.name }}</h1>
               @if (routine()!.category) {
-                <cg-badge [text]="routine()!.category!" variant="info" />
+                <kx-badge [text]="routine()!.category!" variant="info" />
               }
             </div>
             @if (routine()!.description) {
@@ -101,7 +101,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
               >
                 <div class="flex items-center gap-2">
                   <span class="font-semibold text-text">{{ day.name }}</span>
-                  <cg-badge [text]="exerciseCountLabel(day)" variant="neutral" />
+                  <kx-badge [text]="exerciseCountLabel(day)" variant="neutral" />
                 </div>
                 <!-- Chevron -->
                 <svg
@@ -128,7 +128,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
                           <div class="flex items-center gap-2">
                             <span class="text-text font-medium text-sm">{{ exercise.name }}</span>
                             @if (group.groupType !== 'Single') {
-                              <cg-badge [text]="groupTypeLabel(group.groupType)" variant="info" />
+                              <kx-badge [text]="groupTypeLabel(group.groupType)" variant="info" />
                             }
                           </div>
                           <div class="flex items-center gap-2 mt-1">
@@ -153,7 +153,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
     </div>
 
     <!-- Delete confirm dialog -->
-    <cg-confirm-dialog
+    <kx-confirm-dialog
       [open]="showDeleteDialog()"
       title="Eliminar rutina"
       message="Esta acción no se puede deshacer. ¿Estás seguro?"

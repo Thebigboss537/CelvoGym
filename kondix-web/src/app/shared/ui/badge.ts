@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, computed } from '@angular/core';
 
 @Component({
-  selector: 'cg-badge',
+  selector: 'kx-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-semibold" [class]="variantClass()">
@@ -12,7 +12,7 @@ import { ChangeDetectionStrategy, Component, input, computed } from '@angular/co
     </span>
   `,
 })
-export class CgBadge {
+export class KxBadge {
   text = input.required<string>();
   variant = input<'success' | 'warning' | 'danger' | 'info' | 'neutral'>('neutral');
   dot = input<boolean>(false);

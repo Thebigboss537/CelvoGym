@@ -3,8 +3,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { ProgramDetailDto, RoutineListDto } from '../../../../shared/models';
-import { CgSpinner } from '../../../../shared/ui/spinner';
-import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
+import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
 
 interface RoutineSlot {
@@ -15,7 +15,7 @@ interface RoutineSlot {
 @Component({
   selector: 'app-program-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CgSpinner, CgConfirmDialog],
+  imports: [FormsModule, RouterLink, KxSpinner, KxConfirmDialog],
   template: `
     <div class="animate-fade-up">
       <!-- Breadcrumb -->
@@ -30,7 +30,7 @@ interface RoutineSlot {
       </h1>
 
       @if (loadingData()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else {
         <form (ngSubmit)="save()" class="space-y-5 max-w-xl">
 
@@ -141,7 +141,7 @@ interface RoutineSlot {
       }
     </div>
 
-    <cg-confirm-dialog
+    <kx-confirm-dialog
       [open]="showDeleteDialog()"
       title="Eliminar programa"
       message="Esta acción no se puede deshacer. ¿Estás seguro?"

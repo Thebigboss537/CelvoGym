@@ -5,17 +5,17 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
-import { CgLogo } from '../../../shared/ui/logo';
+import { KxLogo } from '../../../shared/ui/logo';
 import { parseGuardError } from '../../../shared/utils/guard-errors';
 
 @Component({
   selector: 'app-register',
-  imports: [FormsModule, RouterLink, CgLogo],
+  imports: [FormsModule, RouterLink, KxLogo],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
         <div class="text-center mb-8">
-          <cg-logo [size]="36" class="flex justify-center" />
+          <kx-logo [size]="36" class="flex justify-center" />
           <p class="text-text-secondary mt-2">Registro de entrenador</p>
         </div>
 

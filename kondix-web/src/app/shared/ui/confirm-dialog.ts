@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 
 @Component({
-  selector: 'cg-confirm-dialog',
+  selector: 'kx-confirm-dialog',
   template: `
     @if (open()) {
       <div class="fixed inset-0 bg-bg/80 backdrop-blur-sm flex items-center justify-center z-50 px-4"
@@ -30,7 +30,7 @@ import { Component, input, output } from '@angular/core';
     }
   `,
 })
-export class CgConfirmDialog {
+export class KxConfirmDialog {
   open = input(false);
   title = input('Confirmar acción');
   message = input('¿Estás seguro?');

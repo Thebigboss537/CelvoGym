@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'cg-rest-timer',
+  selector: 'kx-rest-timer',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -51,7 +51,7 @@ import {
     </div>
   `,
 })
-export class CgRestTimer implements OnDestroy {
+export class KxRestTimer implements OnDestroy {
   durationSeconds = input.required<number>();
   active = input<boolean>(false);
 

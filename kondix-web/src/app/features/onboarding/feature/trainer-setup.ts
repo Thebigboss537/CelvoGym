@@ -4,19 +4,19 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthStore } from '../../../core/auth/auth.store';
-import { CgLogo } from '../../../shared/ui/logo';
-import { CgSpinner } from '../../../shared/ui/spinner';
+import { KxLogo } from '../../../shared/ui/logo';
+import { KxSpinner } from '../../../shared/ui/spinner';
 import { environment } from '../../../../environments/environment';
 import type { TrainerStatusDto } from '../../../shared/models';
 
 @Component({
   selector: 'app-trainer-setup',
-  imports: [FormsModule, CgLogo, CgSpinner],
+  imports: [FormsModule, KxLogo, KxSpinner],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
         <div class="text-center mb-8">
-          <cg-logo [size]="36" class="flex justify-center" />
+          <kx-logo [size]="36" class="flex justify-center" />
           <h1 class="text-h2 mt-3 text-text">Completa tu perfil</h1>
           <p class="text-text-secondary text-sm mt-1">
             Configura cómo te verán tus alumnos en CelvoGym.
@@ -60,7 +60,7 @@ import type { TrainerStatusDto } from '../../../shared/models';
             class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press flex items-center justify-center gap-2"
           >
             @if (loading()) {
-              <cg-spinner size="sm" />
+              <kx-spinner size="sm" />
               Guardando...
             } @else {
               Continuar

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, computed } from '@angular/core';
 
 @Component({
-  selector: 'cg-progress-bar',
+  selector: 'kx-progress-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div>
@@ -20,7 +20,7 @@ import { ChangeDetectionStrategy, Component, input, computed } from '@angular/co
     </div>
   `,
 })
-export class CgProgressBar {
+export class KxProgressBar {
   percentage = input.required<number>();
   label = input<string>('');
   showLabel = input<boolean>(true);

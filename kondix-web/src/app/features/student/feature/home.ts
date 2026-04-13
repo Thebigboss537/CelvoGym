@@ -4,11 +4,11 @@ import { Router } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ApiService } from '../../../core/services/api.service';
 import { MyProgramDto, NextWorkoutDto, PersonalRecordDto } from '../../../shared/models';
-import { CgAvatar } from '../../../shared/ui/avatar';
-import { CgEmptyState } from '../../../shared/ui/empty-state';
-import { CgHeroCard } from '../../../shared/ui/hero-card';
-import { CgSpinner } from '../../../shared/ui/spinner';
-import { CgStatCard } from '../../../shared/ui/stat-card';
+import { KxAvatar } from '../../../shared/ui/avatar';
+import { KxEmptyState } from '../../../shared/ui/empty-state';
+import { KxHeroCard } from '../../../shared/ui/hero-card';
+import { KxSpinner } from '../../../shared/ui/spinner';
+import { KxStatCard } from '../../../shared/ui/stat-card';
 import { relativeDate as relativeDateBase } from '../../../shared/utils/format-date';
 
 function capitalize(s: string): string {
@@ -21,7 +21,7 @@ function relativeDate(iso: string): string {
 
 @Component({
   selector: 'app-student-home',
-  imports: [CgHeroCard, CgStatCard, CgAvatar, CgEmptyState, CgSpinner],
+  imports: [KxHeroCard, KxStatCard, KxAvatar, KxEmptyState, KxSpinner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="animate-fade-up space-y-6">
@@ -35,21 +35,21 @@ function relativeDate(iso: string): string {
           </h1>
         </div>
         @if (firstName()) {
-          <cg-avatar [name]="firstName()" size="md" />
+          <kx-avatar [name]="firstName()" size="md" />
         }
       </div>
 
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else if (!program()) {
         <!-- No program assigned yet -->
-        <cg-empty-state
+        <kx-empty-state
           title="Sin programa asignado"
           subtitle="Tu entrenador aún no te ha asignado un programa." />
       } @else {
         <!-- Hero card: today's workout or rest day -->
         @if (workout()) {
-          <cg-hero-card
+          <kx-hero-card
             [routineName]="workout()!.routineName"
             [dayName]="workout()!.dayName"
             [programName]="workout()!.programName"
@@ -57,7 +57,7 @@ function relativeDate(iso: string): string {
             [totalWeeks]="workout()!.totalWeeks"
             (start)="onStartWorkout()" />
         } @else {
-          <cg-empty-state
+          <kx-empty-state
             title="Día de descanso"
             subtitle="No tienes entreno programado para hoy. Revisa tu calendario." />
         }
@@ -67,17 +67,17 @@ function relativeDate(iso: string): string {
           <p class="text-overline text-text-muted mb-3">ESTA SEMANA</p>
           <div class="flex gap-3">
             <div class="flex-1">
-              <cg-stat-card
+              <kx-stat-card
                 label="Semana"
                 [value]="weekLabel()" />
             </div>
             <div class="flex-1">
-              <cg-stat-card
+              <kx-stat-card
                 label="PRs nuevos"
                 [value]="recentPrCount()" />
             </div>
             <div class="flex-1">
-              <cg-stat-card
+              <kx-stat-card
                 label="Volumen"
                 value="—" />
             </div>

@@ -2,17 +2,17 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } 
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { RoutineListDto } from '../../../../shared/models';
-import { CgBadge } from '../../../../shared/ui/badge';
-import { CgSpinner } from '../../../../shared/ui/spinner';
-import { CgEmptyState } from '../../../../shared/ui/empty-state';
-import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
+import { KxBadge } from '../../../../shared/ui/badge';
+import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxEmptyState } from '../../../../shared/ui/empty-state';
+import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
 import { relativeDate } from '../../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-routine-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CgBadge, CgSpinner, CgEmptyState, CgConfirmDialog],
+  imports: [RouterLink, KxBadge, KxSpinner, KxEmptyState, KxConfirmDialog],
   template: `
     <div class="animate-fade-up">
       <!-- Header -->
@@ -25,21 +25,21 @@ import { relativeDate } from '../../../../shared/utils/format-date';
       </div>
 
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else if (error()) {
         <div class="text-center py-12">
           <p class="text-danger">{{ error() }}</p>
           <button (click)="reload()" class="text-primary text-sm mt-2 hover:underline">Reintentar</button>
         </div>
       } @else if (routines().length === 0) {
-        <cg-empty-state
+        <kx-empty-state
           title="Sin rutinas"
           subtitle="Creá tu primera rutina para empezar">
           <a routerLink="new"
             class="inline-block mt-4 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-5 py-2 rounded-lg transition press">
             + Crear rutina
           </a>
-        </cg-empty-state>
+        </kx-empty-state>
       } @else {
         <!-- Category filter chips -->
         @if (categories().length > 0) {
@@ -79,7 +79,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
                 <div class="flex items-center gap-2 flex-wrap min-w-0">
                   <span class="font-semibold text-text truncate">{{ routine.name }}</span>
                   @if (routine.category) {
-                    <cg-badge [text]="routine.category" variant="info" />
+                    <kx-badge [text]="routine.category" variant="info" />
                   }
                 </div>
                 <!-- Context menu -->
@@ -122,7 +122,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
     </div>
 
     <!-- Delete confirm dialog -->
-    <cg-confirm-dialog
+    <kx-confirm-dialog
       [open]="showDeleteDialog()"
       title="Eliminar rutina"
       message="Esta acción no se puede deshacer. ¿Estás seguro?"

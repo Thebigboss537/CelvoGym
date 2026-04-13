@@ -16,9 +16,9 @@ import {
   StudentRoutineDetailDto,
   WorkoutSessionDto,
 } from '../../../shared/models';
-import { CgConfirmDialog } from '../../../shared/ui/confirm-dialog';
-import { CgProgressBar } from '../../../shared/ui/progress-bar';
-import { CgSpinner } from '../../../shared/ui/spinner';
+import { KxConfirmDialog } from '../../../shared/ui/confirm-dialog';
+import { KxProgressBar } from '../../../shared/ui/progress-bar';
+import { KxSpinner } from '../../../shared/ui/spinner';
 
 type ExerciseState = 'completed' | 'in-progress' | 'pending';
 
@@ -33,12 +33,12 @@ interface ExerciseWithState {
 
 @Component({
   selector: 'app-workout-overview',
-  imports: [CgProgressBar, CgSpinner, CgConfirmDialog],
+  imports: [KxProgressBar, KxSpinner, KxConfirmDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loading()) {
       <div class="flex items-center justify-center min-h-screen bg-bg">
-        <cg-spinner />
+        <kx-spinner />
       </div>
     } @else if (error()) {
       <div class="flex flex-col items-center justify-center min-h-screen bg-bg px-6 text-center">
@@ -82,7 +82,7 @@ interface ExerciseWithState {
 
         <!-- Progress bar -->
         <div class="px-4 pb-4 shrink-0">
-          <cg-progress-bar [percentage]="progressPercentage()" [showLabel]="true" size="md" />
+          <kx-progress-bar [percentage]="progressPercentage()" [showLabel]="true" size="md" />
         </div>
 
         <!-- Exercise list -->
@@ -166,7 +166,7 @@ interface ExerciseWithState {
     }
 
     <!-- Confirm exit dialog -->
-    <cg-confirm-dialog
+    <kx-confirm-dialog
       [open]="showExitDialog()"
       title="¿Salir del entreno?"
       message="Tu progreso se guardará automáticamente."

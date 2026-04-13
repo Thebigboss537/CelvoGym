@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { CgSpinner } from '../../../../shared/ui/spinner';
-import { CgEmptyState } from '../../../../shared/ui/empty-state';
-import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
+import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxEmptyState } from '../../../../shared/ui/empty-state';
+import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
 
 interface CatalogExercise {
@@ -22,7 +22,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
 @Component({
   selector: 'app-catalog-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CgSpinner, CgEmptyState, CgConfirmDialog],
+  imports: [FormsModule, KxSpinner, KxEmptyState, KxConfirmDialog],
   template: `
     <div class="animate-fade-up">
 
@@ -136,9 +136,9 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
 
       <!-- Exercise grid -->
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else if (filtered().length === 0) {
-        <cg-empty-state
+        <kx-empty-state
           [title]="searchTerm.trim() || selectedGroup() !== 'Todos' ? 'Sin resultados' : 'Tu biblioteca está vacía'"
           [subtitle]="searchTerm.trim() || selectedGroup() !== 'Todos'
             ? 'Prueba con otro término o filtro'
@@ -185,7 +185,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
     </div>
 
     <!-- Delete confirmation -->
-    <cg-confirm-dialog
+    <kx-confirm-dialog
       [open]="showDeleteDialog()"
       title="Eliminar ejercicio"
       [message]="'¿Eliminar ' + (deleteTarget?.name ?? '') + ' del catálogo?'"

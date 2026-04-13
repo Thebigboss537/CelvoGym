@@ -9,7 +9,7 @@ export interface NavTab {
 }
 
 @Component({
-  selector: 'cg-bottom-nav',
+  selector: 'kx-bottom-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, LucideAngularModule],
   providers: [
@@ -32,6 +32,6 @@ export interface NavTab {
     :host { display: block; }
   `,
 })
-export class CgBottomNav {
+export class KxBottomNav {
   tabs = input.required<NavTab[]>();
 }

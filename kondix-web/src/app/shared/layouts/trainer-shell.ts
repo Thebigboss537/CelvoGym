@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
-import { CgSidebar, SidebarItem } from '../ui/sidebar';
-import { CgBottomNav, NavTab } from '../ui/bottom-nav';
+import { KxSidebar, SidebarItem } from '../ui/sidebar';
+import { KxBottomNav, NavTab } from '../ui/bottom-nav';
 import { AuthStore } from '../../core/auth/auth.store';
 
 @Component({
-  selector: 'cg-trainer-shell',
+  selector: 'kx-trainer-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, CgSidebar, CgBottomNav],
+  imports: [RouterOutlet, KxSidebar, KxBottomNav],
   template: `
     <div class="flex min-h-screen bg-bg">
-      <cg-sidebar
+      <kx-sidebar
         [items]="sidebarItems"
         [userName]="userName()"
         [userInitials]="userInitials()"
@@ -21,7 +21,7 @@ import { AuthStore } from '../../core/auth/auth.store';
     </div>
     <!-- Mobile bottom nav (hidden on md+) -->
     <div class="md:hidden">
-      <cg-bottom-nav [tabs]="mobileTabs" />
+      <kx-bottom-nav [tabs]="mobileTabs" />
     </div>
     <!-- Mobile FAB -->
     <button (click)="onCreateNew()"

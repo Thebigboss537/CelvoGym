@@ -2,20 +2,20 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { ProgramDetailDto } from '../../../../shared/models';
-import { CgBadge } from '../../../../shared/ui/badge';
-import { CgSpinner } from '../../../../shared/ui/spinner';
-import { CgConfirmDialog } from '../../../../shared/ui/confirm-dialog';
+import { KxBadge } from '../../../../shared/ui/badge';
+import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
 import { formatDateWithYear } from '../../../../shared/utils/format-date';
 
 @Component({
   selector: 'app-program-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CgBadge, CgSpinner, CgConfirmDialog],
+  imports: [RouterLink, KxBadge, KxSpinner, KxConfirmDialog],
   template: `
     <div class="animate-fade-up">
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else if (error()) {
         <div class="text-center py-12">
           <p class="text-danger">{{ error() }}</p>
@@ -52,8 +52,8 @@ import { formatDateWithYear } from '../../../../shared/utils/format-date';
 
         <!-- Info chips -->
         <div class="flex gap-2 flex-wrap mb-6">
-          <cg-badge [text]="program()!.durationWeeks + ' semanas'" variant="neutral" />
-          <cg-badge
+          <kx-badge [text]="program()!.durationWeeks + ' semanas'" variant="neutral" />
+          <kx-badge
             [text]="program()!.routines.length + (program()!.routines.length === 1 ? ' rutina' : ' rutinas')"
             variant="neutral" />
           <span class="text-xs text-text-muted self-center">
@@ -98,7 +98,7 @@ import { formatDateWithYear } from '../../../../shared/utils/format-date';
     </div>
 
     <!-- Delete confirm dialog -->
-    <cg-confirm-dialog
+    <kx-confirm-dialog
       [open]="showDeleteDialog()"
       title="Eliminar programa"
       message="Esta acción no se puede deshacer. ¿Estás seguro?"

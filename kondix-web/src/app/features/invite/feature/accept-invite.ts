@@ -5,12 +5,12 @@ import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { InvitationInfoDto } from '../../../shared/models';
 import { environment } from '../../../../environments/environment';
-import { CgLogo } from '../../../shared/ui/logo';
+import { KxLogo } from '../../../shared/ui/logo';
 import { parseGuardError } from '../../../shared/utils/guard-errors';
 
 @Component({
   selector: 'app-accept-invite',
-  imports: [FormsModule, CgLogo],
+  imports: [FormsModule, KxLogo],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
@@ -26,7 +26,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
           </div>
         } @else if (invitation()) {
           <div class="text-center mb-8">
-            <cg-logo [size]="32" class="flex justify-center" />
+            <kx-logo [size]="32" class="flex justify-center" />
             <p class="text-text mt-3 font-medium">
               {{ invitation()!.trainerName }} te invita a entrenar
             </p>

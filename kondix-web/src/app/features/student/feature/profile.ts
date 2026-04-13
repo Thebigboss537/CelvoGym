@@ -3,21 +3,21 @@ import { forkJoin } from 'rxjs';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ApiService } from '../../../core/services/api.service';
 import { CalendarMonthDto, MyProgramDto, PersonalRecordDto } from '../../../shared/models';
-import { CgBadge } from '../../../shared/ui/badge';
-import { CgEmptyState } from '../../../shared/ui/empty-state';
-import { CgProgressBar } from '../../../shared/ui/progress-bar';
-import { CgSpinner } from '../../../shared/ui/spinner';
-import { CgStatCard } from '../../../shared/ui/stat-card';
+import { KxBadge } from '../../../shared/ui/badge';
+import { KxEmptyState } from '../../../shared/ui/empty-state';
+import { KxProgressBar } from '../../../shared/ui/progress-bar';
+import { KxSpinner } from '../../../shared/ui/spinner';
+import { KxStatCard } from '../../../shared/ui/stat-card';
 
 @Component({
   selector: 'app-student-profile',
-  imports: [CgStatCard, CgBadge, CgProgressBar, CgSpinner, CgEmptyState],
+  imports: [KxStatCard, KxBadge, KxProgressBar, KxSpinner, KxEmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="animate-fade-up space-y-6 pb-8">
 
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else {
 
         <!-- Profile header -->
@@ -36,9 +36,9 @@ import { CgStatCard } from '../../../shared/ui/stat-card';
 
         <!-- Stats row -->
         <div class="grid grid-cols-3 gap-3">
-          <cg-stat-card label="Sesiones" [value]="sessionCount().toString()" />
-          <cg-stat-card label="Racha" value="—" />
-          <cg-stat-card label="PRs" [value]="prCount().toString()" />
+          <kx-stat-card label="Sesiones" [value]="sessionCount().toString()" />
+          <kx-stat-card label="Racha" value="—" />
+          <kx-stat-card label="PRs" [value]="prCount().toString()" />
         </div>
 
         <!-- Mi Entrenador -->
@@ -72,16 +72,16 @@ import { CgStatCard } from '../../../shared/ui/stat-card';
                     {{ modeLabel() }} · {{ program()!.routines.length }} rutinas
                   </p>
                 </div>
-                <cg-badge [text]="statusLabel()" [variant]="statusVariant()" [dot]="true" />
+                <kx-badge [text]="statusLabel()" [variant]="statusVariant()" [dot]="true" />
               </div>
-              <cg-progress-bar
+              <kx-progress-bar
                 [percentage]="progressPct()"
                 [label]="'Semana ' + program()!.currentWeek + ' de ' + program()!.totalWeeks"
                 [showLabel]="true"
                 size="md" />
             </div>
           } @else {
-            <cg-empty-state
+            <kx-empty-state
               title="Sin programa asignado"
               subtitle="Tu entrenador aún no te ha asignado un programa." />
           }

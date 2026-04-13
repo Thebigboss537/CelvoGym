@@ -8,20 +8,20 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { WorkoutSessionDto, NewPrDto, StudentRoutineDetailDto, SetLogDto } from '../../../shared/models';
-import { CgStatCard } from '../../../shared/ui/stat-card';
-import { CgBadge } from '../../../shared/ui/badge';
-import { CgSpinner } from '../../../shared/ui/spinner';
+import { KxStatCard } from '../../../shared/ui/stat-card';
+import { KxBadge } from '../../../shared/ui/badge';
+import { KxSpinner } from '../../../shared/ui/spinner';
 
 @Component({
   selector: 'app-workout-complete',
-  imports: [CgStatCard, CgBadge, CgSpinner],
+  imports: [KxStatCard, KxBadge, KxSpinner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-bg min-h-screen flex flex-col items-center px-5 py-10">
 
       @if (loading()) {
         <div class="flex-1 flex items-center justify-center w-full">
-          <cg-spinner />
+          <kx-spinner />
         </div>
       } @else {
         <div class="w-full max-w-sm animate-fade-up flex flex-col items-center gap-8">
@@ -53,19 +53,19 @@ import { CgSpinner } from '../../../shared/ui/spinner';
           <!-- Summary cards -->
           <div class="flex gap-3 w-full">
             <div class="flex-1">
-              <cg-stat-card
+              <kx-stat-card
                 label="Duración"
                 [value]="durationLabel()"
               />
             </div>
             <div class="flex-1">
-              <cg-stat-card
+              <kx-stat-card
                 label="Sets"
                 [value]="completedSets() > 0 ? completedSets() + '/' + totalSets() : '—'"
               />
             </div>
             <div class="flex-1">
-              <cg-stat-card
+              <kx-stat-card
                 label="Volumen"
                 [value]="totalVolume() > 0 ? totalVolume() + ' kg' : '—'"
               />
@@ -89,7 +89,7 @@ import { CgSpinner } from '../../../shared/ui/spinner';
                     </div>
                     <div class="flex flex-col items-end gap-1 shrink-0 ml-3">
                       <span class="text-base font-extrabold text-success">{{ pr.weight }}kg</span>
-                      <cg-badge text="🏆 Nuevo PR" variant="success" />
+                      <kx-badge text="🏆 Nuevo PR" variant="success" />
                     </div>
                   </div>
                 }

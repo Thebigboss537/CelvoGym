@@ -1,16 +1,16 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { CgBottomNav, NavTab } from '../ui/bottom-nav';
+import { KxBottomNav, NavTab } from '../ui/bottom-nav';
 
 @Component({
-  selector: 'cg-student-shell',
+  selector: 'kx-student-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, CgBottomNav],
+  imports: [RouterOutlet, KxBottomNav],
   template: `
     <main class="min-h-screen bg-bg pb-20 max-w-lg mx-auto">
       <router-outlet />
     </main>
-    <cg-bottom-nav [tabs]="tabs" />
+    <kx-bottom-nav [tabs]="tabs" />
   `,
 })
 export class StudentShell {

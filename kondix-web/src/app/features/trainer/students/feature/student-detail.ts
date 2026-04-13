@@ -9,19 +9,19 @@ import {
 } from '../../../../shared/models';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../../shared/ui/toast';
-import { CgSpinner } from '../../../../shared/ui/spinner';
-import { CgStatCard } from '../../../../shared/ui/stat-card';
-import { CgBadge } from '../../../../shared/ui/badge';
-import { CgProgressBar } from '../../../../shared/ui/progress-bar';
-import { CgTimeline, TimelineItem } from '../../../../shared/ui/timeline';
-import { CgEmptyState } from '../../../../shared/ui/empty-state';
+import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxStatCard } from '../../../../shared/ui/stat-card';
+import { KxBadge } from '../../../../shared/ui/badge';
+import { KxProgressBar } from '../../../../shared/ui/progress-bar';
+import { KxTimeline, TimelineItem } from '../../../../shared/ui/timeline';
+import { KxEmptyState } from '../../../../shared/ui/empty-state';
 import { formatDateWithYear, formatDate } from '../../../../shared/utils/format-date';
 import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 
 @Component({
   selector: 'app-student-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FormsModule, CgSpinner, CgStatCard, CgBadge, CgProgressBar, CgTimeline, CgEmptyState],
+  imports: [RouterLink, FormsModule, KxSpinner, KxStatCard, KxBadge, KxProgressBar, KxTimeline, KxEmptyState],
   template: `
     <div class="animate-fade-up h-full overflow-y-auto">
       <!-- Mobile back link (hidden on desktop when used as inline panel) -->
@@ -37,10 +37,10 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 
       @if (loading()) {
         <div class="flex justify-center pt-12">
-          <cg-spinner />
+          <kx-spinner />
         </div>
       } @else if (!student()) {
-        <cg-empty-state
+        <kx-empty-state
           title="Alumno no encontrado"
           subtitle="No pudimos cargar la información de este alumno." />
       } @else {
@@ -58,7 +58,7 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
             <h2 class="font-display text-xl font-bold text-text leading-tight">{{ student()!.displayName }}</h2>
             <p class="text-text-muted text-xs mt-0.5">Desde {{ formatDateWithYear(student()!.createdAt) }}</p>
             <div class="flex items-center gap-1.5 mt-1.5">
-              <cg-badge
+              <kx-badge
                 [text]="student()!.isActive ? 'Activo' : 'Inactivo'"
                 [variant]="student()!.isActive ? 'success' : 'neutral'"
                 [dot]="true" />
@@ -90,17 +90,17 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
         <!-- Stats grid (2x2) -->
         @if (overview()) {
           <div class="grid grid-cols-2 gap-3 mb-6">
-            <cg-stat-card
+            <kx-stat-card
               label="Sesiones"
               [value]="overview()!.totalSessions.toString()" />
-            <cg-stat-card
+            <kx-stat-card
               label="Adherencia"
               [value]="overview()!.adherencePercentage + '%'"
               [valueColor]="adherenceColor()" />
-            <cg-stat-card
+            <kx-stat-card
               label="Racha"
               value="—" />
-            <cg-stat-card
+            <kx-stat-card
               label="PRs"
               value="—" />
           </div>
@@ -116,14 +116,14 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
                 <h3 class="font-display text-base font-bold text-white leading-tight">
                   {{ activeAssignment()!.programName }}
                 </h3>
-                <cg-badge
+                <kx-badge
                   [text]="activeAssignment()!.mode === 'Rotation' ? 'Rotación' : 'Fijo'"
                   variant="neutral" />
               </div>
               <p class="text-white/70 text-xs mb-2">
                 Semana {{ activeAssignment()!.currentWeek }} de {{ activeAssignment()!.totalWeeks }}
               </p>
-              <cg-progress-bar
+              <kx-progress-bar
                 [percentage]="weekProgress()"
                 [showLabel]="false"
                 size="md" />
@@ -199,7 +199,7 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
         @if (timelineItems().length > 0) {
           <div class="bg-card border border-border rounded-2xl p-4">
             <h3 class="text-overline text-text-secondary mb-4">Actividad reciente</h3>
-            <cg-timeline [items]="timelineItems()" />
+            <kx-timeline [items]="timelineItems()" />
           </div>
         }
 

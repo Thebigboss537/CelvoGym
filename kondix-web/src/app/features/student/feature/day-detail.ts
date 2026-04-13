@@ -17,19 +17,19 @@ import {
   MyProgramDto,
   NextWorkoutDto,
 } from '../../../shared/models';
-import { CgBadge } from '../../../shared/ui/badge';
-import { CgEmptyState } from '../../../shared/ui/empty-state';
-import { CgProgressBar } from '../../../shared/ui/progress-bar';
-import { CgSpinner } from '../../../shared/ui/spinner';
+import { KxBadge } from '../../../shared/ui/badge';
+import { KxEmptyState } from '../../../shared/ui/empty-state';
+import { KxProgressBar } from '../../../shared/ui/progress-bar';
+import { KxSpinner } from '../../../shared/ui/spinner';
 
 @Component({
   selector: 'app-day-detail',
-  imports: [RouterLink, CgSpinner, CgEmptyState, CgBadge, CgProgressBar],
+  imports: [RouterLink, KxSpinner, KxEmptyState, KxBadge, KxProgressBar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="animate-fade-up pb-6">
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else {
         <!-- Back + Header -->
         <div class="mb-6">
@@ -55,30 +55,30 @@ import { CgSpinner } from '../../../shared/ui/spinner';
               </p>
             }
             @if (isTrainingDay()) {
-              <cg-badge text="Día de entrenamiento" variant="info" [dot]="true" />
+              <kx-badge text="Día de entrenamiento" variant="info" [dot]="true" />
             } @else {
-              <cg-badge text="Día de descanso" variant="neutral" />
+              <kx-badge text="Día de descanso" variant="neutral" />
             }
           </div>
         </div>
 
         @if (!program()) {
-          <cg-empty-state
+          <kx-empty-state
             title="Sin programa activo"
             subtitle="Tu entrenador te asignará un programa pronto." />
         } @else if (!isTrainingDay()) {
           <!-- Rest day -->
-          <cg-empty-state
+          <kx-empty-state
             title="Día de descanso"
             subtitle="No tienes entreno programado para este día." />
         } @else {
           <!-- Assignment badges -->
           <div class="flex flex-wrap gap-2 mb-5">
-            <cg-badge
+            <kx-badge
               [text]="program()!.mode === 'Rotation' ? 'Modo Rotación' : 'Modo Fijo'"
               variant="info" />
             @if (routinePositionLabel()) {
-              <cg-badge [text]="routinePositionLabel()" variant="neutral" />
+              <kx-badge [text]="routinePositionLabel()" variant="neutral" />
             }
           </div>
 
@@ -99,9 +99,9 @@ import { CgSpinner } from '../../../shared/ui/spinner';
                   }
                 </div>
                 @if (sess.status === 'completed') {
-                  <cg-badge text="✓ Completado" variant="success" />
+                  <kx-badge text="✓ Completado" variant="success" />
                 } @else {
-                  <cg-badge text="En progreso" variant="warning" [dot]="true" />
+                  <kx-badge text="En progreso" variant="warning" [dot]="true" />
                 }
               </div>
 
@@ -125,7 +125,7 @@ import { CgSpinner } from '../../../shared/ui/spinner';
 
               <!-- Progress bar -->
               @if (sess.totalSets > 0) {
-                <cg-progress-bar
+                <kx-progress-bar
                   [percentage]="setsPercentage()"
                   [label]="sess.completedSets + ' de ' + sess.totalSets + ' series'"
                   [showLabel]="true"

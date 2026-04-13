@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output, computed } from '@angular/core';
 
 @Component({
-  selector: 'cg-student-card',
+  selector: 'kx-student-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
@@ -28,7 +28,7 @@ import { ChangeDetectionStrategy, Component, input, output, computed } from '@an
     </div>
   `,
 })
-export class CgStudentCard {
+export class KxStudentCard {
   name = input.required<string>();
   initials = input.required<string>();
   gradientFrom = input<string>('#E62639');

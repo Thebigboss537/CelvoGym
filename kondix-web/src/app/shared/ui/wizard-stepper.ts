@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
-  selector: 'cg-wizard-stepper',
+  selector: 'kx-wizard-stepper',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex items-center gap-3">
@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     </div>
   `,
 })
-export class CgWizardStepper {
+export class KxWizardStepper {
   currentStep = input.required<number>();
   totalSteps = input.required<number>();
 }

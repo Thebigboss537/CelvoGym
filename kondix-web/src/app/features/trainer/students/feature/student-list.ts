@@ -3,9 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { StudentDto, StudentInvitationDto, ProgramAssignmentDto } from '../../../../shared/models';
-import { CgSpinner } from '../../../../shared/ui/spinner';
-import { CgEmptyState } from '../../../../shared/ui/empty-state';
-import { CgStudentCard } from '../../../../shared/ui/student-card';
+import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxEmptyState } from '../../../../shared/ui/empty-state';
+import { KxStudentCard } from '../../../../shared/ui/student-card';
 import { ToastService } from '../../../../shared/ui/toast';
 import { AuthStore } from '../../../../core/auth/auth.store';
 import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
@@ -15,7 +15,7 @@ import { StudentDetail } from './student-detail';
 @Component({
   selector: 'app-student-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CgSpinner, CgEmptyState, CgStudentCard, StudentDetail],
+  imports: [FormsModule, KxSpinner, KxEmptyState, KxStudentCard, StudentDetail],
   template: `
     <div class="h-full flex">
 
@@ -91,23 +91,23 @@ import { StudentDetail } from './student-detail';
         <div class="flex-1 overflow-y-auto px-3 pb-4">
           @if (loading()) {
             <div class="flex justify-center pt-8">
-              <cg-spinner />
+              <kx-spinner />
             </div>
           } @else if (students().length === 0) {
-            <cg-empty-state
+            <kx-empty-state
               title="Aún no hay alumnos"
               subtitle="Invitá a tu primer alumno para empezar">
               <button (click)="showInvite.set(true)"
                 class="mt-4 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-5 py-2 rounded-lg transition press">
                 + Invitar alumno
               </button>
-            </cg-empty-state>
+            </kx-empty-state>
           } @else if (filteredStudents().length === 0) {
             <p class="text-center text-text-muted text-sm pt-8">Sin resultados para "{{ searchQuery() }}"</p>
           } @else {
             <div class="space-y-1.5">
               @for (item of filteredStudents(); track item.student.id; let i = $index) {
-                <cg-student-card
+                <kx-student-card
                   [name]="item.student.displayName"
                   [initials]="item.initials"
                   [gradientFrom]="item.gradientFrom"

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 @Component({
-  selector: 'cg-hero-card',
+  selector: 'kx-hero-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (loading()) {
@@ -55,7 +55,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
     }
   `,
 })
-export class CgHeroCard {
+export class KxHeroCard {
   routineName = input.required<string>();
   dayName = input.required<string>();
   programName = input.required<string>();

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
 export type DayCellState = 'completed' | 'today' | 'scheduled' | 'rest' | 'other-month';
 
 @Component({
-  selector: 'cg-day-cell',
+  selector: 'kx-day-cell',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button
@@ -20,7 +20,7 @@ export type DayCellState = 'completed' | 'today' | 'scheduled' | 'rest' | 'other
     </button>
   `,
 })
-export class CgDayCell {
+export class KxDayCell {
   day = input.required<number>();
   state = input.required<DayCellState>();
 

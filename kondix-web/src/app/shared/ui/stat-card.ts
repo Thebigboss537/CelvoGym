@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
-  selector: 'cg-stat-card',
+  selector: 'kx-stat-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-card border border-border rounded-2xl p-5 text-center">
@@ -13,7 +13,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
     </div>
   `,
 })
-export class CgStatCard {
+export class KxStatCard {
   value = input.required<string>();
   label = input.required<string>();
   trend = input<string>();

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 @Component({
-  selector: 'cg-segmented-control',
+  selector: 'kx-segmented-control',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex bg-card border border-border rounded-xl p-1">
@@ -15,7 +15,7 @@ import { ChangeDetectionStrategy, Component, input, output } from '@angular/core
     </div>
   `,
 })
-export class CgSegmentedControl {
+export class KxSegmentedControl {
   options = input.required<string[]>();
   selected = input.required<string>();
   selectedChange = output<string>();

@@ -23,7 +23,7 @@ export class ToastService {
 }
 
 @Component({
-  selector: 'cg-toast',
+  selector: 'kx-toast',
   template: `
     @if (toastService.toast(); as t) {
       <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-up"
@@ -44,7 +44,7 @@ export class ToastService {
     }
   `,
 })
-export class CgToast {
+export class KxToast {
   toastService: ToastService;
   constructor(toastService: ToastService) {
     this.toastService = toastService;

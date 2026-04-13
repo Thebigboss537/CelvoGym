@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { environment } from '../../../../environments/environment';
-import { CgLogo } from '../../../shared/ui/logo';
+import { KxLogo } from '../../../shared/ui/logo';
 import { parseGuardError } from '../../../shared/utils/guard-errors';
 import type { TrainerStatusDto } from '../../../shared/models';
 
@@ -11,7 +11,7 @@ const TENANT_ID_KEY = 'celvogym_tenant_id';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, RouterLink, CgLogo],
+  imports: [FormsModule, RouterLink, KxLogo],
   template: `
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
@@ -19,7 +19,7 @@ const TENANT_ID_KEY = 'celvogym_tenant_id';
           <!-- Brand moment: logo with ambient glow -->
           <div class="relative inline-block mb-4">
             <div class="absolute inset-0 blur-2xl opacity-20 bg-primary rounded-full scale-150"></div>
-            <cg-logo [size]="48" class="relative flex justify-center" />
+            <kx-logo [size]="48" class="relative flex justify-center" />
           </div>
           <p class="text-text-secondary mt-1">
             @if (isStudentLogin()) {

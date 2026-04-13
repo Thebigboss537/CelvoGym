@@ -15,8 +15,8 @@ import {
   Menu,
   LucideIconData,
 } from 'lucide-angular';
-import { CgLogo } from './logo';
-import { CgAvatar } from './avatar';
+import { KxLogo } from './logo';
+import { KxAvatar } from './avatar';
 
 export interface SidebarItem {
   label: string;
@@ -38,9 +38,9 @@ const ICON_MAP: Record<string, LucideIconData> = {
 };
 
 @Component({
-  selector: 'cg-sidebar',
+  selector: 'kx-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, CgLogo, CgAvatar, LucideAngularModule],
+  imports: [RouterLink, RouterLinkActive, KxLogo, KxAvatar, LucideAngularModule],
   providers: [
     {
       provide: LUCIDE_ICONS,
@@ -54,7 +54,7 @@ const ICON_MAP: Record<string, LucideIconData> = {
       <!-- Logo section -->
       <div class="flex items-center h-16 px-3 lg:px-4 border-b border-border-light shrink-0">
         <div class="flex items-center gap-2.5 min-w-0">
-          <cg-logo [size]="28" [showText]="false" />
+          <kx-logo [size]="28" [showText]="false" />
           <div class="hidden lg:flex flex-col min-w-0 overflow-hidden">
             <span class="font-display text-base font-bold leading-tight">
               <span class="text-text">Celvo</span><span class="text-primary">Gym</span>
@@ -107,7 +107,7 @@ const ICON_MAP: Record<string, LucideIconData> = {
 
       <!-- User profile section -->
       <div class="flex items-center gap-3 px-3 py-3.5 border-t border-border-light shrink-0 min-w-0">
-        <cg-avatar [name]="userInitials()" size="md" class="shrink-0" />
+        <kx-avatar [name]="userInitials()" size="md" class="shrink-0" />
         <div class="hidden lg:flex flex-col min-w-0 overflow-hidden">
           <span class="text-sm font-medium text-text truncate">{{ userName() }}</span>
           <span class="text-xs text-text-muted truncate">Entrenador</span>
@@ -117,7 +117,7 @@ const ICON_MAP: Record<string, LucideIconData> = {
     </aside>
   `,
 })
-export class CgSidebar {
+export class KxSidebar {
   items = input.required<SidebarItem[]>();
   userName = input.required<string>();
   userInitials = input.required<string>();

@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { RoutineDetailDto, GroupType, SetType, VideoSource } from '../../../../shared/models';
 import { ToastService } from '../../../../shared/ui/toast';
-import { CgWizardStepper } from '../../../../shared/ui/wizard-stepper';
-import { CgSpinner } from '../../../../shared/ui/spinner';
+import { KxWizardStepper } from '../../../../shared/ui/wizard-stepper';
+import { KxSpinner } from '../../../../shared/ui/spinner';
 
 // ── Wizard data model ──
 
@@ -54,17 +54,17 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
 @Component({
   selector: 'app-routine-wizard',
-  imports: [FormsModule, CgWizardStepper, CgSpinner],
+  imports: [FormsModule, KxWizardStepper, KxSpinner],
   template: `
     <div class="animate-fade-up max-w-4xl mx-auto">
 
       <!-- Wizard stepper -->
       <div class="mb-6">
-        <cg-wizard-stepper [currentStep]="currentStep()" [totalSteps]="4" />
+        <kx-wizard-stepper [currentStep]="currentStep()" [totalSteps]="4" />
       </div>
 
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else {
 
         @switch (currentStep()) {
@@ -516,7 +516,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                 <button type="button" (click)="save()" [disabled]="saving()"
                   class="flex-1 bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition press">
                   @if (saving()) {
-                    <cg-spinner size="sm" containerClass="" />
+                    <kx-spinner size="sm" containerClass="" />
                   } @else {
                     Guardar rutina &#10003;
                   }

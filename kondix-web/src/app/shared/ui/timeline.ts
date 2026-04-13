@@ -7,7 +7,7 @@ export interface TimelineItem {
 }
 
 @Component({
-  selector: 'cg-timeline',
+  selector: 'kx-timeline',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="ml-3 border-l-2 border-border pl-5 flex flex-col gap-0">
@@ -25,7 +25,7 @@ export interface TimelineItem {
     </div>
   `,
 })
-export class CgTimeline {
+export class KxTimeline {
   items = input.required<TimelineItem[]>();
 
   dotClass(color: TimelineItem['color']): string {

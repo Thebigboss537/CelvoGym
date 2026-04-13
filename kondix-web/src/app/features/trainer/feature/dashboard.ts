@@ -3,9 +3,9 @@ import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ProgramAssignmentDto } from '../../../shared/models';
-import { CgSpinner } from '../../../shared/ui/spinner';
-import { CgStatCard } from '../../../shared/ui/stat-card';
-import { CgStudentCard } from '../../../shared/ui/student-card';
+import { KxSpinner } from '../../../shared/ui/spinner';
+import { KxStatCard } from '../../../shared/ui/stat-card';
+import { KxStudentCard } from '../../../shared/ui/student-card';
 import { GRADIENT_PAIRS, getInitials } from '../../../shared/utils/display';
 import { formatSpanishDate } from '../../../shared/utils/format-date';
 
@@ -53,7 +53,7 @@ function alertTitle(type: string): string {
 @Component({
   selector: 'app-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CgSpinner, CgStatCard, CgStudentCard],
+  imports: [RouterLink, KxSpinner, KxStatCard, KxStudentCard],
   template: `
     <div class="animate-fade-up">
 
@@ -77,27 +77,27 @@ function alertTitle(type: string): string {
       </div>
 
       @if (loading()) {
-        <cg-spinner />
+        <kx-spinner />
       } @else if (data()) {
 
         <!-- Stats row -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <cg-stat-card
+          <kx-stat-card
             label="ALUMNOS ACTIVOS"
             [value]="data()!.totalStudents.toString()"
             valueColor="text-text"
           />
-          <cg-stat-card
+          <kx-stat-card
             label="ACTIVOS ESTA SEMANA"
             [value]="data()!.activeThisWeek.toString()"
             valueColor="text-text"
           />
-          <cg-stat-card
+          <kx-stat-card
             label="PROGRAMAS ACTIVOS"
             [value]="activePrograms().toString()"
             valueColor="text-text"
           />
-          <cg-stat-card
+          <kx-stat-card
             label="ADHERENCIA"
             [value]="adherence()"
             [valueColor]="adherence() !== '—' ? 'text-success' : 'text-text-muted'"
@@ -119,7 +119,7 @@ function alertTitle(type: string): string {
             @if (data()!.recentActivity.length > 0) {
               <div class="space-y-2">
                 @for (activity of data()!.recentActivity; track activity.studentId; let i = $index) {
-                  <cg-student-card
+                  <kx-student-card
                     [name]="activity.studentName"
                     [initials]="getInitials(activity.studentName)"
                     [gradientFrom]="getGradient(i)[0]"

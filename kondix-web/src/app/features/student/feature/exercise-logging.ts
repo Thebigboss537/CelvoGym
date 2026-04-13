@@ -15,9 +15,9 @@ import {
   SetLogDto,
   StudentRoutineDetailDto,
 } from '../../../shared/models';
-import { CgSetRow } from '../../../shared/ui/set-row';
-import { CgRestTimer } from '../../../shared/ui/rest-timer';
-import { CgSpinner } from '../../../shared/ui/spinner';
+import { KxSetRow } from '../../../shared/ui/set-row';
+import { KxRestTimer } from '../../../shared/ui/rest-timer';
+import { KxSpinner } from '../../../shared/ui/spinner';
 
 interface FlatExercise {
   exercise: ExerciseDto;
@@ -27,14 +27,14 @@ interface FlatExercise {
 
 @Component({
   selector: 'app-exercise-logging',
-  imports: [CgSetRow, CgRestTimer, CgSpinner],
+  imports: [KxSetRow, KxRestTimer, KxSpinner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-bg flex flex-col">
 
       @if (loading()) {
         <div class="flex-1 flex items-center justify-center">
-          <cg-spinner />
+          <kx-spinner />
         </div>
       } @else if (error()) {
         <div class="flex-1 flex flex-col items-center justify-center p-6 gap-4">
@@ -145,7 +145,7 @@ interface FlatExercise {
             <!-- Set rows -->
             <div class="divide-y divide-border/50 px-1">
               @for (row of setRows(); track row.set.id; let i = $index) {
-                <cg-set-row
+                <kx-set-row
                   [setNumber]="i + 1"
                   [setType]="row.set.setType"
                   [state]="row.state"
@@ -164,7 +164,7 @@ interface FlatExercise {
           <!-- Rest timer -->
           @if (showRestTimer()) {
             <div class="animate-fade-up">
-              <cg-rest-timer
+              <kx-rest-timer
                 [durationSeconds]="restDuration()"
                 [active]="showRestTimer()"
                 (finished)="onRestFinished()"

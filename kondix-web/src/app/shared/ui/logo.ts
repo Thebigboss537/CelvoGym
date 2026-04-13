@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'cg-logo',
+  selector: 'kx-logo',
   template: `
     <a [attr.href]="href()" class="flex items-center gap-2.5 group">
       <!-- Mark: "The Lift" — chevron (progress) + bar (strength) -->
@@ -37,7 +37,7 @@ import { Component, input } from '@angular/core';
     </a>
   `,
 })
-export class CgLogo {
+export class KxLogo {
   size = input(28);
   showText = input(true);
   href = input<string | null>(null);
