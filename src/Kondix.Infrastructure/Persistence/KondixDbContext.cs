@@ -32,7 +32,7 @@ public class KondixDbContext(DbContextOptions<KondixDbContext> options)
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasDefaultSchema("gym");
+        modelBuilder.HasDefaultSchema("kondix");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(KondixDbContext).Assembly);
     }
 }
