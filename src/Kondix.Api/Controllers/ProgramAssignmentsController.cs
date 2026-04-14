@@ -13,10 +13,14 @@ namespace Kondix.Api.Controllers;
 public class ProgramAssignmentsController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll(CancellationToken ct)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] Guid? studentId,
+        [FromQuery] bool activeOnly = true,
+        CancellationToken ct = default)
     {
         HttpContext.RequirePermission(Permissions.GymManage);
-        var result = await mediator.Send(new GetProgramAssignmentsQuery(HttpContext.GetTrainerId()), ct);
+        var result = await mediator.Send(
+            new GetProgramAssignmentsQuery(HttpContext.GetTrainerId(), studentId, activeOnly), ct);
         return Ok(result);
     }
 
