@@ -38,8 +38,7 @@ public sealed class BulkAssignProgramHandler(IKondixDbContext db)
             .ToListAsync(cancellationToken);
 
         var alreadyAssigned = await db.ProgramAssignments
-            .Where(pa => pa.ProgramId == request.ProgramId
-                && request.StudentIds.Contains(pa.StudentId)
+            .Where(pa => request.StudentIds.Contains(pa.StudentId)
                 && pa.Status == ProgramAssignmentStatus.Active)
             .Select(pa => pa.StudentId)
             .ToHashSetAsync(cancellationToken);

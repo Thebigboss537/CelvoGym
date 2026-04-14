@@ -38,12 +38,12 @@ public sealed class AssignProgramHandler(IKondixDbContext db)
             ?? throw new InvalidOperationException("Student not found or not linked to this trainer");
 
         var existingActive = await db.ProgramAssignments
-            .AnyAsync(pa => pa.ProgramId == request.ProgramId
-                && pa.StudentId == request.StudentId
+            .AnyAsync(pa => pa.StudentId == request.StudentId
                 && pa.Status == ProgramAssignmentStatus.Active, cancellationToken);
 
         if (existingActive)
-            throw new InvalidOperationException("This program is already assigned to this student");
+            throw new InvalidOperationException(
+                "El alumno ya tiene un programa activo. Cancélalo antes de asignar otro.");
 
         if (request.Mode == ProgramAssignmentMode.Rotation && (request.TrainingDays is null || request.TrainingDays.Count == 0))
             throw new InvalidOperationException("Training days are required for rotation mode");
