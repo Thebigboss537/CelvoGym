@@ -53,6 +53,15 @@ public class RoutinesController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{id:guid}/usage")]
+    public async Task<IActionResult> GetUsage(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var result = await mediator.Send(
+            new GetRoutineUsageQuery(id, HttpContext.GetTrainerId()), ct);
+        return Ok(result);
+    }
+
     [HttpPost("{id:guid}/duplicate")]
     public async Task<IActionResult> Duplicate(Guid id, CancellationToken ct)
     {

@@ -50,3 +50,8 @@ public sealed record ExerciseSetDto(
     string? TargetWeight,
     int? TargetRpe,
     int? RestSeconds);
+
+public sealed record RoutineUsageDto(
+    int ActiveProgramCount,
+    int ActiveAssignmentCount,
+    bool HasSessions);

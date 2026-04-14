@@ -87,6 +87,12 @@ export interface ExerciseSetDto {
   restSeconds: number | null;
 }
 
+export interface RoutineUsageDto {
+  activeProgramCount: number;
+  activeAssignmentCount: number;
+  hasSessions: boolean;
+}
+
 // Students
 export interface StudentDto {
   id: string;
