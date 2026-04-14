@@ -2,7 +2,7 @@ import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { RoutineDetailDto, GroupType, SetType, VideoSource } from '../../../../shared/models';
+import { RoutineDetailDto, GroupType, SetType, VideoSource, RoutineUsageDto } from '../../../../shared/models';
 import { ToastService } from '../../../../shared/ui/toast';
 import { KxWizardStepper } from '../../../../shared/ui/wizard-stepper';
 import { KxSpinner } from '../../../../shared/ui/spinner';
@@ -75,6 +75,23 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
           @case (1) {
             <div class="animate-fade-up space-y-6">
               <h2 class="text-h1 text-text">{{ isEdit() ? 'Editar rutina' : 'Nueva rutina' }}</h2>
+              @if (usage()?.hasSessions) {
+                <div class="bg-warning/10 border border-warning/30 rounded-xl p-3 mb-4 mt-3">
+                  <p class="text-warning text-sm font-semibold">Rutina con sesiones registradas</p>
+                  <p class="text-warning/70 text-xs mt-1">
+                    No se puede editar porque tiene sesiones. Usa "Duplicar" desde la lista para crear una versión nueva.
+                  </p>
+                </div>
+              } @else if (usage()?.activeAssignmentCount) {
+                <div class="bg-warning/10 border border-warning/30 rounded-xl p-3 mb-4 mt-3">
+                  <p class="text-warning text-sm font-semibold">Rutina en uso</p>
+                  <p class="text-warning/70 text-xs mt-1">
+                    Esta rutina está en {{ usage()!.activeProgramCount }} programa(s) con
+                    {{ usage()!.activeAssignmentCount }} alumno(s) activo(s).
+                    Los cambios se aplicarán en su próxima sesión.
+                  </p>
+                </div>
+              }
 
               <!-- Name -->
               <div>
@@ -552,6 +569,7 @@ export class RoutineWizard implements OnInit, OnDestroy {
   saving = signal(false);
   loading = signal(false);
   isEdit = signal(false);
+  usage = signal<RoutineUsageDto | null>(null);
 
   // ── Catalog autocomplete ──
   catalogSuggestions = signal<CatalogSuggestion[]>([]);
@@ -579,6 +597,9 @@ export class RoutineWizard implements OnInit, OnDestroy {
     if (this.routineId) {
       this.isEdit.set(true);
       this.loadRoutine();
+      this.api.get<RoutineUsageDto>(`/routines/${this.routineId}/usage`).subscribe({
+        next: (u) => this.usage.set(u),
+      });
     } else {
       this.days.set([this.newDay()]);
     }
@@ -984,6 +1005,10 @@ export class RoutineWizard implements OnInit, OnDestroy {
   // ── Save ──
 
   save() {
+    if (this.usage()?.hasSessions) {
+      this.toast.show('Esta rutina tiene sesiones. Duplicala para editarla.', 'error');
+      return;
+    }
     this.saving.set(true);
 
     const body = {
