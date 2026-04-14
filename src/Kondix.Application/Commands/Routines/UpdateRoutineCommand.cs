@@ -23,6 +23,14 @@ public sealed class UpdateRoutineHandler(IKondixDbContext db)
             .FirstOrDefaultAsync(r => r.Id == request.RoutineId && r.TrainerId == request.TrainerId && r.IsActive, cancellationToken)
             ?? throw new InvalidOperationException("Routine not found");
 
+        // Guard: prevent editing if students have sessions referencing this routine's days
+        var hasSessions = await db.WorkoutSessions
+            .AnyAsync(ws => ws.RoutineId == routine.Id, cancellationToken);
+
+        if (hasSessions)
+            throw new InvalidOperationException(
+                "Esta rutina tiene sesiones registradas. Duplicala para crear una versión nueva.");
+
         await db.Days.Where(d => d.RoutineId == routine.Id).ExecuteDeleteAsync(cancellationToken);
 
         routine.Name = request.Name;
