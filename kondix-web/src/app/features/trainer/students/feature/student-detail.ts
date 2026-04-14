@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal, computed, effect } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import {
@@ -15,13 +16,14 @@ import { KxBadge } from '../../../../shared/ui/badge';
 import { KxProgressBar } from '../../../../shared/ui/progress-bar';
 import { KxTimeline, TimelineItem } from '../../../../shared/ui/timeline';
 import { KxEmptyState } from '../../../../shared/ui/empty-state';
+import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { formatDateWithYear, formatDate } from '../../../../shared/utils/format-date';
 import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 
 @Component({
   selector: 'app-student-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FormsModule, KxSpinner, KxStatCard, KxBadge, KxProgressBar, KxTimeline, KxEmptyState],
+  imports: [RouterLink, FormsModule, DatePipe, KxSpinner, KxStatCard, KxBadge, KxProgressBar, KxTimeline, KxEmptyState, KxConfirmDialog],
   template: `
     <div class="animate-fade-up h-full overflow-y-auto">
       <!-- Mobile back link (hidden on desktop when used as inline panel) -->
@@ -127,6 +129,11 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
                 [percentage]="weekProgress()"
                 [showLabel]="false"
                 size="md" />
+              <button type="button" (click)="confirmCancel.set(true)"
+                class="mt-3 w-full py-2 bg-white/10 text-white/80 text-xs rounded-lg border border-white/20
+                       hover:bg-white/20 transition press">
+                @if (cancelling()) { Cancelando... } @else { Cancelar programa }
+              </button>
             </div>
           } @else {
             <div class="bg-card border border-border rounded-2xl p-4">
@@ -195,6 +202,28 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
           }
         </div>
 
+        <!-- Assignment history -->
+        @if (pastAssignments().length > 0) {
+          <div class="mb-6">
+            <div class="bg-card border border-border rounded-2xl p-4">
+              <p class="text-overline text-text-secondary mb-3">HISTORIAL DE PROGRAMAS</p>
+              @for (pa of pastAssignments(); track pa.id) {
+                <div class="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <div>
+                    <p class="text-sm text-text font-medium">{{ pa.programName }}</p>
+                    <p class="text-xs text-text-muted">
+                      {{ pa.startDate | date:'dd MMM yyyy' }} — {{ pa.endDate | date:'dd MMM yyyy' }}
+                    </p>
+                  </div>
+                  <kx-badge
+                    [text]="pa.status === 'Completed' ? 'Completado' : 'Cancelado'"
+                    [variant]="pa.status === 'Completed' ? 'success' : 'neutral'" />
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Activity timeline -->
         @if (timelineItems().length > 0) {
           <div class="bg-card border border-border rounded-2xl p-4">
@@ -205,6 +234,15 @@ import { GRADIENT_PAIRS, getInitials } from '../../../../shared/utils/display';
 
       }
     </div>
+
+    <kx-confirm-dialog
+      [open]="confirmCancel()"
+      title="Cancelar programa"
+      message="El alumno dejará de ver este programa. El historial de sesiones se conserva. ¿Continuar?"
+      confirmLabel="Cancelar programa"
+      variant="danger"
+      (confirmed)="cancelAssignment(); confirmCancel.set(false)"
+      (cancelled)="confirmCancel.set(false)" />
   `,
 })
 export class StudentDetail implements OnInit {
@@ -230,6 +268,10 @@ export class StudentDetail implements OnInit {
     this.assignments().find(a => a.status === 'Active') ?? null
   );
 
+  pastAssignments = computed(() =>
+    this.assignments().filter(a => a.status !== 'Active')
+  );
+
   // Assignment form state
   showAssignForm = signal(false);
   availablePrograms = signal<ProgramListDto[]>([]);
@@ -237,6 +279,8 @@ export class StudentDetail implements OnInit {
   assignMode = signal<'Rotation' | 'Fixed'>('Rotation');
   assignDays = signal<number[]>([]);
   assigning = signal(false);
+  cancelling = signal(false);
+  confirmCancel = signal(false);
 
   weekDays = [
     { label: 'LUN', value: 1 }, { label: 'MAR', value: 2 }, { label: 'MIÉ', value: 3 },
@@ -329,7 +373,7 @@ export class StudentDetail implements OnInit {
     });
 
     // Assignments
-    this.api.get<ProgramAssignmentDto[]>(`/program-assignments?studentId=${id}`).subscribe({
+    this.api.get<ProgramAssignmentDto[]>(`/program-assignments?studentId=${id}&activeOnly=false`).subscribe({
       next: (data) => this.assignments.set(data),
     });
   }
@@ -373,6 +417,26 @@ export class StudentDetail implements OnInit {
       error: (err) => {
         this.assigning.set(false);
         this.toast.show(err.error?.error ?? 'Error al asignar programa', 'error');
+      },
+    });
+  }
+
+  cancelAssignment(): void {
+    const assignment = this.activeAssignment();
+    if (!assignment) return;
+
+    this.cancelling.set(true);
+    this.api.delete(`/program-assignments/${assignment.id}`).subscribe({
+      next: () => {
+        this.assignments.update(list =>
+          list.map(a => a.id === assignment.id ? { ...a, status: 'Cancelled' as const } : a)
+        );
+        this.cancelling.set(false);
+        this.toast.show('Programa cancelado');
+      },
+      error: (err) => {
+        this.cancelling.set(false);
+        this.toast.show(err.error?.error ?? 'Error al cancelar', 'error');
       },
     });
   }
