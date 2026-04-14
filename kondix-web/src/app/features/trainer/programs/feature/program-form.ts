@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { ProgramDetailDto, RoutineListDto } from '../../../../shared/models';
+import { ProgramAssignmentDto, ProgramDetailDto, RoutineListDto } from '../../../../shared/models';
 import { KxSpinner } from '../../../../shared/ui/spinner';
 import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
@@ -28,6 +28,17 @@ interface RoutineSlot {
       <h1 class="font-display text-2xl font-extrabold mb-6">
         {{ isEdit() ? 'Editar programa' : 'Nuevo programa' }}
       </h1>
+
+      @if (activeAssignmentCount() > 0) {
+        <div class="bg-warning/10 border border-warning/30 rounded-xl p-3 mb-4">
+          <p class="text-warning text-sm font-semibold">Programa con alumnos asignados</p>
+          <p class="text-warning/70 text-xs mt-1">
+            {{ activeAssignmentCount() }} alumno(s) tienen este programa activo.
+            Puedes cambiar nombre y duración, pero para modificar las rutinas
+            debes cancelar las asignaciones primero.
+          </p>
+        </div>
+      }
 
       @if (loadingData()) {
         <kx-spinner />
@@ -162,6 +173,7 @@ export class ProgramForm implements OnInit {
   saving = signal(false);
   error = signal('');
   showDeleteDialog = signal(false);
+  activeAssignmentCount = signal(0);
 
   routines = signal<RoutineListDto[]>([]);
   slots = signal<RoutineSlot[]>([{ routineId: '', label: '' }]);
@@ -185,6 +197,12 @@ export class ProgramForm implements OnInit {
         this.routines.set(data);
         if (this.isEdit()) {
           this.loadProgram();
+          this.api.get<ProgramAssignmentDto[]>('/program-assignments?activeOnly=true').subscribe({
+            next: (assignments) => {
+              const count = assignments.filter(a => a.programId === this.programId).length;
+              this.activeAssignmentCount.set(count);
+            },
+          });
         } else {
           this.loadingData.set(false);
         }
