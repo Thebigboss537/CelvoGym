@@ -119,6 +119,10 @@ public sealed class InternalTestFactory : WebApplicationFactory<Program>
 {
     public const string InternalKey = "integration-test-internal-key";
 
+    // All four tests in this class share a single InMemory database
+    // (scoped per factory instance via IClassFixture). Each test generates its
+    // own unique tenantId to avoid cross-test contamination; future tests
+    // MUST do the same — do not assume a clean slate per test.
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
