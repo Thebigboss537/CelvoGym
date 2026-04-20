@@ -7,6 +7,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Kondix.ArchTests/Kondix.ArchTests.csproj" />
+    <Project Path="tests/Kondix.IntegrationTests/Kondix.IntegrationTests.csproj" />
     <Project Path="tests/Kondix.UnitTests/Kondix.UnitTests.csproj" />
   </Folder>
 </Solution>
