@@ -22,7 +22,7 @@ try
         .WriteTo.Console());
 
     builder.Services.AddApplicationServices();
-    builder.Services.AddInfrastructureServices(builder.Configuration, builder.Environment);
+    builder.Services.AddInfrastructureServices(builder.Configuration);
 
     builder.Services.AddCelvoGuard(options =>
     {

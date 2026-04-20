@@ -126,15 +126,27 @@ public sealed class InternalTestFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.SingleOrDefault(d =>
-                d.ServiceType == typeof(DbContextOptions<KondixDbContext>));
-            if (descriptor is not null)
-            {
-                services.Remove(descriptor);
-            }
+            // Remove every EF registration for KondixDbContext so the
+            // Npgsql provider registered by Infrastructure does not clash
+            // with the InMemory one we register below.
+            // This includes internal EF types like IDbContextOptionsConfiguration<T>
+            // (which stores provider extensions) identified by their type name, since
+            // those are internal and cannot be referenced directly.
+            var toRemove = services
+                .Where(d =>
+                    d.ServiceType == typeof(DbContextOptions<KondixDbContext>)
+                    || d.ServiceType == typeof(DbContextOptions)
+                    || d.ServiceType == typeof(KondixDbContext)
+                    || (d.ServiceType.IsGenericType &&
+                        d.ServiceType.GetGenericArguments().Any(a => a == typeof(KondixDbContext))))
+                .ToList();
+            foreach (var d in toRemove) services.Remove(d);
 
+            // Fixed database name so every DI scope in the test run shares
+            // the same in-memory store. Per-test isolation comes from the
+            // factory being instantiated once per test class via IClassFixture.
             services.AddDbContext<KondixDbContext>(options =>
-                options.UseInMemoryDatabase($"Kondix-{Guid.NewGuid()}"));
+                options.UseInMemoryDatabase("KondixIntegrationTests"));
         });
     }
 }
