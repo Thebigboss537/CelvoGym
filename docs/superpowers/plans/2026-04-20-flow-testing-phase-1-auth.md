@@ -448,6 +448,33 @@ public sealed record ApproveTrainerRequest(Guid TenantId);
 
 - [ ] **Step 2: Register controller conditionally + bypass middleware**
 
+First, guard the auto-migration block so it never runs under the `Testing` environment (the in-memory EF provider used by `Kondix.IntegrationTests` does not support migrations):
+
+Replace:
+
+```csharp
+    // Auto-migrate on startup
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+```
+
+With:
+
+```csharp
+    // Auto-migrate on startup (skip under Testing env — InMemory EF provider has no migrations)
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+```
+
+Then make the existing middleware changes:
+
 Edit `src/Kondix.Api/Program.cs`. Find the existing middleware block:
 
 ```csharp

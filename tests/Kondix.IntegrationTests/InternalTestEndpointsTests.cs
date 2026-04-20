@@ -126,9 +126,12 @@ public sealed class InternalTestFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            var descriptor = services.Single(d =>
+            var descriptor = services.SingleOrDefault(d =>
                 d.ServiceType == typeof(DbContextOptions<KondixDbContext>));
-            services.Remove(descriptor);
+            if (descriptor is not null)
+            {
+                services.Remove(descriptor);
+            }
 
             services.AddDbContext<KondixDbContext>(options =>
                 options.UseInMemoryDatabase($"Kondix-{Guid.NewGuid()}"));
