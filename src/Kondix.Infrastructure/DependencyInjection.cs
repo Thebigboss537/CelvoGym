@@ -5,16 +5,25 @@ using Kondix.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Kondix.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment? environment = null)
     {
-        services.AddDbContext<KondixDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                .UseSnakeCaseNamingConvention());
+        // Skip Npgsql DbContext registration in Testing environment so the
+        // WebApplicationFactory can substitute InMemory without provider conflicts.
+        if (environment is null || !environment.IsEnvironment("Testing"))
+        {
+            services.AddDbContext<KondixDbContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                    .UseSnakeCaseNamingConvention());
+        }
 
         services.AddScoped<IKondixDbContext>(sp => sp.GetRequiredService<KondixDbContext>());
 
