@@ -20,7 +20,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
         </div>
 
         @if (registered()) {
-          <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3">
+          <div data-testid="register-success" class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3">
             <p class="text-success font-display font-bold text-lg">¡Registro exitoso!</p>
             <p class="text-text-secondary text-sm">
               Tu cuenta está pendiente de aprobación. Recibirás un aviso cuando esté activa.
@@ -42,6 +42,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
                 type="text"
                 [(ngModel)]="displayName"
                 name="displayName"
+                data-testid="register-displayname"
                 class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                 placeholder="Tu nombre"
                 required
@@ -54,6 +55,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
                 type="email"
                 [(ngModel)]="email"
                 name="email"
+                data-testid="register-email"
                 class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                 placeholder="tu@email.com"
                 required
@@ -66,6 +68,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
                 type="password"
                 [(ngModel)]="password"
                 name="password"
+                data-testid="register-password"
                 autocomplete="new-password"
                 class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                 placeholder="Mínimo 8 caracteres"
@@ -80,6 +83,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
                 type="password"
                 [(ngModel)]="confirmPassword"
                 name="confirmPassword"
+                data-testid="register-confirm"
                 autocomplete="new-password"
                 class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                 placeholder="Repetí tu contraseña"
@@ -96,6 +100,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
 
             <button
               type="submit"
+              data-testid="register-submit"
               [disabled]="loading() || (confirmPassword !== '' && password !== confirmPassword)"
               class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press disabled:opacity-50 disabled:cursor-not-allowed"
             >
