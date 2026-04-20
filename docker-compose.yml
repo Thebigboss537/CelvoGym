@@ -43,6 +43,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-dev}
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./setup/init-e2e-databases.sql:/docker-entrypoint-initdb.d/10-init-e2e.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U celvo_user -d celvo"]
       interval: 10s
