@@ -61,7 +61,7 @@ function alertTitle(type: string): string {
       <div class="flex items-start justify-between mb-6">
         <div>
           <p class="text-xs text-text-muted mb-0.5">{{ today }}</p>
-          <h1 class="font-display text-2xl font-bold text-text">{{ greeting }}, {{ firstName }}</h1>
+          <h1 class="font-display text-2xl font-bold text-text" data-testid="dashboard-greeting">{{ greeting }}, {{ firstName }}</h1>
         </div>
         <button
           type="button"
@@ -77,7 +77,9 @@ function alertTitle(type: string): string {
       </div>
 
       @if (loading()) {
-        <kx-spinner />
+        <div data-testid="dashboard-loading">
+          <kx-spinner />
+        </div>
       } @else if (data()) {
 
         <!-- Stats row -->
@@ -86,21 +88,25 @@ function alertTitle(type: string): string {
             label="ALUMNOS ACTIVOS"
             [value]="data()!.totalStudents.toString()"
             valueColor="text-text"
+            data-testid="stat-active-students"
           />
           <kx-stat-card
             label="ACTIVOS ESTA SEMANA"
             [value]="data()!.activeThisWeek.toString()"
             valueColor="text-text"
+            data-testid="stat-active-week"
           />
           <kx-stat-card
             label="PROGRAMAS ACTIVOS"
             [value]="activePrograms().toString()"
             valueColor="text-text"
+            data-testid="stat-active-programs"
           />
           <kx-stat-card
             label="ADHERENCIA"
             [value]="adherence()"
             [valueColor]="adherence() !== '—' ? 'text-success' : 'text-text-muted'"
+            data-testid="stat-adherence"
           />
         </div>
 
@@ -111,7 +117,7 @@ function alertTitle(type: string): string {
           <div class="lg:col-span-7">
             <div class="flex items-center justify-between mb-3">
               <h2 class="text-overline text-text-secondary">Actividad de alumnos</h2>
-              <a routerLink="/trainer/students" class="text-xs text-primary hover:text-primary-hover transition-colors font-medium">
+              <a routerLink="/trainer/students" class="text-xs text-primary hover:text-primary-hover transition-colors font-medium" data-testid="activity-see-all">
                 Ver todos →
               </a>
             </div>
@@ -131,7 +137,7 @@ function alertTitle(type: string): string {
                 }
               </div>
             } @else {
-              <div class="bg-card border border-border rounded-xl p-6 text-center">
+              <div class="bg-card border border-border rounded-xl p-6 text-center" data-testid="activity-empty">
                 <p class="text-text-muted text-sm">Sin actividad reciente</p>
               </div>
             }
@@ -156,7 +162,7 @@ function alertTitle(type: string): string {
                   }
                 </div>
               } @else {
-                <div class="bg-card border border-border rounded-xl p-4 text-center">
+                <div class="bg-card border border-border rounded-xl p-4 text-center" data-testid="alerts-empty">
                   <p class="text-text-muted text-xs">Sin alertas pendientes</p>
                 </div>
               }
@@ -170,6 +176,7 @@ function alertTitle(type: string): string {
                   type="button"
                   (click)="router.navigate(['/trainer/routines/new'])"
                   class="w-full bg-card border border-border rounded-xl p-3 text-left flex items-center gap-3 hover:bg-card-hover transition-colors"
+                  data-testid="quick-create-routine"
                 >
                   <span class="bg-primary/10 p-1.5 rounded-lg text-base leading-none">📋</span>
                   <span class="text-sm text-text font-medium">Crear rutina</span>
@@ -178,6 +185,7 @@ function alertTitle(type: string): string {
                   type="button"
                   (click)="router.navigate(['/trainer/programs/new'])"
                   class="w-full bg-card border border-border rounded-xl p-3 text-left flex items-center gap-3 hover:bg-card-hover transition-colors"
+                  data-testid="quick-create-program"
                 >
                   <span class="bg-primary/10 p-1.5 rounded-lg text-base leading-none">📦</span>
                   <span class="text-sm text-text font-medium">Crear programa</span>
@@ -186,6 +194,7 @@ function alertTitle(type: string): string {
                   type="button"
                   (click)="router.navigate(['/trainer/students'])"
                   class="w-full bg-card border border-border rounded-xl p-3 text-left flex items-center gap-3 hover:bg-card-hover transition-colors"
+                  data-testid="quick-invite-student"
                 >
                   <span class="bg-primary/10 p-1.5 rounded-lg text-base leading-none">✉️</span>
                   <span class="text-sm text-text font-medium">Invitar alumno</span>
