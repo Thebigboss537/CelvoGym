@@ -6,11 +6,12 @@
 // (AU80-AU82). Logout (AU60-AU64) and student login (AU40-AU47) are
 // deferred to the Phase-2 plan that also covers onboarding UI.
 import { test, expect } from '@playwright/test';
-import { makeTrainer } from '../fixtures/test-users';
+import { makeTrainer, makeStudent } from '../fixtures/test-users';
 import { approveTrainer, cleanupTenant, clearRateLimits } from '../fixtures/seed';
-import { completeTrainerSetup, readTenantIdFromCookies } from '../fixtures/auth';
+import { completeTrainerSetup, readTenantIdFromCookies, inviteStudent, registerStudentViaInvite } from '../fixtures/auth';
 import { RegisterPage } from '../pages/shared/register.page';
 import { LoginPage } from '../pages/shared/login.page';
+import { ShellPage } from '../pages/shared/shell.page';
 
 // Clear CelvoGuard rate-limit keys before every test so that multiple
 // register calls in the same session don't trip the 3/hour per-IP cap.
@@ -119,5 +120,67 @@ test.describe('Flow: protected route redirect', () => {
     await page.context().clearCookies();
     await page.goto('/trainer');
     await expect(page).toHaveURL(/\/auth\/login/);
+  });
+});
+
+test.describe('Flow: student login (tenant-scoped)', () => {
+  test('AU40-AU47: student with tenantId in URL logs into /workout', async ({ page, context }) => {
+    const trainer = makeTrainer('auth-studlogin');
+    const student = makeStudent('auth-studlogin');
+    let tenantId: string | undefined;
+
+    const register = new RegisterPage(page);
+    await register.goto();
+    await register.submit(trainer);
+    tenantId = await readTenantIdFromCookies(page);
+    await completeTrainerSetup(page, trainer.displayName);
+    if (tenantId) await approveTrainer(tenantId);
+
+    const token = await inviteStudent(page, student.email, student.firstName);
+    await page.context().clearCookies();
+
+    await registerStudentViaInvite(
+      context,
+      token,
+      student.email,
+      student.password,
+      student.firstName,
+    );
+    await page.context().clearCookies();
+
+    const login = new LoginPage(page);
+    await login.gotoAsStudent(tenantId!);
+    await login.submitCredentials(student.email, student.password);
+
+    await expect(page).toHaveURL(/\/workout/);
+
+    if (tenantId) await cleanupTenant(tenantId);
+  });
+});
+
+test.describe('Flow: trainer logout', () => {
+  test('AU60-AU64: active trainer logs out via sidebar', async ({ page }) => {
+    const trainer = makeTrainer('auth-logout');
+    let tenantId: string | undefined;
+
+    const register = new RegisterPage(page);
+    await register.goto();
+    await register.submit(trainer);
+    tenantId = await readTenantIdFromCookies(page);
+    await completeTrainerSetup(page, trainer.displayName);
+    if (tenantId) await approveTrainer(tenantId);
+    await page.context().clearCookies();
+
+    const login = new LoginPage(page);
+    await login.goto();
+    await login.submitCredentials(trainer.email, trainer.password);
+    await expect(page).toHaveURL(/\/trainer(\/|$)/);
+
+    const shell = new ShellPage(page);
+    await shell.logoutAsTrainer();
+
+    await expect(page).toHaveURL(/\/auth\/login/);
+
+    if (tenantId) await cleanupTenant(tenantId);
   });
 });
