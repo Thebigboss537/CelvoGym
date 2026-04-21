@@ -72,11 +72,15 @@ export class CatalogListPage {
   }
 
   async confirmDeleteDialog(): Promise<void> {
-    await this.deleteDialog.waitFor();
-    // kx-confirm-dialog renders a visible button with text "Eliminar" inside
-    // the dialog host — scope to it so the per-card Eliminar hover button does
-    // not get matched.
-    await this.deleteDialog.getByRole('button', { name: 'Eliminar' }).click();
-    await this.deleteDialog.waitFor({ state: 'hidden' });
+    // The <kx-confirm-dialog> host element has no layout box of its own — the
+    // inner overlay (role="dialog") is what becomes visible when [open]=true.
+    // Waiting on the host with the default 'visible' state hangs even when the
+    // dialog is on screen. Wait on the inner role instead.
+    const dialog = this.deleteDialog.getByRole('dialog');
+    await dialog.waitFor();
+    // Scope the "Eliminar" button click inside the dialog so the per-card
+    // hover-Eliminar button does not get matched.
+    await dialog.getByRole('button', { name: 'Eliminar' }).click();
+    await dialog.waitFor({ state: 'hidden' });
   }
 }
