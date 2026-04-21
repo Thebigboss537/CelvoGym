@@ -111,6 +111,7 @@ import { KxStatCard } from '../../../shared/ui/stat-card';
           </div>
           <button
             (click)="authStore.logout()"
+            data-testid="student-logout"
             class="w-full flex items-center gap-3 py-3.5 px-4 hover:bg-danger/5 transition text-left">
             <span class="text-base">🚪</span>
             <span class="text-sm font-semibold text-danger">Cerrar sesión</span>

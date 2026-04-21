@@ -30,6 +30,7 @@ import type { TrainerStatusDto } from '../../../shared/models';
               type="text"
               [(ngModel)]="displayName"
               name="displayName"
+              data-testid="onboarding-displayname"
               class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
               placeholder="Ej: Coach Juan, Juan Pérez Fitness"
               required
@@ -44,6 +45,7 @@ import type { TrainerStatusDto } from '../../../shared/models';
             <textarea
               [(ngModel)]="bio"
               name="bio"
+              data-testid="onboarding-bio"
               rows="3"
               class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition resize-none"
               placeholder="Cuéntale a tus alumnos un poco sobre vos..."
@@ -51,11 +53,12 @@ import type { TrainerStatusDto } from '../../../shared/models';
           </div>
 
           @if (error()) {
-            <p class="text-danger text-sm">{{ error() }}</p>
+            <p class="text-danger text-sm" data-testid="onboarding-error">{{ error() }}</p>
           }
 
           <button
             type="submit"
+            data-testid="onboarding-submit"
             [disabled]="loading()"
             class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press flex items-center justify-center gap-2"
           >

@@ -15,13 +15,13 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
     <div class="min-h-screen flex items-center justify-center px-4">
       <div class="w-full max-w-sm animate-fade-up">
         @if (loading()) {
-          <div class="text-center">
+          <div class="text-center" data-testid="invite-loading">
             <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
             <p class="text-text-secondary mt-3">Verificando invitación...</p>
           </div>
         } @else if (error()) {
           <div class="text-center">
-            <p class="text-danger text-lg font-medium">{{ error() }}</p>
+            <p class="text-danger text-lg font-medium" data-testid="invite-error">{{ error() }}</p>
             <a href="/auth/login" class="text-primary hover:underline text-sm mt-3 inline-block">Ir a iniciar sesión</a>
           </div>
         } @else if (invitation()) {
@@ -36,12 +36,13 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
           </div>
 
           @if (accepted()) {
-            <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3">
+            <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3" data-testid="invite-success">
               <p class="text-success font-display font-bold text-lg">¡Listo, ya estás dentro!</p>
               <p class="text-text-secondary text-sm">
                 Tu entrenador te asignará rutinas que podrás seguir desde tu celular.
               </p>
               <button (click)="goToWorkout()"
+                data-testid="invite-goto-workout"
                 class="bg-primary hover:bg-primary-hover text-white font-semibold px-6 py-2.5 rounded-lg transition press text-sm">
                 Ver mis rutinas
               </button>
@@ -54,6 +55,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
                   type="text"
                   [(ngModel)]="displayName"
                   name="displayName"
+                  data-testid="invite-displayname"
                   class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                   placeholder="Tu nombre"
                   required
@@ -76,6 +78,7 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
                   type="password"
                   [(ngModel)]="password"
                   name="password"
+                  data-testid="invite-password"
                   autocomplete="new-password"
                   class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                   placeholder="Mínimo 8 caracteres"
@@ -85,11 +88,12 @@ import { parseGuardError } from '../../../shared/utils/guard-errors';
               </div>
 
               @if (acceptError()) {
-                <p class="text-danger text-sm">{{ acceptError() }}</p>
+                <p class="text-danger text-sm" data-testid="invite-accept-error">{{ acceptError() }}</p>
               }
 
               <button
                 type="submit"
+                data-testid="invite-submit"
                 [disabled]="accepting()"
                 class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press"
               >

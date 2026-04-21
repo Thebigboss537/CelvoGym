@@ -16,7 +16,7 @@ import type { TrainerStatusDto } from '../../../shared/models';
           <kx-logo [size]="36" class="flex justify-center" />
         </div>
 
-        <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3">
+        <div class="bg-success-dark border border-success/30 rounded-xl p-5 text-center space-y-3" data-testid="pending-panel">
           <p class="text-success font-display font-bold text-lg">¡Perfil creado!</p>
           <p class="text-text-secondary text-sm">
             Tu cuenta está pendiente de aprobación. Te avisaremos cuando esté activa.
@@ -29,12 +29,13 @@ import type { TrainerStatusDto } from '../../../shared/models';
         </div>
 
         @if (checkError()) {
-          <p class="text-danger text-sm text-center mt-3">{{ checkError() }}</p>
+          <p class="text-danger text-sm text-center mt-3" data-testid="pending-check-error">{{ checkError() }}</p>
         }
 
         <div class="mt-4 space-y-2">
           <button
             (click)="checkStatus()"
+            data-testid="pending-check-status"
             [disabled]="checking()"
             class="w-full bg-card border border-border hover:border-primary text-text font-semibold py-3 rounded-lg transition press flex items-center justify-center gap-2"
           >
@@ -48,6 +49,7 @@ import type { TrainerStatusDto } from '../../../shared/models';
 
           <button
             (click)="logout()"
+            data-testid="onboarding-logout"
             class="w-full text-text-muted text-sm hover:text-text py-2 transition"
           >
             Cerrar sesión
