@@ -29,7 +29,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
       <!-- Header -->
       <div class="flex items-center justify-between mb-5">
         <h1 class="text-2xl font-extrabold font-display">Catálogo de Ejercicios</h1>
-        <button (click)="openCreate()"
+        <button (click)="openCreate()" data-testid="catalog-new"
           class="bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-4 py-2 rounded-lg transition press">
           + Nuevo ejercicio
         </button>
@@ -49,6 +49,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
             [(ngModel)]="searchTerm"
             (input)="onSearchInput()"
             name="search"
+            data-testid="catalog-search"
             placeholder="Buscar ejercicio..."
             class="w-full bg-card border border-border rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-text
                    focus:outline-none focus:border-primary transition placeholder:text-text-muted"
@@ -61,6 +62,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
         @for (chip of visibleChips(); track chip) {
           <button
             (click)="selectGroup(chip)"
+            [attr.data-testid]="'catalog-chip-' + chip.toLowerCase()"
             class="text-xs font-medium px-3 py-1.5 rounded-full border transition press"
             [class.bg-primary]="selectedGroup() === chip"
             [class.border-primary]="selectedGroup() === chip"
@@ -76,6 +78,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
         }
         <button
           (click)="toggleMoreChips()"
+          data-testid="catalog-more-chips"
           class="text-xs font-medium px-3 py-1.5 rounded-full border border-border bg-card text-text-muted
                  hover:border-primary hover:text-text transition press"
         >
@@ -85,7 +88,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
 
       <!-- Create / Edit form -->
       @if (editingExercise() !== undefined) {
-        <div class="bg-card border border-border rounded-2xl p-5 mb-5 animate-fade-up">
+        <div class="bg-card border border-border rounded-2xl p-5 mb-5 animate-fade-up" data-testid="catalog-form">
           <h2 class="font-display font-bold text-base mb-4">
             {{ editingExercise() === null ? 'Nuevo ejercicio' : 'Editar ejercicio' }}
           </h2>
@@ -93,14 +96,14 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs text-text-secondary mb-1">Nombre *</label>
-                <input type="text" [(ngModel)]="formName" name="name" required maxlength="200"
+                <input type="text" [(ngModel)]="formName" name="name" data-testid="catalog-form-name" required maxlength="200"
                   class="w-full bg-bg-raised border border-border rounded-xl px-3.5 py-2.5 text-sm text-text
                          focus:outline-none focus:border-primary transition"
                   placeholder="Ej: Press de banca" />
               </div>
               <div>
                 <label class="block text-xs text-text-secondary mb-1">Grupo muscular</label>
-                <input type="text" [(ngModel)]="formMuscleGroup" name="muscleGroup" maxlength="100"
+                <input type="text" [(ngModel)]="formMuscleGroup" name="muscleGroup" data-testid="catalog-form-muscle" maxlength="100"
                   class="w-full bg-bg-raised border border-border rounded-xl px-3.5 py-2.5 text-sm text-text
                          focus:outline-none focus:border-primary transition"
                   placeholder="Ej: Pecho, Espalda..." />
@@ -108,24 +111,24 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
             </div>
             <div>
               <label class="block text-xs text-text-secondary mb-1">Video URL (YouTube)</label>
-              <input type="url" [(ngModel)]="formVideoUrl" name="videoUrl" maxlength="500"
+              <input type="url" [(ngModel)]="formVideoUrl" name="videoUrl" data-testid="catalog-form-video" maxlength="500"
                 class="w-full bg-bg-raised border border-border rounded-xl px-3.5 py-2.5 text-sm text-text
                        focus:outline-none focus:border-primary transition"
                 placeholder="https://youtube.com/watch?v=..." />
             </div>
             <div>
               <label class="block text-xs text-text-secondary mb-1">Instrucciones / notas</label>
-              <textarea [(ngModel)]="formNotes" name="notes" maxlength="2000" rows="3"
+              <textarea [(ngModel)]="formNotes" name="notes" data-testid="catalog-form-notes" maxlength="2000" rows="3"
                 class="w-full bg-bg-raised border border-border rounded-xl px-3.5 py-2.5 text-sm text-text
                        focus:outline-none focus:border-primary transition resize-none"
                 placeholder="Indicaciones técnicas, tips de ejecución..."></textarea>
             </div>
             <div class="flex items-center gap-3 pt-1">
-              <button type="submit" [disabled]="saving()"
+              <button type="submit" [disabled]="saving()" data-testid="catalog-form-submit"
                 class="bg-primary hover:bg-primary-hover text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition press">
                 {{ editingExercise() === null ? 'Crear ejercicio' : 'Guardar cambios' }}
               </button>
-              <button type="button" (click)="cancelForm()"
+              <button type="button" (click)="cancelForm()" data-testid="catalog-form-cancel"
                 class="text-sm text-text-muted hover:text-text transition">
                 Cancelar
               </button>
@@ -139,6 +142,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
         <kx-spinner />
       } @else if (filtered().length === 0) {
         <kx-empty-state
+          data-testid="catalog-empty"
           [title]="searchTerm.trim() || selectedGroup() !== 'Todos' ? 'Sin resultados' : 'Tu biblioteca está vacía'"
           [subtitle]="searchTerm.trim() || selectedGroup() !== 'Todos'
             ? 'Prueba con otro término o filtro'
@@ -147,6 +151,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger">
           @for (ex of filtered(); track ex.id) {
             <div
+              [attr.data-testid]="'catalog-card-' + ex.id"
               class="bg-card border border-border rounded-2xl overflow-hidden cursor-pointer
                      hover:border-primary/40 transition group"
               (click)="editExercise(ex)"
@@ -173,6 +178,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
                 <!-- Delete button (visible on hover) -->
                 <div class="mt-2 flex justify-end opacity-0 group-hover:opacity-100 transition">
                   <button
+                    [attr.data-testid]="'catalog-delete-' + ex.id"
                     (click)="requestDelete(ex, $event)"
                     class="text-[11px] text-danger hover:underline"
                   >Eliminar</button>
@@ -186,6 +192,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
 
     <!-- Delete confirmation -->
     <kx-confirm-dialog
+      data-testid="catalog-delete-dialog"
       [open]="showDeleteDialog()"
       title="Eliminar ejercicio"
       [message]="'¿Eliminar ' + (deleteTarget?.name ?? '') + ' del catálogo?'"
