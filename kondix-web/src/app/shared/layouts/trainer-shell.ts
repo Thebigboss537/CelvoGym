@@ -14,7 +14,8 @@ import { AuthStore } from '../../core/auth/auth.store';
         [items]="sidebarItems"
         [userName]="userName()"
         [userInitials]="userInitials()"
-        (create)="onCreateNew()" />
+        (create)="onCreateNew()"
+        (logout)="logout()" />
       <main class="flex-1 md:ml-14 lg:ml-60 min-h-screen">
         <router-outlet />
       </main>
@@ -59,5 +60,9 @@ export class TrainerShell {
 
   onCreateNew() {
     this.router.navigate(['/trainer/routines/new']);
+  }
+
+  logout() {
+    this.authStore.logout();
   }
 }
