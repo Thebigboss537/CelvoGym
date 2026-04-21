@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { BrowserContext, Page } from '@playwright/test';
 
 const API = process.env.E2E_API_URL ?? 'http://localhost:5070';
 const GUARD = process.env.E2E_GUARD_URL ?? 'http://localhost:5050';
@@ -94,4 +94,131 @@ export async function readTenantIdFromCookies(page: Page): Promise<string> {
     Buffer.from(access.value.split('.')[1], 'base64url').toString('utf8'),
   );
   return payload.tenantId ?? payload.tid ?? payload.sub;
+}
+
+/**
+ * Invites a student via the real POST /api/v1/students/invite endpoint,
+ * authenticated by the current page's trainer cookies. Returns the raw
+ * invite token (not the URL). The trainer must be approved and active
+ * before calling this — otherwise the endpoint returns 403.
+ *
+ * CSRF: Kondix's csrf middleware requires the cg-csrf-kondix cookie
+ * echoed back as X-CSRF-Token header.
+ */
+export async function inviteStudent(
+  page: Page,
+  email: string,
+  firstName?: string,
+): Promise<string> {
+  const cookies = await page.context().cookies();
+  const csrfRaw = cookies.find(c => c.name === 'cg-csrf-kondix')?.value;
+  if (!csrfRaw) {
+    throw new Error('cg-csrf-kondix cookie missing — trainer must be logged in first');
+  }
+  const csrf = decodeURIComponent(csrfRaw);
+
+  const cookieHeader = cookies
+    .filter(c => c.name.startsWith('cg-'))
+    .map(c => `${c.name}=${c.value}`)
+    .join('; ');
+
+  const res = await fetch(`${API}/api/v1/students/invite`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrf,
+      'Cookie': cookieHeader,
+      'Origin': 'http://localhost:4200',
+    },
+    body: JSON.stringify({ email, firstName: firstName ?? null }),
+  });
+  if (!res.ok) {
+    throw new Error(`inviteStudent failed: ${res.status} ${await res.text()}`);
+  }
+  const data = (await res.json()) as { token: string };
+  return data.token;
+}
+
+/**
+ * Completes the student invite-acceptance flow programmatically:
+ * 1) CelvoGuard endUser register with the invited email + tenantId
+ * 2) Kondix public/invite/{token}/accept to bind the student to the trainer
+ *
+ * Copies the Set-Cookie headers returned by CelvoGuard register into the
+ * Playwright BrowserContext so the browser is effectively logged in as the
+ * student. Use this when a spec needs an authenticated student without
+ * running the UI acceptance flow (e.g., student login specs that precondition
+ * on a logged-in student account).
+ */
+export async function registerStudentViaInvite(
+  context: BrowserContext,
+  token: string,
+  email: string,
+  password: string,
+  displayName: string,
+): Promise<void> {
+  // Load invitation info to discover tenantId
+  const infoRes = await fetch(`${API}/api/v1/public/invite/${encodeURIComponent(token)}`);
+  if (!infoRes.ok) {
+    throw new Error(`invite info load failed: ${infoRes.status}`);
+  }
+  const info = (await infoRes.json()) as { tenantId: string };
+
+  // Register in CelvoGuard (receives Set-Cookie with cg-* cookies)
+  const regRes = await fetch(`${GUARD}/api/v1/enduser/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-App-Slug': 'kondix' },
+    body: JSON.stringify({
+      email,
+      password,
+      firstName: displayName,
+      tenantId: info.tenantId,
+    }),
+  });
+  if (!regRes.ok) {
+    throw new Error(`enduser register failed: ${regRes.status} ${await regRes.text()}`);
+  }
+  const userData = (await regRes.json()) as { user: { id: string } };
+
+  // Copy the Set-Cookie headers into the Playwright context
+  const setCookies: string[] = (regRes.headers as Headers & { getSetCookie?: () => string[] })
+    .getSetCookie?.() ?? [];
+  const fallback = setCookies.length === 0
+    ? (regRes.headers.get('set-cookie')?.split(/,(?=\s*cg-)/g) ?? [])
+    : [];
+  const all = setCookies.length > 0 ? setCookies : fallback;
+  for (const raw of all) {
+    const pair = raw.split(';')[0].trim();
+    const eq = pair.indexOf('=');
+    if (eq < 0) continue;
+    const name = pair.slice(0, eq);
+    const value = pair.slice(eq + 1);
+    if (!name.startsWith('cg-')) continue;
+    await context.addCookies([
+      {
+        name,
+        value,
+        domain: 'localhost',
+        path: '/',
+        httpOnly: name.startsWith('cg-access') || name.startsWith('cg-refresh'),
+        secure: false,
+      },
+    ]);
+  }
+
+  // Accept invitation server-side (binds student to trainer in gym schema)
+  const acceptRes = await fetch(
+    `${API}/api/v1/public/invite/${encodeURIComponent(token)}/accept`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        celvoGuardUserId: userData.user.id,
+        displayName,
+      }),
+    },
+  );
+  if (!acceptRes.ok) {
+    throw new Error(`invite accept failed: ${acceptRes.status} ${await acceptRes.text()}`);
+  }
 }
