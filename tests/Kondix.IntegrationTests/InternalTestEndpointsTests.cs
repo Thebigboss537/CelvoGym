@@ -113,6 +113,52 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
             still.Should().BeFalse();
         }
     }
+
+    [Fact]
+    public async Task Cleanup_WithValidKey_RemovesTenantCatalogExercises()
+    {
+        var tenantId = Guid.NewGuid();
+        var trainerId = Guid.NewGuid();
+        var catalogId = Guid.NewGuid();
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
+            db.Trainers.Add(new Trainer
+            {
+                Id = trainerId,
+                TenantId = tenantId,
+                CelvoGuardUserId = Guid.NewGuid(),
+                DisplayName = "Catalog Owner",
+                IsApproved = true,
+                IsActive = true,
+            });
+            db.CatalogExercises.Add(new CatalogExercise
+            {
+                Id = catalogId,
+                TrainerId = trainerId,
+                Name = "Bench Press",
+                IsActive = true,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Internal-Key", InternalTestFactory.InternalKey);
+
+        var res = await client.DeleteAsync(
+            $"/api/v1/internal/test/cleanup?tenantId={tenantId}");
+
+        res.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
+            var catalogStill = await db.CatalogExercises.AnyAsync(c => c.Id == catalogId);
+            catalogStill.Should().BeFalse();
+        }
+    }
 }
 
 public sealed class InternalTestFactory : WebApplicationFactory<Program>

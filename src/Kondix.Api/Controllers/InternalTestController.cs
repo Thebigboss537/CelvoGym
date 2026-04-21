@@ -72,6 +72,14 @@ public class InternalTestController(KondixDbContext db, IConfiguration config) :
             .ToListAsync(ct);
         db.Students.RemoveRange(studentsToRemove);
 
+        // 2b. Remove CatalogExercises created by this tenant's trainers.
+        //     FK cascade handles this in Postgres but not in InMemory, and
+        //     keeping the delete explicit keeps integration tests deterministic.
+        var catalogToRemove = await db.CatalogExercises
+            .Where(c => trainerIds.Contains(c.TrainerId))
+            .ToListAsync(ct);
+        db.CatalogExercises.RemoveRange(catalogToRemove);
+
         // 3. Remove trainers for this tenant.
         var trainersToRemove = await db.Trainers
             .Where(t => t.TenantId == tenantId)
