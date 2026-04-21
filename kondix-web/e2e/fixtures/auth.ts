@@ -1,4 +1,8 @@
 import type { BrowserContext, Page } from '@playwright/test';
+import type { TestTrainer } from './test-users';
+import { makeTrainer } from './test-users';
+import { approveTrainer } from './seed';
+import { RegisterPage } from '../pages/shared/register.page';
 
 const API = process.env.E2E_API_URL ?? 'http://localhost:5070';
 const GUARD = process.env.E2E_GUARD_URL ?? 'http://localhost:5050';
@@ -221,4 +225,28 @@ export async function registerStudentViaInvite(
   if (!acceptRes.ok) {
     throw new Error(`invite accept failed: ${acceptRes.status} ${await acceptRes.text()}`);
   }
+}
+
+/**
+ * Composes register + onboarding setup + admin approval for a fresh trainer.
+ * Leaves `page` logged in as an active trainer on whatever URL the register
+ * flow redirects to (usually /onboarding/setup after the redirect, or /trainer
+ * after subsequent navigation — callers should navigate explicitly after).
+ *
+ * Returns the generated trainer credentials and the resolved tenantId so the
+ * spec can call `cleanupTenant(tenantId)` in afterAll. Callers must still
+ * `clearRateLimits()` in beforeEach.
+ */
+export async function setupActiveTrainer(
+  page: Page,
+  tag = 'spec',
+): Promise<{ trainer: TestTrainer; tenantId: string }> {
+  const trainer = makeTrainer(tag);
+  const register = new RegisterPage(page);
+  await register.goto();
+  await register.submit(trainer);
+  const tenantId = await readTenantIdFromCookies(page);
+  await completeTrainerSetup(page, trainer.displayName);
+  await approveTrainer(tenantId);
+  return { trainer, tenantId };
 }
