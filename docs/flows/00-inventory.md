@@ -33,7 +33,7 @@ becomes (eventually) a diagram in `docs/flows/` and a spec in
 
 | Flow                                        | Role     | Flow file                | Spec file                     | Status  |
 |---------------------------------------------|----------|--------------------------|-------------------------------|---------|
-| Dashboard: view metrics + CTAs              | trainer  | `03-trainer-dashboard.md`| `03-trainer-dashboard.spec.ts`| Pending |
+| Dashboard: view metrics + CTAs              | trainer  | `03-trainer-dashboard.md`| `03-trainer-dashboard.spec.ts`| Done |
 | Routines: list + filter                     | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
 | Routines: create via wizard (days + exercises + sets) | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
 | Routines: view detail                       | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
@@ -48,7 +48,7 @@ becomes (eventually) a diagram in `docs/flows/` and a spec in
 | Students: invite via QR                     | trainer  | `06-trainer-students.md` | `06-trainer-students.spec.ts` | Pending |
 | Students: view detail + history             | trainer  | `06-trainer-students.md` | `06-trainer-students.spec.ts` | Pending |
 | Students: cancel active program             | trainer  | `06-trainer-students.md` | `06-trainer-students.spec.ts` | Pending |
-| Catalog: list + add exercise                | trainer  | `07-trainer-catalog.md`  | `07-trainer-catalog.spec.ts`  | Pending |
+| Catalog: list + add exercise                | trainer  | `07-trainer-catalog.md`  | `07-trainer-catalog.spec.ts`  | Done |
 
 ## Invite Acceptance (Student)
 
