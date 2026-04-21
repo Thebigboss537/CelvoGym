@@ -14,20 +14,20 @@ becomes (eventually) a diagram in `docs/flows/` and a spec in
 
 | Flow                                   | Role      | Flow file          | Spec file               | Status  |
 |----------------------------------------|-----------|--------------------|-------------------------|---------|
-| Trainer registration                   | public    | `01-auth.md`       | `01-auth.spec.ts`       | Planned |
-| Trainer login                          | public    | `01-auth.md`       | `01-auth.spec.ts`       | Planned |
-| Student login (tenant-scoped via `?t=`)| public    | `01-auth.md`       | `01-auth.spec.ts`       | Planned |
-| Logout (trainer + student)             | auth      | `01-auth.md`       | `01-auth.spec.ts`       | Planned |
-| Protected route redirect to /auth/login| auth      | `01-auth.md`       | `01-auth.spec.ts`       | Planned |
-| Token refresh (transparent)            | auth      | `01-auth.md`       | `01-auth.spec.ts`       | Planned |
+| Trainer registration                   | public    | `01-auth.md`       | `01-auth.spec.ts`       | Done |
+| Trainer login                          | public    | `01-auth.md`       | `01-auth.spec.ts`       | Done |
+| Student login (tenant-scoped via `?t=`)| public    | `01-auth.md`       | `01-auth.spec.ts`       | Done |
+| Logout (trainer + student)             | auth      | `01-auth.md`       | `01-auth.spec.ts`       | Done |
+| Protected route redirect to /auth/login| auth      | `01-auth.md`       | `01-auth.spec.ts`       | Done |
+| Token refresh (transparent)            | auth      | `01-auth.md`       | `01-auth.spec.ts`       | Done |
 
 ## Onboarding (Trainer)
 
 | Flow                                   | Role        | Flow file                  | Spec file                    | Status  |
 |----------------------------------------|-------------|----------------------------|------------------------------|---------|
-| Trainer fills setup (display name, bio)| onboarding  | `02-onboarding-trainer.md` | `02-onboarding-trainer.spec.ts` | Pending |
-| Trainer sees pending-approval screen   | onboarding  | `02-onboarding-trainer.md` | `02-onboarding-trainer.spec.ts` | Pending |
-| Trainer becomes active after approval  | onboarding  | `02-onboarding-trainer.md` | `02-onboarding-trainer.spec.ts` | Pending |
+| Trainer fills setup (display name, bio)| onboarding  | `02-onboarding-trainer.md` | `02-onboarding-trainer.spec.ts` | Done |
+| Trainer sees pending-approval screen   | onboarding  | `02-onboarding-trainer.md` | `02-onboarding-trainer.spec.ts` | Done |
+| Trainer becomes active after approval  | onboarding  | `02-onboarding-trainer.md` | `02-onboarding-trainer.spec.ts` | Done |
 
 ## Trainer Area
 
@@ -54,9 +54,9 @@ becomes (eventually) a diagram in `docs/flows/` and a spec in
 
 | Flow                                   | Role     | Flow file               | Spec file                  | Status  |
 |----------------------------------------|----------|-------------------------|----------------------------|---------|
-| Student opens invite link              | public   | `08-invite-acceptance.md` | `08-invite-acceptance.spec.ts` | Pending |
-| Student creates end-user account       | public   | `08-invite-acceptance.md` | `08-invite-acceptance.spec.ts` | Pending |
-| Student lands on `/workout/home`       | student  | `08-invite-acceptance.md` | `08-invite-acceptance.spec.ts` | Pending |
+| Student opens invite link              | public   | `08-invite-acceptance.md` | `08-invite-acceptance.spec.ts` | Done |
+| Student creates end-user account       | public   | `08-invite-acceptance.md` | `08-invite-acceptance.spec.ts` | Done |
+| Student lands on `/workout/home`       | student  | `08-invite-acceptance.md` | `08-invite-acceptance.spec.ts` | Done |
 
 ## Student Area
 
