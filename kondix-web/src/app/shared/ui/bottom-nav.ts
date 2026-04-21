@@ -17,7 +17,8 @@ export interface NavTab {
   ],
   template: `
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-bg-sidebar border-t border-border-light
-                flex justify-around items-center px-3 pb-[env(safe-area-inset-bottom)] pt-2">
+                flex justify-around items-center px-3 pb-safe-bottom pt-2
+                h-[calc(var(--kx-nav-height)+env(safe-area-inset-bottom,0px))]">
       @for (tab of tabs(); track tab.route) {
         <a [routerLink]="tab.route" routerLinkActive="active-tab" [routerLinkActiveOptions]="{ exact: tab.route === '.' }"
            class="flex flex-col items-center gap-1 flex-1 py-1.5 text-text-muted transition-colors

@@ -43,7 +43,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, KxBadge, KxSpinner, KxConfirmDialog],
   template: `
-    <div class="animate-fade-up">
+    <div class="animate-fade-up px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
       @if (loading()) {
         <kx-spinner />
       } @else if (error()) {

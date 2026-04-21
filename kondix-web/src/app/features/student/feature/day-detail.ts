@@ -27,7 +27,7 @@ import { KxSpinner } from '../../../shared/ui/spinner';
   imports: [RouterLink, KxSpinner, KxEmptyState, KxBadge, KxProgressBar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="animate-fade-up pb-6">
+    <div class="animate-fade-up pt-4">
       @if (loading()) {
         <kx-spinner />
       } @else {

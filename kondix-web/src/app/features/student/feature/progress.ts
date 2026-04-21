@@ -20,7 +20,7 @@ import { formatDate, formatDateWithYear, parseLocalDate } from '../../../shared/
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, KxSegmentedControl, KxStatCard, KxSpinner, KxEmptyState, KxBadge],
   template: `
-    <div class="animate-fade-up space-y-5 pb-8">
+    <div class="animate-fade-up space-y-5 pt-4">
 
       <!-- Header -->
       <div>

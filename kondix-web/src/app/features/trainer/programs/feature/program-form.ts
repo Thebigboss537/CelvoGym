@@ -17,7 +17,7 @@ interface RoutineSlot {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, RouterLink, KxSpinner, KxConfirmDialog],
   template: `
-    <div class="animate-fade-up">
+    <div class="animate-fade-up px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
       <!-- Breadcrumb -->
       <nav class="flex items-center gap-1.5 text-sm text-text-secondary mb-4">
         <a routerLink="/trainer/programs" class="hover:text-text transition">Programas</a>

@@ -25,7 +25,7 @@ interface DayGridCell {
   imports: [KxSpinner, KxEmptyState, KxProgressBar, KxDayCell],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="animate-fade-up pb-6">
+    <div class="animate-fade-up pt-4">
       @if (loading()) {
         <kx-spinner />
       } @else if (!calendarData()?.activeProgram) {

@@ -25,7 +25,7 @@ import { AuthStore } from '../../core/auth/auth.store';
     </div>
     <!-- Mobile FAB -->
     <button (click)="onCreateNew()"
-      class="md:hidden fixed bottom-20 right-5 w-14 h-14 bg-primary rounded-full flex items-center justify-center
+      class="md:hidden fixed bottom-nav-safe right-5 w-14 h-14 bg-primary rounded-full flex items-center justify-center
              text-white text-2xl shadow-lg shadow-primary/40 z-50 press">
       +
     </button>

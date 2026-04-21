@@ -14,7 +14,7 @@ import { KxStatCard } from '../../../shared/ui/stat-card';
   imports: [KxStatCard, KxBadge, KxProgressBar, KxSpinner, KxEmptyState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="animate-fade-up space-y-6 pb-8">
+    <div class="animate-fade-up space-y-6 pt-4">
 
       @if (loading()) {
         <kx-spinner />

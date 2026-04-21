@@ -24,7 +24,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, KxSpinner, KxEmptyState, KxConfirmDialog],
   template: `
-    <div class="animate-fade-up">
+    <div class="animate-fade-up px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
 
       <!-- Header -->
       <div class="flex items-center justify-between mb-5">

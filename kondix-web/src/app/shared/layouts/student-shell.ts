@@ -7,7 +7,7 @@ import { KxBottomNav, NavTab } from '../ui/bottom-nav';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, KxBottomNav],
   template: `
-    <main class="min-h-screen bg-bg pb-20 max-w-lg mx-auto">
+    <main class="min-h-screen bg-bg px-4 sm:px-6 pt-safe-top pb-nav-safe max-w-lg mx-auto">
       <router-outlet />
     </main>
     <kx-bottom-nav [tabs]="tabs" />

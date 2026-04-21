@@ -56,7 +56,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
   selector: 'app-routine-wizard',
   imports: [FormsModule, KxWizardStepper, KxSpinner],
   template: `
-    <div class="animate-fade-up max-w-4xl mx-auto">
+    <div class="animate-fade-up max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
 
       <!-- Wizard stepper -->
       <div class="mb-6">

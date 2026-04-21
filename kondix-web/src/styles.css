@@ -52,7 +52,16 @@
   /* Typography — font families registered for Tailwind font-display / font-body */
   --font-display: 'Syne', system-ui, sans-serif;
   --font-body: 'Outfit', system-ui, sans-serif;
+
+  /* Layout — bottom nav height token (used by shells + FAB positioning) */
+  --kx-nav-height: 56px;
 }
+
+/* Safe-area + nav-safe padding utilities (iOS notch / home indicator aware) */
+.pt-safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.pb-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.pb-nav-safe { padding-bottom: calc(var(--kx-nav-height) + env(safe-area-inset-bottom, 0px) + 1.5rem); }
+.bottom-nav-safe { bottom: calc(var(--kx-nav-height) + env(safe-area-inset-bottom, 0px) + 1rem); }
 
 /* Typography utilities — role-based classes for consistent hierarchy */
 .text-display { font-family: var(--font-display); font-size: 2rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; }

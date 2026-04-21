@@ -14,7 +14,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, KxBadge, KxSpinner, KxEmptyState, KxConfirmDialog],
   template: `
-    <div class="animate-fade-up">
+    <div class="animate-fade-up px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="font-display text-2xl font-extrabold">Rutinas</h1>
