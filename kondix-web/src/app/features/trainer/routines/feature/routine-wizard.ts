@@ -97,6 +97,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
               <div>
                 <label for="routine-name" class="block text-sm text-text-secondary mb-1.5">Nombre de la rutina *</label>
                 <input id="routine-name" type="text" [(ngModel)]="name" name="name"
+                  data-testid="wizard-name"
                   class="w-full bg-card border border-border rounded-xl px-4 py-3 text-text focus:outline-none focus:border-primary transition"
                   placeholder="Ej: Push / Pull / Legs" />
               </div>
@@ -107,6 +108,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                 <div class="flex flex-wrap gap-2">
                   @for (cat of categories; track cat) {
                     <button type="button" (click)="toggleCategory(cat)"
+                      [attr.data-testid]="'wizard-category-' + cat"
                       class="bg-card border rounded-xl px-4 py-2 text-sm cursor-pointer transition"
                       [class.border-border]="category !== cat"
                       [class.text-text-secondary]="category !== cat"
@@ -123,6 +125,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
               <div>
                 <label for="routine-desc" class="block text-sm text-text-secondary mb-1.5">Descripcion (opcional)</label>
                 <textarea id="routine-desc" [(ngModel)]="description" name="description" rows="3"
+                  data-testid="wizard-description"
                   class="w-full bg-card border border-border rounded-xl px-4 py-3 text-text focus:outline-none focus:border-primary transition resize-none"
                   placeholder="Describe el objetivo de esta rutina..."></textarea>
               </div>
@@ -138,6 +141,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                     </span>
                   }
                   <input type="text" [(ngModel)]="tagInput" name="tagInput" maxlength="50"
+                    data-testid="wizard-tag-input"
                     (keydown.enter)="addTag($event)"
                     class="bg-transparent text-text text-sm flex-1 min-w-[60px] focus:outline-none"
                     placeholder="Agregar tag..." />
@@ -147,10 +151,12 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
               <!-- Navigation -->
               <div class="flex gap-3 pt-2">
                 <button type="button" (click)="cancel()"
+                  data-testid="wizard-btn-cancel"
                   class="flex-1 bg-card border border-border text-text-secondary py-3 rounded-xl transition hover:bg-card-hover">
                   Cancelar
                 </button>
                 <button type="button" (click)="goToStep(2)" [disabled]="!name.trim()"
+                  data-testid="wizard-btn-next"
                   class="flex-1 bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition press">
                   Siguiente: Dias
                 </button>
