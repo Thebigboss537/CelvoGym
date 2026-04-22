@@ -248,7 +248,7 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
 
         var res = await client.PostAsJsonAsync(
             "/api/v1/internal/test/approve-trainer",
-            new { email = "anyone@example.com" });
+            new { tenantId = Guid.NewGuid() });
 
         res.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -261,7 +261,7 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
 
         var res = await client.PostAsJsonAsync(
             "/api/v1/internal/test/approve-trainer",
-            new { email = "anyone@example.com" });
+            new { tenantId = Guid.NewGuid() });
 
         res.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -269,7 +269,6 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
     [Fact]
     public async Task ApproveTrainer_WithValidKey_SetsIsApprovedTrue()
     {
-        var email = $"t-{Guid.NewGuid():N}@e2e.test";
         var tenantId = Guid.NewGuid();
 
         using (var scope = _factory.Services.CreateScope())
@@ -279,7 +278,7 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
             {
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
-                Email = email,
+                CelvoGuardUserId = Guid.NewGuid(),
                 DisplayName = "Test Trainer",
                 IsApproved = false,
                 IsActive = true,
@@ -292,14 +291,14 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
 
         var res = await client.PostAsJsonAsync(
             "/api/v1/internal/test/approve-trainer",
-            new { email });
+            new { tenantId });
 
         res.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
-            var trainer = await db.Trainers.SingleAsync(t => t.Email == email);
+            var trainer = await db.Trainers.SingleAsync(t => t.TenantId == tenantId);
             trainer.IsApproved.Should().BeTrue();
         }
     }
@@ -308,7 +307,6 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
     public async Task Cleanup_WithValidKey_RemovesTenantData()
     {
         var tenantId = Guid.NewGuid();
-        var email = $"c-{Guid.NewGuid():N}@e2e.test";
 
         using (var scope = _factory.Services.CreateScope())
         {
@@ -317,7 +315,7 @@ public sealed class InternalTestEndpointsTests : IClassFixture<InternalTestFacto
             {
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
-                Email = email,
+                CelvoGuardUserId = Guid.NewGuid(),
                 DisplayName = "Cleanup Target",
                 IsApproved = true,
                 IsActive = true,
@@ -416,7 +414,7 @@ public class InternalTestController(IKondixDbContext db, IConfiguration config) 
     {
         if (!AuthorizeInternal()) return Unauthorized();
 
-        var trainer = await db.Trainers.FirstOrDefaultAsync(t => t.Email == request.Email, ct);
+        var trainer = await db.Trainers.FirstOrDefaultAsync(t => t.TenantId == request.TenantId, ct);
         if (trainer is null) return NotFound(new { error = "trainer not found" });
 
         trainer.IsApproved = true;
@@ -443,12 +441,39 @@ public class InternalTestController(IKondixDbContext db, IConfiguration config) 
     }
 }
 
-public sealed record ApproveTrainerRequest(string Email);
+public sealed record ApproveTrainerRequest(Guid TenantId);
 ```
 
 **Note on scope:** The cleanup deletes trainers and students for the tenant. Routines/programs/assignments cascade from trainer via EF relationships configured in `Kondix.Infrastructure` — if the cascade does not cover everything, extend this method in a follow-up; do not over-expand here.
 
 - [ ] **Step 2: Register controller conditionally + bypass middleware**
+
+First, guard the auto-migration block so it never runs under the `Testing` environment (the in-memory EF provider used by `Kondix.IntegrationTests` does not support migrations):
+
+Replace:
+
+```csharp
+    // Auto-migrate on startup
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+```
+
+With:
+
+```csharp
+    // Auto-migrate on startup (skip under Testing env — InMemory EF provider has no migrations)
+    if (!app.Environment.IsEnvironment("Testing"))
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+```
+
+Then make the existing middleware changes:
 
 Edit `src/Kondix.Api/Program.cs`. Find the existing middleware block:
 
@@ -778,14 +803,14 @@ export function makeStudent(specTag: string): TestStudent {
 const API = process.env.E2E_API_URL ?? 'http://localhost:5070';
 const KEY = process.env.E2E_INTERNAL_KEY ?? 'dev-internal-key-change-me';
 
-export async function approveTrainer(email: string): Promise<void> {
+export async function approveTrainer(tenantId: string): Promise<void> {
   const res = await fetch(`${API}/api/v1/internal/test/approve-trainer`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Internal-Key': KEY,
     },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ tenantId }),
   });
   if (!res.ok) {
     throw new Error(`approveTrainer failed: ${res.status} ${await res.text()}`);
@@ -1070,15 +1095,17 @@ import { LoginPage } from '../pages/shared/login.page';
 test.describe('Smoke: harness validation', () => {
   test('trainer can register, be approved, and log in', async ({ page }) => {
     const trainer = makeTrainer('smoke');
+    let tenantId: string | undefined;
 
     await test.step('register trainer', async () => {
       const reg = new RegisterPage(page);
       await reg.goto();
       await reg.submit(trainer);
+      tenantId = await (await import('../fixtures/auth')).readTenantIdFromCookies(page);
     });
 
     await test.step('approve trainer via internal API', async () => {
-      await approveTrainer(trainer.email);
+      if (tenantId) await approveTrainer(tenantId);
     });
 
     await test.step('log in as approved trainer', async () => {
@@ -1349,7 +1376,7 @@ test.describe('Flow: trainer login branches', () => {
     await register.submit(trainer);
     tenantId = await readTenantIdFromCookies(page);
     await completeTrainerSetup(page, trainer.displayName);
-    await approveTrainer(trainer.email);
+    if (tenantId) await approveTrainer(tenantId);
     await page.context().clearCookies();
 
     const login = new LoginPage(page);

@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Package,
   Menu,
+  LogOut,
   LucideIconData,
 } from 'lucide-angular';
 import { KxLogo } from './logo';
@@ -45,7 +46,7 @@ const ICON_MAP: Record<string, LucideIconData> = {
     {
       provide: LUCIDE_ICONS,
       multi: true,
-      useValue: new LucideIconProvider({ LayoutDashboard, Dumbbell, Layers, BookOpen, Users, Plus, ClipboardList, Package, Menu }),
+      useValue: new LucideIconProvider({ LayoutDashboard, Dumbbell, Layers, BookOpen, Users, Plus, ClipboardList, Package, Menu, LogOut }),
     },
   ],
   template: `
@@ -108,10 +109,18 @@ const ICON_MAP: Record<string, LucideIconData> = {
       <!-- User profile section -->
       <div class="flex items-center gap-3 px-3 py-3.5 border-t border-border-light shrink-0 min-w-0">
         <kx-avatar [name]="userInitials()" size="md" class="shrink-0" />
-        <div class="hidden lg:flex flex-col min-w-0 overflow-hidden">
+        <div class="hidden lg:flex flex-col flex-1 min-w-0 overflow-hidden">
           <span class="text-sm font-medium text-text truncate">{{ userName() }}</span>
           <span class="text-xs text-text-muted truncate">Entrenador</span>
         </div>
+        <button
+          (click)="logout.emit()"
+          data-testid="trainer-logout"
+          title="Cerrar sesión"
+          class="flex items-center justify-center w-7 h-7 rounded-md text-text-muted hover:text-primary hover:bg-card-hover transition-colors duration-150 shrink-0"
+        >
+          <lucide-icon [img]="logOutIcon" [size]="16" [strokeWidth]="1.5" />
+        </button>
       </div>
 
     </aside>
@@ -123,8 +132,10 @@ export class KxSidebar {
   userInitials = input.required<string>();
 
   create = output<void>();
+  logout = output<void>();
 
   readonly plusIcon = Plus;
+  readonly logOutIcon = LogOut;
 
   getIcon(name: string): LucideIconData {
     return ICON_MAP[name] ?? Plus;

@@ -63,7 +63,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
         <div class="flex items-start justify-between gap-3 mb-4">
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="font-display text-xl font-extrabold text-text">{{ routine()!.name }}</h1>
+              <h1 class="font-display text-xl font-extrabold text-text" data-testid="routine-detail-name">{{ routine()!.name }}</h1>
               @if (routine()!.category) {
                 <kx-badge [text]="routine()!.category!" variant="info" />
               }
@@ -75,14 +75,17 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
           <div class="flex gap-2 shrink-0">
             <a
               routerLink="edit"
+              data-testid="routine-detail-edit"
               class="bg-card hover:bg-card-hover border border-border text-sm px-3 py-1.5 rounded-lg transition"
             >Editar</a>
             <button (click)="duplicate()"
               [disabled]="duplicating()"
+              data-testid="routine-detail-duplicate"
               class="bg-card hover:bg-card-hover border border-border text-sm px-3 py-1.5 rounded-lg transition disabled:opacity-50">
               {{ duplicating() ? 'Duplicando...' : 'Duplicar' }}
             </button>
             <button (click)="showDeleteDialog.set(true)"
+              data-testid="routine-detail-delete"
               class="bg-danger/10 text-danger border border-danger/20 text-sm px-3 py-1.5 rounded-lg transition hover:bg-danger/20">
               Eliminar
             </button>
@@ -98,6 +101,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
                 type="button"
                 class="w-full flex items-center justify-between px-4 py-3 hover:bg-bg-raised transition text-left"
                 (click)="toggleDay(i)"
+                [attr.data-testid]="'routine-day-toggle-' + i"
               >
                 <div class="flex items-center gap-2">
                   <span class="font-semibold text-text">{{ day.name }}</span>
@@ -115,7 +119,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
 
               <!-- Day content (collapsible) -->
               @if (expandedDays().has(i)) {
-                <div class="border-t border-border divide-y divide-border-light">
+                <div class="border-t border-border divide-y divide-border-light" [attr.data-testid]="'routine-day-content-' + i">
                   @for (group of day.groups; track group.id) {
                     <div class="px-4 py-3">
                       @if (group.groupType !== 'Single') {
@@ -154,6 +158,7 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
 
     <!-- Delete confirm dialog -->
     <kx-confirm-dialog
+      data-testid="routine-detail-delete-dialog"
       [open]="showDeleteDialog()"
       title="Eliminar rutina"
       message="Esta acción no se puede deshacer. ¿Estás seguro?"

@@ -62,7 +62,8 @@ try
 
     var app = builder.Build();
 
-    // Auto-migrate on startup
+    // Auto-migrate on startup (skip under Testing env — InMemory EF provider has no migrations)
+    if (!app.Environment.IsEnvironment("Testing"))
     {
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
@@ -117,7 +118,8 @@ try
     app.UseWhen(
         ctx => ctx.Request.Path.StartsWithSegments("/api/v1")
                && !ctx.Request.Path.StartsWithSegments("/api/v1/public")
-               && !ctx.Request.Path.StartsWithSegments("/api/v1/health"),
+               && !ctx.Request.Path.StartsWithSegments("/api/v1/health")
+               && !ctx.Request.Path.StartsWithSegments("/api/v1/internal/test"),
         branch =>
         {
             branch.UseMiddleware<CelvoGuardMiddleware>();
@@ -136,6 +138,18 @@ try
             branch.UseMiddleware<CsrfValidationMiddleware>();
         }
     );
+
+    // Hide internal test endpoints in Production
+    app.Use(async (context, next) =>
+    {
+        if (context.Request.Path.StartsWithSegments("/api/v1/internal/test")
+            && app.Environment.IsProduction())
+        {
+            context.Response.StatusCode = 404;
+            return;
+        }
+        await next();
+    });
 
     app.MapControllers();
 

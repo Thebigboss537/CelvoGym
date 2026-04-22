@@ -75,6 +75,6 @@ public static class ContextKeys
 
 public static class Permissions
 {
-    public const string GymManage = "gym:manage";
-    public const string GymWorkout = "gym:workout";
+    public const string GymManage = "kondix:manage";
+    public const string GymWorkout = "kondix:workout";
 }

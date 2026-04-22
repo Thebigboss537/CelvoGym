@@ -37,6 +37,7 @@ const TENANT_ID_KEY = 'kondix_tenant_id';
               type="email"
               [(ngModel)]="email"
               name="email"
+              data-testid="login-email"
               class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
               placeholder="tu@email.com"
               required
@@ -49,6 +50,7 @@ const TENANT_ID_KEY = 'kondix_tenant_id';
               type="password"
               [(ngModel)]="password"
               name="password"
+              data-testid="login-password"
               autocomplete="current-password"
               class="w-full bg-card border border-border rounded-lg px-4 py-3 text-text focus:outline-none focus:border-primary transition"
               placeholder="••••••••"
@@ -57,11 +59,12 @@ const TENANT_ID_KEY = 'kondix_tenant_id';
           </div>
 
           @if (error()) {
-            <p class="text-danger text-sm">{{ error() }}</p>
+            <p data-testid="login-error" class="text-danger text-sm">{{ error() }}</p>
           }
 
           <button
             type="submit"
+            data-testid="login-submit"
             [disabled]="loading()"
             class="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition press"
           >
