@@ -241,6 +241,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                 <div class="w-[180px] shrink-0 space-y-1">
                   @for (day of days(); track $index; let di = $index) {
                     <button type="button" (click)="selectedDayIndex.set(di)"
+                      [attr.data-testid]="'wizard-day-tab-' + di"
                       class="w-full text-left px-3 py-2.5 rounded-lg text-sm transition border-l-2"
                       [class.border-primary]="selectedDayIndex() === di"
                       [class.bg-primary/5]="selectedDayIndex() === di"
@@ -268,7 +269,8 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                           <div class="flex flex-wrap items-center gap-2 px-4 py-2.5 bg-bg-raised border-b border-border-light">
                             <select [ngModel]="group.groupType" (ngModelChange)="updateGroupType(gi, $event)" [name]="'gt-' + gi"
                               class="bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-text"
-                              [attr.aria-label]="'Tipo de grupo'">
+                              [attr.aria-label]="'Tipo de grupo'"
+                              [attr.data-testid]="'wizard-group-' + gi + '-type'">
                               <option value="Single">Individual</option>
                               <option value="Superset">Superset</option>
                               <option value="Triset">Triset</option>
@@ -277,11 +279,13 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                             <div class="flex items-center gap-1.5">
                               <input type="number" [ngModel]="group.restSeconds" (ngModelChange)="updateGroupRest(gi, $event)" [name]="'grest-' + gi"
                                 class="bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text w-16 text-center" placeholder="90"
-                                [attr.aria-label]="'Descanso del grupo'" />
+                                [attr.aria-label]="'Descanso del grupo'"
+                                [attr.data-testid]="'wizard-group-' + gi + '-rest'" />
                               <span class="text-text-muted text-xs">seg</span>
                             </div>
                             <button type="button" (click)="removeGroup(gi)"
-                              class="text-text-muted hover:text-danger text-xs px-2 py-1 rounded transition ml-auto" aria-label="Eliminar grupo">&#10005;</button>
+                              class="text-text-muted hover:text-danger text-xs px-2 py-1 rounded transition ml-auto" aria-label="Eliminar grupo"
+                              [attr.data-testid]="'wizard-group-' + gi + '-remove'">&#10005;</button>
                           </div>
 
                           <!-- Exercises within group -->
@@ -302,6 +306,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                         (blur)="hideSuggestionsDelayed()"
                                         [name]="'ex-' + gi + '-' + ei"
                                         autocomplete="off"
+                                        [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-name'"
                                         class="w-full bg-transparent text-sm font-medium text-text focus:outline-none border-b border-border-light focus:border-primary pb-0.5"
                                         placeholder="Nombre del ejercicio" />
                                       @if (catalogSuggestions().length > 0 && activeGroupIndex === gi && activeExerciseIndex === ei) {
@@ -323,7 +328,8 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                       [class.text-primary]="ex.showVideo || ex.videoUrl"
                                       [class.text-text-muted]="!ex.showVideo && !ex.videoUrl">Video</button>
                                     <button type="button" (click)="$event.stopPropagation(); removeExercise(gi, ei)"
-                                      class="text-text-muted hover:text-danger text-xs px-1.5 py-1 rounded transition" aria-label="Eliminar ejercicio">&#10005;</button>
+                                      class="text-text-muted hover:text-danger text-xs px-1.5 py-1 rounded transition" aria-label="Eliminar ejercicio"
+                                      [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-remove'">&#10005;</button>
                                     <span class="text-text-muted text-xs cursor-pointer">&#9650;</span>
                                   </div>
 
@@ -368,6 +374,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                   <div class="mx-3 mb-2">
                                     <input type="text" [ngModel]="ex.notes" (ngModelChange)="updateExerciseNotes(gi, ei, $event)"
                                       [name]="'notes-' + gi + '-' + ei"
+                                      [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-notes'"
                                       class="w-full bg-card border border-border-light rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-primary"
                                       placeholder="Notas del ejercicio (opcional)" />
                                   </div>
@@ -391,7 +398,8 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                         <select [ngModel]="set.setType" (ngModelChange)="updateSetType(gi, ei, si, $event)"
                                           [name]="'st-' + gi + '-' + ei + '-' + si"
                                           class="w-24 bg-bg-raised border border-border-light rounded-lg px-1.5 py-1.5 text-xs text-text select-styled"
-                                          [attr.aria-label]="'Tipo de serie'">
+                                          [attr.aria-label]="'Tipo de serie'"
+                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-type'">
                                           <option value="Warmup">Calentam.</option>
                                           <option value="Effective">Efectiva</option>
                                           <option value="DropSet">Drop set</option>
@@ -401,25 +409,31 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                         <input type="text" [ngModel]="set.targetReps" (ngModelChange)="updateSetField(gi, ei, si, 'targetReps', $event)"
                                           [name]="'reps-' + gi + '-' + ei + '-' + si"
                                           class="w-14 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="Reps"
-                                          [attr.aria-label]="'Repeticiones'" />
+                                          [attr.aria-label]="'Repeticiones'"
+                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-reps'" />
                                         <input type="text" [ngModel]="set.targetWeight" (ngModelChange)="updateSetField(gi, ei, si, 'targetWeight', $event)"
                                           [name]="'wt-' + gi + '-' + ei + '-' + si"
                                           class="w-14 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="kg"
-                                          [attr.aria-label]="'Peso'" />
+                                          [attr.aria-label]="'Peso'"
+                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-weight'" />
                                         <input type="number" [ngModel]="set.targetRpe" (ngModelChange)="updateSetRpe(gi, ei, si, $event)"
                                           [name]="'rpe-' + gi + '-' + ei + '-' + si"
                                           class="w-14 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="RPE"
-                                          min="1" max="10" [attr.aria-label]="'RPE'" />
+                                          min="1" max="10" [attr.aria-label]="'RPE'"
+                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-rpe'" />
                                         <input type="number" [ngModel]="set.restSeconds" (ngModelChange)="updateSetRest(gi, ei, si, $event)"
                                           [name]="'srest-' + gi + '-' + ei + '-' + si"
                                           class="w-16 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="seg"
-                                          [attr.aria-label]="'Descanso'" />
+                                          [attr.aria-label]="'Descanso'"
+                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-rest'" />
                                         <button type="button" (click)="removeSet(gi, ei, si)"
-                                          class="w-6 text-text-muted hover:text-danger text-xs transition" aria-label="Eliminar serie">&#10005;</button>
+                                          class="w-6 text-text-muted hover:text-danger text-xs transition" aria-label="Eliminar serie"
+                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-remove'">&#10005;</button>
                                       </div>
                                     }
 
                                     <button type="button" (click)="addSet(gi, ei)"
+                                      [attr.data-testid]="'wizard-set-add-' + gi + '-' + ei"
                                       class="text-primary text-xs hover:underline mt-1">+ Agregar serie</button>
                                   </div>
                                 </div>
@@ -427,7 +441,8 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                               } @else {
                                 <!-- Collapsed exercise -->
                                 <div class="flex items-center gap-2 px-3 py-2.5 bg-bg-raised rounded-lg cursor-pointer hover:bg-card-hover transition"
-                                  (click)="toggleExercise(gi, ei)">
+                                  (click)="toggleExercise(gi, ei)"
+                                  [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-toggle'">
                                   <span class="w-6 h-6 rounded bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                                     {{ ei + 1 }}
                                   </span>
@@ -440,6 +455,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
                             <!-- Add exercise -->
                             <button type="button" (click)="addExercise(gi)"
+                              [attr.data-testid]="'wizard-exercise-add-' + gi"
                               class="text-primary text-xs hover:underline">+ Agregar ejercicio</button>
                           </div>
                         </div>
@@ -447,6 +463,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
                       <!-- Add group -->
                       <button type="button" (click)="addGroup()"
+                        data-testid="wizard-group-add"
                         class="w-full border border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-xl py-2.5 text-sm transition">
                         + Agregar grupo de ejercicios
                       </button>
@@ -458,10 +475,12 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
               <!-- Navigation -->
               <div class="flex gap-3 pt-4">
                 <button type="button" (click)="goToStep(2)"
+                  data-testid="wizard-btn-back"
                   class="flex-1 bg-card border border-border text-text-secondary py-3 rounded-xl transition hover:bg-card-hover">
                   &larr; Dias
                 </button>
                 <button type="button" (click)="goToStep(4)"
+                  data-testid="wizard-btn-next"
                   class="flex-1 bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition press">
                   Siguiente: Revisar
                 </button>
