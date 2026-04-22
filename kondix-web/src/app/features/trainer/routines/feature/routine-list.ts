@@ -17,9 +17,10 @@ import { relativeDate } from '../../../../shared/utils/format-date';
     <div class="animate-fade-up">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="font-display text-2xl font-extrabold">Rutinas</h1>
+        <h1 data-testid="routine-list-title" class="font-display text-2xl font-extrabold">Rutinas</h1>
         <a
           routerLink="new"
+          data-testid="routine-list-new"
           class="bg-primary hover:bg-primary-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition press"
         >+ Nueva rutina</a>
       </div>
@@ -33,9 +34,11 @@ import { relativeDate } from '../../../../shared/utils/format-date';
         </div>
       } @else if (routines().length === 0) {
         <kx-empty-state
+          data-testid="routine-list-empty"
           title="Sin rutinas"
           subtitle="Creá tu primera rutina para empezar">
           <a routerLink="new"
+            data-testid="routine-list-empty-new"
             class="inline-block mt-4 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-5 py-2 rounded-lg transition press">
             + Crear rutina
           </a>
@@ -45,6 +48,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
         @if (categories().length > 0) {
           <div class="flex gap-1.5 mb-4 flex-wrap">
             <button (click)="filterCategory.set(null)"
+              data-testid="routine-chip-all"
               class="text-xs px-3 py-1 rounded-full border transition"
               [class]="!filterCategory()
                 ? 'bg-primary/10 text-primary border-primary/30'
@@ -53,6 +57,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
             </button>
             @for (cat of categories(); track cat) {
               <button (click)="filterCategory.set(cat)"
+                [attr.data-testid]="'routine-chip-' + cat"
                 class="text-xs px-3 py-1 rounded-full border transition"
                 [class]="filterCategory() === cat
                   ? 'bg-primary/10 text-primary border-primary/30'
@@ -72,6 +77,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
             }
             <div
               (click)="navigateTo(routine.id)"
+              [attr.data-testid]="'routine-card-' + routine.id"
               class="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:bg-card-hover transition-colors"
             >
               <!-- Top row -->
@@ -86,6 +92,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
                 <div class="relative z-20 shrink-0">
                   <button
                     (click)="$event.stopPropagation(); toggleMenu(routine.id)"
+                    [attr.data-testid]="'routine-card-' + routine.id + '-menu'"
                     class="text-text-muted hover:text-text w-7 h-7 flex items-center justify-center rounded-lg hover:bg-bg-raised transition text-lg leading-none"
                     aria-label="Más opciones"
                   >⋯</button>
@@ -94,16 +101,19 @@ import { relativeDate } from '../../../../shared/utils/format-date';
                       (click)="$event.stopPropagation()">
                       <button
                         (click)="openMenuId.set(null); navigateTo(routine.id + '/edit')"
+                        [attr.data-testid]="'routine-card-' + routine.id + '-edit'"
                         class="w-full text-left text-sm px-3 py-2 hover:bg-bg-raised text-text transition">
                         Editar
                       </button>
                       <button
                         (click)="openMenuId.set(null); duplicateRoutine(routine.id)"
+                        [attr.data-testid]="'routine-card-' + routine.id + '-duplicate'"
                         class="w-full text-left text-sm px-3 py-2 hover:bg-bg-raised text-text transition">
                         Duplicar
                       </button>
                       <button
                         (click)="openMenuId.set(null); requestDelete(routine.id)"
+                        [attr.data-testid]="'routine-card-' + routine.id + '-delete'"
                         class="w-full text-left text-sm px-3 py-2 hover:bg-bg-raised text-danger transition">
                         Eliminar
                       </button>
@@ -123,6 +133,7 @@ import { relativeDate } from '../../../../shared/utils/format-date';
 
     <!-- Delete confirm dialog -->
     <kx-confirm-dialog
+      data-testid="routine-delete-dialog"
       [open]="showDeleteDialog()"
       title="Eliminar rutina"
       message="Esta acción no se puede deshacer. ¿Estás seguro?"
