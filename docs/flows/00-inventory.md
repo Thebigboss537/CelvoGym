@@ -34,11 +34,11 @@ becomes (eventually) a diagram in `docs/flows/` and a spec in
 | Flow                                        | Role     | Flow file                | Spec file                     | Status  |
 |---------------------------------------------|----------|--------------------------|-------------------------------|---------|
 | Dashboard: view metrics + CTAs              | trainer  | `03-trainer-dashboard.md`| `03-trainer-dashboard.spec.ts`| Done |
-| Routines: list + filter                     | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
-| Routines: create via wizard (days + exercises + sets) | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
-| Routines: view detail                       | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
-| Routines: edit (full replace)               | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
-| Routines: delete + warn if in use           | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Pending |
+| Routines: list + filter                     | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Done |
+| Routines: create via wizard (days + exercises + sets) | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Done |
+| Routines: view detail                       | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Done |
+| Routines: edit (full replace)               | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Done |
+| Routines: delete + warn if in use           | trainer  | `04-trainer-routines.md` | `04-trainer-routines.spec.ts` | Done |
 | Programs: list                              | trainer  | `05-trainer-programs.md` | `05-trainer-programs.spec.ts` | Pending |
 | Programs: create (ordered routines)         | trainer  | `05-trainer-programs.md` | `05-trainer-programs.spec.ts` | Pending |
 | Programs: edit + warn if active assignments | trainer  | `05-trainer-programs.md` | `05-trainer-programs.spec.ts` | Pending |
