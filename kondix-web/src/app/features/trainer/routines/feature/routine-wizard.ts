@@ -182,6 +182,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
                     <!-- Editable name -->
                     <input type="text" [ngModel]="day.name" (ngModelChange)="updateDayName(di, $event)" [name]="'day-' + di"
+                      [attr.data-testid]="'wizard-day-' + di + '-name'"
                       class="flex-1 bg-transparent text-text font-medium focus:outline-none border-b border-transparent focus:border-primary pb-0.5"
                       placeholder="Nombre del dia (ej: Pecho y Triceps)" />
 
@@ -199,6 +200,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
                     <!-- Delete -->
                     <button type="button" (click)="removeDay(di)"
+                      [attr.data-testid]="'wizard-day-' + di + '-remove'"
                       class="text-text-muted hover:text-danger text-lg px-1 transition" aria-label="Eliminar dia">&#10005;</button>
                   </div>
                 }
@@ -206,6 +208,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
               <!-- Add day -->
               <button type="button" (click)="addDay()"
+                data-testid="wizard-day-add"
                 class="w-full border border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-xl py-3 text-sm transition">
                 + Agregar dia
               </button>
@@ -213,10 +216,12 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
               <!-- Navigation -->
               <div class="flex gap-3 pt-2">
                 <button type="button" (click)="goToStep(1)"
+                  data-testid="wizard-btn-back"
                   class="flex-1 bg-card border border-border text-text-secondary py-3 rounded-xl transition hover:bg-card-hover">
                   &larr; Anterior
                 </button>
                 <button type="button" (click)="goToStep(3)" [disabled]="!canAdvanceFromDays()"
+                  data-testid="wizard-btn-next"
                   class="flex-1 bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition press">
                   Siguiente: Ejercicios
                 </button>
