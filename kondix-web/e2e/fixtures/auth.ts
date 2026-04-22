@@ -250,3 +250,81 @@ export async function setupActiveTrainer(
   await approveTrainer(tenantId);
   return { trainer, tenantId };
 }
+
+/**
+ * Creates a routine via the real POST /api/v1/routines endpoint using the
+ * current page's trainer cookies + CSRF. Returns the created routine's id.
+ * Use this to arrange state for edit/view/delete specs without driving the
+ * 4-step wizard UI. The input shape mirrors the CreateRoutineCommand DTO.
+ */
+export async function createRoutineViaApi(
+  page: Page,
+  input: {
+    name: string;
+    category?: string;
+    description?: string;
+    days: {
+      name: string;
+      exercises: { name: string; reps?: string; weight?: string }[];
+    }[];
+  },
+): Promise<string> {
+  const cookies = await page.context().cookies();
+  const csrfRaw = cookies.find(c => c.name === 'cg-csrf-kondix')?.value;
+  if (!csrfRaw) {
+    throw new Error('cg-csrf-kondix cookie missing — trainer must be logged in first');
+  }
+  const csrf = decodeURIComponent(csrfRaw);
+  const cookieHeader = cookies
+    .filter(c => c.name.startsWith('cg-'))
+    .map(c => `${c.name}=${c.value}`)
+    .join('; ');
+
+  const body = {
+    name: input.name,
+    description: input.description ?? null,
+    category: input.category ?? null,
+    tags: [],
+    days: input.days.map(d => ({
+      name: d.name,
+      groups: [
+        {
+          groupType: 'Single',
+          restSeconds: 90,
+          exercises: d.exercises.map(e => ({
+            name: e.name,
+            notes: null,
+            videoSource: 'None',
+            videoUrl: null,
+            tempo: null,
+            sets: [
+              {
+                setType: 'Effective',
+                targetReps: e.reps ?? '8-12',
+                targetWeight: e.weight ?? null,
+                targetRpe: null,
+                restSeconds: null,
+              },
+            ],
+          })),
+        },
+      ],
+    })),
+  };
+
+  const res = await fetch(`${API}/api/v1/routines`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrf,
+      'Cookie': cookieHeader,
+      'Origin': 'http://localhost:4200',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`createRoutineViaApi failed: ${res.status} ${await res.text()}`);
+  }
+  const data = (await res.json()) as { id: string };
+  return data.id;
+}
