@@ -52,7 +52,7 @@ export async function completeTrainerSetup(
       'Content-Type': 'application/json',
       'X-CSRF-Token': csrf,
       'Cookie': cookieHeader,
-      'Origin': 'http://localhost:4200',
+      'Origin': 'http://localhost:4201',
     },
     body: JSON.stringify({ displayName, bio }),
   });
@@ -132,7 +132,7 @@ export async function inviteStudent(
       'Content-Type': 'application/json',
       'X-CSRF-Token': csrf,
       'Cookie': cookieHeader,
-      'Origin': 'http://localhost:4200',
+      'Origin': 'http://localhost:4201',
     },
     body: JSON.stringify({ email, firstName: firstName ?? null }),
   });
@@ -318,7 +318,7 @@ export async function createRoutineViaApi(
       'Content-Type': 'application/json',
       'X-CSRF-Token': csrf,
       'Cookie': cookieHeader,
-      'Origin': 'http://localhost:4200',
+      'Origin': 'http://localhost:4201',
     },
     body: JSON.stringify(body),
   });
