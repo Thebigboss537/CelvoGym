@@ -557,10 +557,12 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
               <!-- Navigation -->
               <div class="flex gap-3 pt-2">
                 <button type="button" (click)="goToStep(3)"
+                  data-testid="wizard-btn-back"
                   class="flex-1 bg-card border border-border text-text-secondary py-3 rounded-xl transition hover:bg-card-hover">
                   &larr; Ejercicios
                 </button>
                 <button type="button" (click)="save()" [disabled]="saving()"
+                  data-testid="wizard-btn-save"
                   class="flex-1 bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-xl transition press">
                   @if (saving()) {
                     <kx-spinner size="sm" containerClass="" />
