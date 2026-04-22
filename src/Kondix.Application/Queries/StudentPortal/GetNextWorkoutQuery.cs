@@ -35,38 +35,52 @@ public sealed class GetNextWorkoutHandler(IKondixDbContext db)
 
         var currentWeek = ProgramWeekHelper.CalculateCurrentWeek(assignment.StartDate);
 
-        Domain.Entities.ProgramRoutine? targetPr;
+        // Flatten (ProgramRoutine, Day) tuples so rotation advances through individual workout days
+        // across the program — not only through top-level routines. This matches the trainer's
+        // mental model where a routine with N days represents N distinct sessions.
+        var allDays = programRoutines
+            .SelectMany(pr => pr.Routine.Days
+                .OrderBy(d => d.SortOrder)
+                .Select(d => (ProgramRoutine: pr, Day: d)))
+            .ToList();
+
+        if (allDays.Count == 0) return null;
+
+        Domain.Entities.ProgramRoutine targetPr;
+        Domain.Entities.Day targetDay;
 
         if (assignment.Mode == ProgramAssignmentMode.Rotation)
         {
-            var index = assignment.RotationIndex % programRoutines.Count;
-            targetPr = programRoutines[index];
+            var index = assignment.RotationIndex % allDays.Count;
+            (targetPr, targetDay) = allDays[index];
         }
         else
         {
             var todayDow = (int)DateTime.UtcNow.DayOfWeek;
-            targetPr = FindRoutineForDay(assignment.FixedScheduleJson, todayDow, programRoutines);
+            var pr = FindRoutineForDay(assignment.FixedScheduleJson, todayDow, programRoutines);
 
-            if (targetPr is null)
+            if (pr is null)
             {
                 for (var offset = 1; offset <= 7; offset++)
                 {
                     var nextDow = ((int)DateTime.UtcNow.DayOfWeek + offset) % 7;
-                    targetPr = FindRoutineForDay(assignment.FixedScheduleJson, nextDow, programRoutines);
-                    if (targetPr is not null) break;
+                    pr = FindRoutineForDay(assignment.FixedScheduleJson, nextDow, programRoutines);
+                    if (pr is not null) break;
                 }
             }
+
+            if (pr is null) return null;
+
+            var day = pr.Routine.Days.OrderBy(d => d.SortOrder).FirstOrDefault();
+            if (day is null) return null;
+
+            targetPr = pr;
+            targetDay = day;
         }
 
-        if (targetPr is null) return null;
-
-        var routine = targetPr.Routine;
-        var firstDay = routine.Days.OrderBy(d => d.SortOrder).FirstOrDefault();
-        if (firstDay is null) return null;
-
         return new NextWorkoutDto(
-            routine.Id, routine.Name,
-            firstDay.Id, firstDay.Name,
+            targetPr.Routine.Id, targetPr.Routine.Name,
+            targetDay.Id, targetDay.Name,
             assignment.Program.Name,
             currentWeek, assignment.Program.DurationWeeks);
     }
