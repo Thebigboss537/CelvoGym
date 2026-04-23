@@ -72,9 +72,13 @@ export interface ExerciseDto {
   id: string;
   name: string;
   notes: string | null;
+  tempo: string | null;
+  catalogExerciseId: string | null;
+  // Read-only media projected from the linked catalog entry on GET.
+  // Write paths (create/update) return nulls here.
   videoSource: VideoSource;
   videoUrl: string | null;
-  tempo: string | null;
+  imageUrl: string | null;
   sets: ExerciseSetDto[];
 }
 

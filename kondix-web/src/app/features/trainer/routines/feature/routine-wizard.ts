@@ -2,7 +2,7 @@ import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { RoutineDetailDto, GroupType, SetType, VideoSource, RoutineUsageDto } from '../../../../shared/models';
+import { RoutineDetailDto, GroupType, SetType, RoutineUsageDto } from '../../../../shared/models';
 import { ToastService } from '../../../../shared/ui/toast';
 import { KxWizardStepper } from '../../../../shared/ui/wizard-stepper';
 import { KxSpinner } from '../../../../shared/ui/spinner';
@@ -20,14 +20,14 @@ interface WizardSet {
 interface WizardExercise {
   name: string;
   notes: string;
-  videoSource: VideoSource;
-  videoUrl: string;
   tempo: string;
+  catalogExerciseId: string | null;
   sets: WizardSet[];
-  // UI-only state
-  videoInputMode: 'youtube' | 'upload';
-  uploading: boolean;
-  showVideo: boolean;
+  // Read-only preview from the linked catalog entry — not edited here, shown
+  // so the trainer can recognize the exercise at a glance while building.
+  // Trainer edits media on the catalog screen.
+  catalogImageUrl: string | null;
+  catalogVideoUrl: string | null;
 }
 
 interface WizardGroup {
@@ -46,7 +46,7 @@ interface CatalogSuggestion {
   name: string;
   muscleGroup: string | null;
   videoUrl: string | null;
-  videoSource: VideoSource | null;
+  imageUrl: string | null;
   notes: string | null;
 }
 
@@ -323,50 +323,28 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                         </div>
                                       }
                                     </div>
-                                    <button type="button" (click)="$event.stopPropagation(); toggleVideo(gi, ei)"
-                                      class="text-xs px-2 py-1 rounded transition"
-                                      [class.text-primary]="ex.showVideo || ex.videoUrl"
-                                      [class.text-text-muted]="!ex.showVideo && !ex.videoUrl">Video</button>
                                     <button type="button" (click)="$event.stopPropagation(); removeExercise(gi, ei)"
                                       class="text-text-muted hover:text-danger text-xs px-1.5 py-1 rounded transition" aria-label="Eliminar ejercicio"
                                       [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-remove'">&#10005;</button>
                                     <span class="text-text-muted text-xs cursor-pointer">&#9650;</span>
                                   </div>
 
-                                  <!-- Video section -->
-                                  @if (ex.showVideo) {
-                                    <div class="mx-3 mb-2 bg-card rounded-lg p-2.5 space-y-2">
-                                      <div class="flex gap-1">
-                                        <button type="button" (click)="setVideoMode(gi, ei, 'youtube')"
-                                          class="px-2.5 py-1 text-xs rounded-lg transition"
-                                          [class.bg-primary]="ex.videoInputMode === 'youtube'"
-                                          [class.text-white]="ex.videoInputMode === 'youtube'"
-                                          [class.bg-card-hover]="ex.videoInputMode !== 'youtube'"
-                                          [class.text-text-muted]="ex.videoInputMode !== 'youtube'">YouTube</button>
-                                        <button type="button" (click)="setVideoMode(gi, ei, 'upload')"
-                                          class="px-2.5 py-1 text-xs rounded-lg transition"
-                                          [class.bg-primary]="ex.videoInputMode === 'upload'"
-                                          [class.text-white]="ex.videoInputMode === 'upload'"
-                                          [class.bg-card-hover]="ex.videoInputMode !== 'upload'"
-                                          [class.text-text-muted]="ex.videoInputMode !== 'upload'">Subir</button>
-                                      </div>
-                                      @if (ex.videoInputMode === 'youtube') {
-                                        <input type="url" [ngModel]="ex.videoUrl" (ngModelChange)="onVideoUrlChange(gi, ei, $event)"
-                                          [name]="'vid-' + gi + '-' + ei"
-                                          class="w-full bg-bg-raised border border-border-light rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-primary"
-                                          placeholder="URL de YouTube" />
-                                      } @else {
-                                        @if (ex.uploading) {
-                                          <p class="text-xs text-primary py-1">Subiendo video...</p>
-                                        } @else {
-                                          <input type="file" accept="video/mp4,video/webm,video/quicktime"
-                                            (change)="onVideoUpload(gi, ei, $event)"
-                                            class="w-full text-xs text-text-muted file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-primary file:text-white file:cursor-pointer" />
-                                        }
+                                  <!-- Catalog media preview (read-only) -->
+                                  @if (ex.catalogImageUrl || ex.catalogVideoUrl) {
+                                    <div class="mx-3 mb-2 flex items-center gap-2 text-xs text-text-muted">
+                                      @if (ex.catalogImageUrl) {
+                                        <img [src]="ex.catalogImageUrl" [alt]="ex.name"
+                                          class="w-10 h-10 rounded object-cover border border-border-light" />
                                       }
-                                      @if (ex.videoUrl) {
-                                        <p class="text-xs text-success truncate">{{ ex.videoSource === 'Upload' ? 'Video subido' : 'Video agregado' }}</p>
+                                      @if (ex.catalogVideoUrl) {
+                                        <span class="flex items-center gap-1 text-text-muted">
+                                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7L8 5z"/>
+                                          </svg>
+                                          video
+                                        </span>
                                       }
+                                      <span class="text-text-subtle">· editable en catálogo</span>
                                     </div>
                                   }
 
@@ -773,7 +751,14 @@ export class RoutineWizard implements OnInit, OnDestroy {
   updateExerciseName(gi: number, ei: number, name: string) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].name = name;
+      const ex = d[di].groups[gi].exercises[ei];
+      ex.name = name;
+      // Free-text edits break the catalog link — drop it so stale media doesn't
+      // reach the student. selectCatalogExercise re-links and restores preview.
+      // Phase 3 auto-cataloging will upsert on save if the name is still new.
+      ex.catalogExerciseId = null;
+      ex.catalogImageUrl = null;
+      ex.catalogVideoUrl = null;
       return [...d];
     });
   }
@@ -798,69 +783,6 @@ export class RoutineWizard implements OnInit, OnDestroy {
   isExerciseExpanded(gi: number, ei: number): boolean {
     const exp = this.expandedExercise();
     return !!exp && exp.gi === gi && exp.ei === ei;
-  }
-
-  // ── Video management ──
-
-  toggleVideo(gi: number, ei: number) {
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      d[di].groups[gi].exercises[ei].showVideo = !d[di].groups[gi].exercises[ei].showVideo;
-      return [...d];
-    });
-  }
-
-  setVideoMode(gi: number, ei: number, mode: 'youtube' | 'upload') {
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      d[di].groups[gi].exercises[ei].videoInputMode = mode;
-      return [...d];
-    });
-  }
-
-  onVideoUrlChange(gi: number, ei: number, url: string) {
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      const ex = d[di].groups[gi].exercises[ei];
-      ex.videoUrl = url;
-      ex.videoSource = url ? 'YouTube' : 'None';
-      return [...d];
-    });
-  }
-
-  onVideoUpload(gi: number, ei: number, event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    const maxSize = 100 * 1024 * 1024;
-    if (file.size > maxSize) {
-      this.toast.show('El video no puede superar 100MB', 'error');
-      return;
-    }
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      d[di].groups[gi].exercises[ei].uploading = true;
-      return [...d];
-    });
-    const formData = new FormData();
-    formData.append('file', file);
-    this.api.upload<{ url: string; key: string }>('/videos/upload', formData).subscribe({
-      next: (res) => {
-        this.days.update(d => {
-          const ex = d[di].groups[gi].exercises[ei];
-          ex.videoUrl = res.url;
-          ex.videoSource = 'Upload';
-          ex.uploading = false;
-          return [...d];
-        });
-      },
-      error: () => {
-        this.days.update(d => {
-          d[di].groups[gi].exercises[ei].uploading = false;
-          return [...d];
-        });
-        this.toast.show('Error al subir video', 'error');
-      },
-    });
   }
 
   // ── Set management ──
@@ -938,11 +860,9 @@ export class RoutineWizard implements OnInit, OnDestroy {
     this.days.update(d => {
       const ex = d[di].groups[gi].exercises[ei];
       ex.name = catalog.name;
-      if (catalog.videoUrl) {
-        ex.videoUrl = catalog.videoUrl;
-        ex.videoSource = catalog.videoSource ?? 'None';
-        ex.showVideo = catalog.videoSource !== 'None';
-      }
+      ex.catalogExerciseId = catalog.id;
+      ex.catalogImageUrl = catalog.imageUrl;
+      ex.catalogVideoUrl = catalog.videoUrl;
       if (catalog.notes) ex.notes = catalog.notes;
       return [...d];
     });
@@ -1007,9 +927,10 @@ export class RoutineWizard implements OnInit, OnDestroy {
               exercises: g.exercises.map((e) => ({
                 name: e.name,
                 notes: e.notes ?? '',
-                videoSource: e.videoSource,
-                videoUrl: e.videoUrl ?? '',
                 tempo: e.tempo ?? '',
+                catalogExerciseId: e.catalogExerciseId ?? null,
+                catalogImageUrl: e.imageUrl ?? null,
+                catalogVideoUrl: e.videoUrl ?? null,
                 sets: e.sets.map((s) => ({
                   setType: s.setType,
                   targetReps: s.targetReps ?? '',
@@ -1017,9 +938,6 @@ export class RoutineWizard implements OnInit, OnDestroy {
                   targetRpe: s.targetRpe,
                   restSeconds: s.restSeconds,
                 })),
-                videoInputMode: (e.videoSource === 'Upload' ? 'upload' : 'youtube') as 'youtube' | 'upload',
-                uploading: false,
-                showVideo: e.videoSource !== 'None',
               })),
             })),
           }))
@@ -1056,9 +974,8 @@ export class RoutineWizard implements OnInit, OnDestroy {
           exercises: g.exercises.map((e) => ({
             name: e.name,
             notes: e.notes || null,
-            videoSource: e.videoSource,
-            videoUrl: e.videoUrl || null,
             tempo: e.tempo || null,
+            catalogExerciseId: e.catalogExerciseId,
             sets: e.sets.map((s) => ({
               setType: s.setType,
               targetReps: s.targetReps || null,
@@ -1101,13 +1018,11 @@ export class RoutineWizard implements OnInit, OnDestroy {
     return {
       name: '',
       notes: '',
-      videoSource: 'None',
-      videoUrl: '',
       tempo: '',
+      catalogExerciseId: null,
+      catalogImageUrl: null,
+      catalogVideoUrl: null,
       sets: [this.newSet()],
-      videoInputMode: 'youtube',
-      uploading: false,
-      showVideo: false,
     };
   }
 
