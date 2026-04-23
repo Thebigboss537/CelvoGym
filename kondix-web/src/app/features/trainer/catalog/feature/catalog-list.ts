@@ -12,6 +12,7 @@ interface CatalogExercise {
   muscleGroup: string | null;
   videoSource: string;
   videoUrl: string | null;
+  imageUrl: string | null;
   notes: string | null;
   updatedAt: string;
 }
@@ -117,6 +118,33 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
                 placeholder="https://youtube.com/watch?v=..." />
             </div>
             <div>
+              <label class="block text-xs text-text-secondary mb-1">Miniatura</label>
+              @if (formImageUrl) {
+                <div class="flex items-start gap-3">
+                  <img [src]="formImageUrl" alt="miniatura"
+                    class="w-20 h-20 rounded-xl object-cover border border-border" />
+                  <button type="button" (click)="formImageUrl = ''" data-testid="catalog-form-image-clear"
+                    class="text-xs text-text-muted hover:text-danger transition">Quitar imagen</button>
+                </div>
+              } @else {
+                <label class="inline-flex items-center justify-center w-20 h-20 rounded-xl border-2 border-dashed border-border
+                              hover:border-primary cursor-pointer transition bg-bg-raised"
+                  [class.opacity-60]="uploadingImage()">
+                  @if (uploadingImage()) {
+                    <kx-spinner />
+                  } @else {
+                    <svg class="w-6 h-6 text-text-muted" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 5v14M5 12h14" />
+                    </svg>
+                  }
+                  <input type="file" accept="image/jpeg,image/png,image/webp" data-testid="catalog-form-image"
+                    (change)="onImageUpload($event)" [disabled]="uploadingImage()" class="hidden" />
+                </label>
+              }
+              <p class="text-[11px] text-text-muted mt-1">JPG, PNG o WebP · máx 5 MB</p>
+            </div>
+            <div>
               <label class="block text-xs text-text-secondary mb-1">Instrucciones / notas</label>
               <textarea [(ngModel)]="formNotes" name="notes" data-testid="catalog-form-notes" maxlength="2000" rows="3"
                 class="w-full bg-bg-raised border border-border rounded-xl px-3.5 py-2.5 text-sm text-text
@@ -157,8 +185,16 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
               (click)="editExercise(ex)"
             >
               <!-- Thumbnail -->
-              <div class="h-20 bg-bg-raised flex items-center justify-center">
-                @if (ex.videoUrl) {
+              <div class="h-24 bg-bg-raised flex items-center justify-center relative overflow-hidden">
+                @if (ex.imageUrl) {
+                  <img [src]="ex.imageUrl" [alt]="ex.name" class="w-full h-full object-cover" loading="lazy" />
+                  @if (ex.videoUrl) {
+                    <span class="absolute top-1.5 right-1.5 bg-black/60 text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1">
+                      <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z"/></svg>
+                      video
+                    </span>
+                  }
+                } @else if (ex.videoUrl) {
                   <svg class="w-10 h-10 text-text-muted/40" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7L8 5z"/>
                   </svg>
@@ -242,7 +278,9 @@ export class CatalogList implements OnInit {
   formName = '';
   formMuscleGroup = '';
   formVideoUrl = '';
+  formImageUrl = '';
   formNotes = '';
+  uploadingImage = signal(false);
 
   ngOnInit() {
     this.loadExercises();
@@ -270,6 +308,7 @@ export class CatalogList implements OnInit {
     this.formName = ex.name;
     this.formMuscleGroup = ex.muscleGroup ?? '';
     this.formVideoUrl = ex.videoUrl ?? '';
+    this.formImageUrl = ex.imageUrl ?? '';
     this.formNotes = ex.notes ?? '';
     this.editingExercise.set(ex);
   }
@@ -285,10 +324,13 @@ export class CatalogList implements OnInit {
     this.saving.set(true);
 
     const editing = this.editingExercise();
+    const videoUrl = this.formVideoUrl.trim() || null;
     const body = {
       name: this.formName.trim(),
       muscleGroup: this.formMuscleGroup.trim() || null,
-      videoUrl: this.formVideoUrl.trim() || null,
+      videoSource: videoUrl ? 'YouTube' : 'None',
+      videoUrl,
+      imageUrl: this.formImageUrl.trim() || null,
       notes: this.formNotes.trim() || null,
     };
 
@@ -340,6 +382,31 @@ export class CatalogList implements OnInit {
     this.formName = '';
     this.formMuscleGroup = '';
     this.formVideoUrl = '';
+    this.formImageUrl = '';
     this.formNotes = '';
+    this.uploadingImage.set(false);
+  }
+
+  onImageUpload(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.toast.show('La imagen no puede superar 5MB', 'error');
+      return;
+    }
+    this.uploadingImage.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    this.api.upload<{ url: string; key: string }>('/images/upload', formData).subscribe({
+      next: (res) => {
+        this.formImageUrl = res.url;
+        this.uploadingImage.set(false);
+      },
+      error: () => {
+        this.uploadingImage.set(false);
+        this.toast.show('Error al subir imagen', 'error');
+      },
+    });
   }
 }
