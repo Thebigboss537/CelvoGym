@@ -21,13 +21,13 @@ import { KxSpinner } from '../../../shared/ui/spinner';
 
 interface FlatExercise {
   exercise: ExerciseDto;
-  groupRestSeconds: number;
-  groupType: string;
-  // Position within the containing group — used to decide whether the
+  blockRestSeconds: number;
+  blockType: string | null;
+  // Position within the containing block — used to decide whether the
   // just-completed set finished a round of a multi-exercise block
-  // (Superset/Triset/Circuit), in which case the group's rest applies.
-  indexInGroup: number;
-  groupSize: number;
+  // (Superset/Triset/Circuit), in which case the block's rest applies.
+  indexInBlock: number;
+  blockSize: number;
 }
 
 @Component({
@@ -235,23 +235,19 @@ export class ExerciseLogging implements OnInit {
    * back to the first exercise next, so the block-level rest applies.
    * Otherwise use the set's own rest override, falling back to the block's
    * rest, then to a 90s default.
-   *
-   * Naming keeps `group` / `groupType` on purpose: Phase 2 of the exercise-
-   * catalog refactor renames groups to blocks across the codebase and ships
-   * separately. This derived signal will be renamed as part of that sweep.
    */
   readonly nextRestSeconds = computed<number>(() => {
     const last = this.lastCompletedSet();
     const flat = this.flatExercises[this.exerciseIndex()];
     if (!last || !flat) return 90;
 
-    const isMultiExerciseGroup = flat.groupSize > 1;
-    const isLastExerciseInGroup = flat.indexInGroup === flat.groupSize - 1;
+    const isMultiExerciseBlock = flat.blockSize > 1;
+    const isLastExerciseInBlock = flat.indexInBlock === flat.blockSize - 1;
 
-    if (isMultiExerciseGroup && isLastExerciseInGroup && flat.groupRestSeconds > 0) {
-      return flat.groupRestSeconds;
+    if (isMultiExerciseBlock && isLastExerciseInBlock && flat.blockRestSeconds > 0) {
+      return flat.blockRestSeconds;
     }
-    return last.restSeconds ?? (flat.groupRestSeconds > 0 ? flat.groupRestSeconds : 90);
+    return last.restSeconds ?? (flat.blockRestSeconds > 0 ? flat.blockRestSeconds : 90);
   });
 
   ngOnInit(): void {
@@ -284,14 +280,14 @@ export class ExerciseLogging implements OnInit {
 
         // Build flat exercise list with group context
         this.flatExercises = [];
-        for (const group of day.groups) {
-          for (let i = 0; i < group.exercises.length; i++) {
+        for (const block of day.blocks) {
+          for (let i = 0; i < block.exercises.length; i++) {
             this.flatExercises.push({
-              exercise: group.exercises[i],
-              groupRestSeconds: group.restSeconds,
-              groupType: group.groupType,
-              indexInGroup: i,
-              groupSize: group.exercises.length,
+              exercise: block.exercises[i],
+              blockRestSeconds: block.restSeconds,
+              blockType: block.blockType,
+              indexInBlock: i,
+              blockSize: block.exercises.length,
             });
           }
         }

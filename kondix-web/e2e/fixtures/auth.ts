@@ -289,16 +289,15 @@ export async function createRoutineViaApi(
     tags: [],
     days: input.days.map(d => ({
       name: d.name,
-      groups: [
+      blocks: [
         {
-          groupType: 'Single',
+          blockType: null,
           restSeconds: 90,
           exercises: d.exercises.map(e => ({
             name: e.name,
             notes: null,
-            videoSource: 'None',
-            videoUrl: null,
             tempo: null,
+            catalogExerciseId: null,
             sets: [
               {
                 setType: 'Effective',
@@ -369,8 +368,8 @@ export async function createRoutineWithBlocksViaApi(
     description?: string;
     days: {
       name: string;
-      groups: {
-        groupType: 'Single' | 'Superset' | 'Triset' | 'Circuit';
+      blocks: {
+        blockType: null | 'Superset' | 'Triset' | 'Circuit';
         restSeconds: number;
         exercises: {
           name: string;
@@ -395,15 +394,14 @@ export async function createRoutineWithBlocksViaApi(
     tags: [],
     days: input.days.map(d => ({
       name: d.name,
-      groups: d.groups.map(g => ({
-        groupType: g.groupType,
-        restSeconds: g.restSeconds,
-        exercises: g.exercises.map(e => ({
+      blocks: d.blocks.map(b => ({
+        blockType: b.blockType,
+        restSeconds: b.restSeconds,
+        exercises: b.exercises.map(e => ({
           name: e.name,
           notes: null,
-          videoSource: 'None',
-          videoUrl: null,
           tempo: null,
+          catalogExerciseId: null,
           sets: e.sets.map(s => ({
             setType: s.setType ?? 'Effective',
             targetReps: s.targetReps ?? '8-12',

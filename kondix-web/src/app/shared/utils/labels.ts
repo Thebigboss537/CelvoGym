@@ -4,8 +4,9 @@ export function progressColor(pct: number): string {
   return 'var(--color-primary)';
 }
 
-export function groupTypeLabel(type: string): string {
-  const labels: Record<string, string> = { Single: 'Individual', Superset: 'Biserie', Triset: 'Triserie', Circuit: 'Circuito' };
+export function blockTypeLabel(type: string | null): string {
+  if (!type) return 'Individual';
+  const labels: Record<string, string> = { Superset: 'Biserie', Triset: 'Triserie', Circuit: 'Circuito' };
   return labels[type] ?? type;
 }
 

@@ -1,10 +1,6 @@
-// Phase 4 of exercise-catalog-and-block-refactor plan.
 // Regression test for the block-level rest bug: when a Superset/Triset/Circuit
-// group has >1 exercise, completing the last set in a round must fire the
-// group.restSeconds timer, not the just-completed set's restSeconds.
-//
-// Note on naming: this phase ships before Phase 2 (block/blockType rename), so
-// the data model still uses `groups` / `groupType` at the API boundary.
+// block has >1 exercise, completing the last set in a round must fire the
+// block.restSeconds timer, not the just-completed set's restSeconds.
 import { test, expect } from '@playwright/test';
 import { cleanupTenant, clearRateLimits } from '../fixtures/seed';
 import {
@@ -51,9 +47,9 @@ test.describe('Flow: student block-level rest', () => {
       days: [
         {
           name: 'Día A',
-          groups: [
+          blocks: [
             {
-              groupType: 'Superset',
+              blockType: 'Superset',
               restSeconds: 90,
               exercises: [
                 {

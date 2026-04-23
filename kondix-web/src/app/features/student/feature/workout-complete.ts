@@ -155,7 +155,7 @@ export class WorkoutComplete implements OnInit {
       next: (routine) => {
         const day = routine.days.find(d => d.id === s.dayId);
         if (day) {
-          const allSets = day.groups.flatMap(g => g.exercises.flatMap(e => e.sets));
+          const allSets = day.blocks.flatMap(g => g.exercises.flatMap(e => e.sets));
           this.totalSets.set(allSets.length);
 
           const logs = day.setLogs ?? [];
