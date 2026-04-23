@@ -34,3 +34,6 @@ yarn-debug.log*
 # Legacy Next.js (keeping files in repo for reference, ignore build artifacts)
 .next/
 out/
+
+# Git worktrees for parallel branch work
+.worktrees/
