@@ -86,6 +86,18 @@ interface FlatExercise {
             }
           </div>
 
+          <!-- Catalog thumbnail -->
+          @if (exercise()!.imageUrl) {
+            <div class="rounded-xl overflow-hidden border border-border">
+              <img
+                [src]="exercise()!.imageUrl!"
+                [alt]="exercise()!.name"
+                class="w-full h-44 object-cover"
+                loading="lazy"
+              />
+            </div>
+          }
+
           <!-- Video card -->
           @if (exercise()!.videoSource !== 'None' && exercise()!.videoUrl) {
             <div class="rounded-xl overflow-hidden border border-border">
