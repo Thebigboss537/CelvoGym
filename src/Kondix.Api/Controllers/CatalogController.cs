@@ -25,7 +25,7 @@ public class CatalogController(IMediator mediator) : ControllerBase
         HttpContext.RequirePermission(Permissions.GymManage);
         var result = await mediator.Send(new CreateCatalogExerciseCommand(
             HttpContext.GetTrainerId(), request.Name, request.MuscleGroup,
-            request.VideoSource, request.VideoUrl, request.Notes), ct);
+            request.VideoSource, request.VideoUrl, request.ImageUrl, request.Notes), ct);
         return Created($"/api/v1/catalog/{result.Id}", result);
     }
 
@@ -35,7 +35,7 @@ public class CatalogController(IMediator mediator) : ControllerBase
         HttpContext.RequirePermission(Permissions.GymManage);
         var result = await mediator.Send(new UpdateCatalogExerciseCommand(
             id, HttpContext.GetTrainerId(), request.Name, request.MuscleGroup,
-            request.VideoSource, request.VideoUrl, request.Notes), ct);
+            request.VideoSource, request.VideoUrl, request.ImageUrl, request.Notes), ct);
         return Ok(result);
     }
 
@@ -53,4 +53,5 @@ public sealed record CatalogExerciseRequest(
     string? MuscleGroup,
     VideoSource VideoSource = VideoSource.None,
     string? VideoUrl = null,
+    string? ImageUrl = null,
     string? Notes = null);
