@@ -175,6 +175,24 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
           [subtitle]="searchTerm.trim() || selectedGroup() !== 'Todos'
             ? 'Prueba con otro término o filtro'
             : 'Agrega ejercicios para reutilizarlos al crear rutinas'" />
+        @if (allExercises().length === 0 && !searchTerm.trim() && selectedGroup() === 'Todos') {
+          <div class="max-w-sm mx-auto mt-4 text-center">
+            <button type="button" (click)="seedCatalog()" [disabled]="seeding()"
+              data-testid="catalog-seed"
+              class="bg-card border border-primary/30 hover:bg-primary/10 text-primary text-sm font-semibold px-4 py-2 rounded-lg transition press inline-flex items-center gap-2">
+              @if (seeding()) {
+                <kx-spinner size="sm" />
+                Cargando...
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Cargar 50 ejercicios base
+              }
+            </button>
+            <p class="text-text-muted text-xs mt-2">Te damos una biblioteca inicial para arrancar. Los podés editar o borrar después.</p>
+          </div>
+        }
       } @else {
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger">
           @for (ex of filtered(); track ex.id) {
@@ -281,6 +299,7 @@ export class CatalogList implements OnInit {
   formImageUrl = '';
   formNotes = '';
   uploadingImage = signal(false);
+  seeding = signal(false);
 
   ngOnInit() {
     this.loadExercises();
@@ -361,6 +380,21 @@ export class CatalogList implements OnInit {
       next: () => {
         this.toast.show('Ejercicio eliminado');
         this.loadExercises();
+      },
+    });
+  }
+
+  seedCatalog() {
+    this.seeding.set(true);
+    this.api.post<{ inserted: number }>('/catalog/seed', {}).subscribe({
+      next: (res) => {
+        this.toast.show(`${res.inserted} ejercicios agregados al catálogo`);
+        this.seeding.set(false);
+        this.loadExercises();
+      },
+      error: () => {
+        this.seeding.set(false);
+        this.toast.show('No se pudo cargar la biblioteca base', 'error');
       },
     });
   }
