@@ -50,12 +50,14 @@ export class KxIconButton {
       return 'bg-primary hover:bg-primary-hover text-white';
     }
     if (this.variant() === 'danger') {
-      return 'text-text-muted hover:bg-danger/10 hover:text-danger';
+      return 'bg-card border border-border text-text-muted hover:bg-danger/10 hover:text-danger hover:border-danger/30';
     }
-    // ghost
+    // Ghost always gets a visible border — the parent surface is often
+    // bg-card too (expanded exercise cards, block headers), so the
+    // button disappears without an outline.
     return this.active()
-      ? 'bg-primary/10 text-primary hover:bg-primary/20'
-      : 'bg-card hover:bg-card-hover text-text-muted hover:text-text';
+      ? 'bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20'
+      : 'bg-card border border-border text-text-muted hover:bg-card-hover hover:text-text hover:border-border-light';
   }
 
   iconSize(): number {

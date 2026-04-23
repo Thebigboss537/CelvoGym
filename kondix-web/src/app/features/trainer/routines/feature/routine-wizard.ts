@@ -454,12 +454,23 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                               }
                             }
 
-                            <!-- Add exercise into this block (unites into superset/triset/circuit) -->
+                            <!-- Add exercise into this block — labels the outcome, not the
+                                 internal concept: a single-exercise block invites grouping
+                                 into a Superset (trainer can switch to Triset/Circuito from
+                                 the selector that appears). A multi-exercise block already
+                                 has a type, so we just offer to extend it. -->
                             <div>
-                              <kx-icon-button icon="plus" ariaLabel="Agregar al bloque"
-                                [label]="block.exercises.length === 1 ? 'Unir a bloque' : 'Ejercicio'" size="sm"
-                                [attr.data-testid]="'wizard-exercise-add-' + bi"
-                                (clicked)="addExercise(bi)" />
+                              @if (block.exercises.length === 1) {
+                                <kx-icon-button icon="link-2" ariaLabel="Convertir en superset"
+                                  label="Hacer superset" size="sm" variant="primary"
+                                  [attr.data-testid]="'wizard-exercise-add-' + bi"
+                                  (clicked)="addExercise(bi)" />
+                              } @else {
+                                <kx-icon-button icon="plus" ariaLabel="Agregar ejercicio al bloque"
+                                  label="Otro ejercicio" size="sm"
+                                  [attr.data-testid]="'wizard-exercise-add-' + bi"
+                                  (clicked)="addExercise(bi)" />
+                              }
                             </div>
                           </div>
                         </div>
