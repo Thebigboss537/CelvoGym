@@ -111,11 +111,56 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
               </div>
             </div>
             <div>
-              <label class="block text-xs text-text-secondary mb-1">Video URL (YouTube)</label>
-              <input type="url" [(ngModel)]="formVideoUrl" name="videoUrl" data-testid="catalog-form-video" maxlength="500"
-                class="w-full bg-bg-raised border border-border rounded-xl px-3.5 py-2.5 text-sm text-text
-                       focus:outline-none focus:border-primary transition"
-                placeholder="https://youtube.com/watch?v=..." />
+              <label class="block text-xs text-text-secondary mb-1">Video</label>
+              <div class="space-y-2">
+                <div class="flex gap-1">
+                  <button type="button" (click)="formVideoMode.set('youtube')"
+                    class="px-3 py-1 text-xs rounded-lg transition"
+                    [class.bg-primary]="formVideoMode() === 'youtube'"
+                    [class.text-white]="formVideoMode() === 'youtube'"
+                    [class.bg-card]="formVideoMode() !== 'youtube'"
+                    [class.text-text-muted]="formVideoMode() !== 'youtube'">YouTube</button>
+                  <button type="button" (click)="formVideoMode.set('upload')"
+                    class="px-3 py-1 text-xs rounded-lg transition"
+                    [class.bg-primary]="formVideoMode() === 'upload'"
+                    [class.text-white]="formVideoMode() === 'upload'"
+                    [class.bg-card]="formVideoMode() !== 'upload'"
+                    [class.text-text-muted]="formVideoMode() !== 'upload'">Subir</button>
+                </div>
+                @if (formVideoMode() === 'youtube') {
+                  <input type="url" [ngModel]="formVideoUrl" (ngModelChange)="onYoutubeUrlChange($event)"
+                    name="videoUrl" data-testid="catalog-form-video" maxlength="500"
+                    class="w-full bg-bg-raised border border-border rounded-xl px-3.5 py-2.5 text-sm text-text
+                           focus:outline-none focus:border-primary transition"
+                    placeholder="https://youtube.com/watch?v=..." />
+                } @else {
+                  @if (formVideoUrl && formVideoSource === 'Upload') {
+                    <div class="flex items-center gap-3 bg-bg-raised border border-border rounded-xl px-3.5 py-2.5">
+                      <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z"/></svg>
+                      <span class="text-xs text-success flex-1">Video subido</span>
+                      <button type="button" (click)="clearVideo()" data-testid="catalog-form-video-clear"
+                        class="text-xs text-text-muted hover:text-danger transition">Quitar</button>
+                    </div>
+                  } @else {
+                    <label class="flex items-center justify-center w-full py-6 rounded-xl border-2 border-dashed border-border
+                                  hover:border-primary cursor-pointer transition bg-bg-raised"
+                      [class.opacity-60]="uploadingVideo()">
+                      @if (uploadingVideo()) {
+                        <div class="flex items-center gap-2"><kx-spinner size="sm" /><span class="text-xs text-primary">Subiendo...</span></div>
+                      } @else {
+                        <div class="flex items-center gap-2 text-text-muted">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14M5 12h14" />
+                          </svg>
+                          <span class="text-xs">Seleccionar video (mp4, webm)</span>
+                        </div>
+                      }
+                      <input type="file" accept="video/mp4,video/webm,video/quicktime" data-testid="catalog-form-video-file"
+                        (change)="onVideoUpload($event)" [disabled]="uploadingVideo()" class="hidden" />
+                    </label>
+                  }
+                }
+              </div>
             </div>
             <div>
               <label class="block text-xs text-text-secondary mb-1">Miniatura</label>
@@ -296,9 +341,12 @@ export class CatalogList implements OnInit {
   formName = '';
   formMuscleGroup = '';
   formVideoUrl = '';
+  formVideoSource: 'None' | 'YouTube' | 'Upload' = 'None';
+  formVideoMode = signal<'youtube' | 'upload'>('youtube');
   formImageUrl = '';
   formNotes = '';
   uploadingImage = signal(false);
+  uploadingVideo = signal(false);
   seeding = signal(false);
 
   ngOnInit() {
@@ -327,6 +375,8 @@ export class CatalogList implements OnInit {
     this.formName = ex.name;
     this.formMuscleGroup = ex.muscleGroup ?? '';
     this.formVideoUrl = ex.videoUrl ?? '';
+    this.formVideoSource = (ex.videoSource as 'None' | 'YouTube' | 'Upload') ?? 'None';
+    this.formVideoMode.set(this.formVideoSource === 'Upload' ? 'upload' : 'youtube');
     this.formImageUrl = ex.imageUrl ?? '';
     this.formNotes = ex.notes ?? '';
     this.editingExercise.set(ex);
@@ -347,7 +397,7 @@ export class CatalogList implements OnInit {
     const body = {
       name: this.formName.trim(),
       muscleGroup: this.formMuscleGroup.trim() || null,
-      videoSource: videoUrl ? 'YouTube' : 'None',
+      videoSource: videoUrl ? this.formVideoSource : 'None',
       videoUrl,
       imageUrl: this.formImageUrl.trim() || null,
       notes: this.formNotes.trim() || null,
@@ -416,9 +466,46 @@ export class CatalogList implements OnInit {
     this.formName = '';
     this.formMuscleGroup = '';
     this.formVideoUrl = '';
+    this.formVideoSource = 'None';
+    this.formVideoMode.set('youtube');
     this.formImageUrl = '';
     this.formNotes = '';
     this.uploadingImage.set(false);
+    this.uploadingVideo.set(false);
+  }
+
+  onYoutubeUrlChange(url: string) {
+    this.formVideoUrl = url;
+    this.formVideoSource = url.trim() ? 'YouTube' : 'None';
+  }
+
+  clearVideo() {
+    this.formVideoUrl = '';
+    this.formVideoSource = 'None';
+  }
+
+  onVideoUpload(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.toast.show('El video no puede superar 50MB', 'error');
+      return;
+    }
+    this.uploadingVideo.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    this.api.upload<{ url: string; key: string }>('/videos/upload', formData).subscribe({
+      next: (res) => {
+        this.formVideoUrl = res.url;
+        this.formVideoSource = 'Upload';
+        this.uploadingVideo.set(false);
+      },
+      error: () => {
+        this.uploadingVideo.set(false);
+        this.toast.show('Error al subir video', 'error');
+      },
+    });
   }
 
   onImageUpload(event: Event) {
