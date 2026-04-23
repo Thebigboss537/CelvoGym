@@ -28,9 +28,8 @@ public class CreateRoutineValidatorTests
                             new CreateExerciseInput(
                                 Name: "Bench Press",
                                 Notes: null,
-                                VideoSource: VideoSource.None,
-                                VideoUrl: null,
                                 Tempo: "3010",
+                                CatalogExerciseId: null,
                                 Sets:
                                 [
                                     new CreateExerciseSetInput(
@@ -87,7 +86,7 @@ public class CreateRoutineValidatorTests
                 [
                     new CreateExerciseGroupInput(GroupType.Single, 60,
                     [
-                        new CreateExerciseInput("Bench Press", null, VideoSource.None, null, null,
+                        new CreateExerciseInput("Bench Press", null, null, null,
                         [
                             new CreateExerciseSetInput(SetType.Effective, "8", "80kg", TargetRpe: 0, RestSeconds: 90)
                         ])
@@ -112,7 +111,7 @@ public class CreateRoutineValidatorTests
                 [
                     new CreateExerciseGroupInput(GroupType.Single, 60,
                     [
-                        new CreateExerciseInput("Bench Press", null, VideoSource.None, null, null,
+                        new CreateExerciseInput("Bench Press", null, null, null,
                         [
                             new CreateExerciseSetInput(SetType.Effective, "8", "80kg", TargetRpe: 11, RestSeconds: 90)
                         ])
@@ -137,7 +136,7 @@ public class CreateRoutineValidatorTests
                 [
                     new CreateExerciseGroupInput(GroupType.Single, RestSeconds: -1,
                     [
-                        new CreateExerciseInput("Bench Press", null, VideoSource.None, null, null,
+                        new CreateExerciseInput("Bench Press", null, null, null,
                         [
                             new CreateExerciseSetInput(SetType.Effective, "8", "80kg", TargetRpe: 8, RestSeconds: 90)
                         ])

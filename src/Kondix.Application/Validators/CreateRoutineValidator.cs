@@ -26,7 +26,6 @@ public sealed class CreateRoutineValidator : AbstractValidator<CreateRoutineComm
                 {
                     exercise.RuleFor(e => e.Name).NotEmpty().MaximumLength(200);
                     exercise.RuleFor(e => e.Notes).MaximumLength(2000);
-                    exercise.RuleFor(e => e.VideoUrl).MaximumLength(500);
                     exercise.RuleFor(e => e.Tempo).MaximumLength(20);
                     exercise.RuleFor(e => e.Sets).NotEmpty().WithMessage("At least one set is required");
 

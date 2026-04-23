@@ -26,9 +26,8 @@ public sealed record CreateExerciseGroupInput(
 public sealed record CreateExerciseInput(
     string Name,
     string? Notes,
-    VideoSource VideoSource,
-    string? VideoUrl,
     string? Tempo,
+    Guid? CatalogExerciseId,
     List<CreateExerciseSetInput> Sets);
 
 public sealed record CreateExerciseSetInput(

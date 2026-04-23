@@ -38,9 +38,14 @@ public sealed record ExerciseDto(
     Guid Id,
     string Name,
     string? Notes,
+    string? Tempo,
+    Guid? CatalogExerciseId,
+    // Media below is projected from the linked catalog entry when served via
+    // GET — write paths return nulls here; the client already has the catalog
+    // loaded and can merge if needed.
     VideoSource VideoSource,
     string? VideoUrl,
-    string? Tempo,
+    string? ImageUrl,
     List<ExerciseSetDto> Sets);
 
 public sealed record ExerciseSetDto(

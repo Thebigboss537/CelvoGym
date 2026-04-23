@@ -1,6 +1,7 @@
 using Kondix.Application.Common.Interfaces;
 using Kondix.Application.DTOs;
 using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,9 +62,8 @@ public sealed class DuplicateRoutineHandler(IKondixDbContext db)
                     {
                         Name = sourceExercise.Name,
                         Notes = sourceExercise.Notes,
-                        VideoSource = sourceExercise.VideoSource,
-                        VideoUrl = sourceExercise.VideoUrl,
                         Tempo = sourceExercise.Tempo,
+                        CatalogExerciseId = sourceExercise.CatalogExerciseId,
                         SortOrder = sourceExercise.SortOrder
                     };
                     var setDtos = new List<ExerciseSetDto>();
@@ -87,7 +87,8 @@ public sealed class DuplicateRoutineHandler(IKondixDbContext db)
 
                     group.Exercises.Add(exercise);
                     exerciseDtos.Add(new ExerciseDto(exercise.Id, exercise.Name, exercise.Notes,
-                        exercise.VideoSource, exercise.VideoUrl, exercise.Tempo, setDtos));
+                        exercise.Tempo, exercise.CatalogExerciseId,
+                        VideoSource.None, null, null, setDtos));
                 }
 
                 day.ExerciseGroups.Add(group);

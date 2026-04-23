@@ -1,5 +1,4 @@
 using Kondix.Domain.Entities;
-using Kondix.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,11 +14,6 @@ public class ExerciseConfiguration : IEntityTypeConfiguration<Exercise>
         builder.Property(e => e.Id).HasDefaultValueSql("gen_random_uuid()");
         builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Notes).HasMaxLength(2000);
-        builder.Property(e => e.VideoSource)
-            .HasConversion<string>()
-            .HasMaxLength(20)
-            .HasDefaultValue(VideoSource.None);
-        builder.Property(e => e.VideoUrl).HasMaxLength(500);
         builder.Property(e => e.Tempo).HasMaxLength(20);
         builder.Property(e => e.SortOrder).HasDefaultValue(0);
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");

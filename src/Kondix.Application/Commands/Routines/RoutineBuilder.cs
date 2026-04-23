@@ -1,5 +1,6 @@
 using Kondix.Application.DTOs;
 using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 
 namespace Kondix.Application.Commands.Routines;
 
@@ -34,9 +35,8 @@ public static class RoutineBuilder
                     {
                         Name = exInput.Name,
                         Notes = exInput.Notes,
-                        VideoSource = exInput.VideoSource,
-                        VideoUrl = exInput.VideoUrl,
                         Tempo = exInput.Tempo,
+                        CatalogExerciseId = exInput.CatalogExerciseId,
                         SortOrder = ei
                     };
                     var setDtos = new List<ExerciseSetDto>();
@@ -60,8 +60,11 @@ public static class RoutineBuilder
                     }
 
                     group.Exercises.Add(exercise);
+                    // Media fields (VideoSource/VideoUrl/ImageUrl) come from the catalog join
+                    // on GET — write-paths return nulls. Client merges from its catalog cache.
                     exerciseDtos.Add(new ExerciseDto(exercise.Id, exercise.Name, exercise.Notes,
-                        exercise.VideoSource, exercise.VideoUrl, exercise.Tempo, setDtos));
+                        exercise.Tempo, exercise.CatalogExerciseId,
+                        VideoSource.None, null, null, setDtos));
                 }
 
                 day.ExerciseGroups.Add(group);

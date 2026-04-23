@@ -76,7 +76,7 @@ public class RoutinesController(IMediator mediator) : ControllerBase
             d.Groups.Select(g => new CreateExerciseGroupInput(
                 g.GroupType, g.RestSeconds,
                 g.Exercises.Select(e => new CreateExerciseInput(
-                    e.Name, e.Notes, e.VideoSource, e.VideoUrl, e.Tempo,
+                    e.Name, e.Notes, e.Tempo, e.CatalogExerciseId,
                     e.Sets.Select(s => new CreateExerciseSetInput(
                         s.SetType, s.TargetReps, s.TargetWeight, s.TargetRpe, s.RestSeconds
                     )).ToList()
@@ -104,9 +104,8 @@ public sealed record ExerciseGroupRequest(
 public sealed record ExerciseRequest(
     string Name,
     string? Notes,
-    VideoSource VideoSource,
-    string? VideoUrl,
     string? Tempo,
+    Guid? CatalogExerciseId,
     List<ExerciseSetRequest> Sets);
 
 public sealed record ExerciseSetRequest(

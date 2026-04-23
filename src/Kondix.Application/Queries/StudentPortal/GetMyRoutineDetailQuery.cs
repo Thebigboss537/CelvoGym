@@ -29,7 +29,9 @@ public sealed class GetMyRoutineDetailHandler(IKondixDbContext db)
             .Include(r => r.Days.OrderBy(d => d.SortOrder))
                 .ThenInclude(d => d.ExerciseGroups.OrderBy(g => g.SortOrder))
                     .ThenInclude(g => g.Exercises.OrderBy(e => e.SortOrder))
-                        .ThenInclude(e => e.Sets.OrderBy(s => s.SortOrder))
+                        .ThenInclude(e => e.CatalogExercise)
+            .Include(r => r.Days).ThenInclude(d => d.ExerciseGroups)
+                .ThenInclude(g => g.Exercises).ThenInclude(e => e.Sets.OrderBy(s => s.SortOrder))
             .FirstOrDefaultAsync(r => r.Id == request.RoutineId && r.IsActive, cancellationToken)
             ?? throw new InvalidOperationException("Routine not found");
 
@@ -81,7 +83,10 @@ public sealed class GetMyRoutineDetailHandler(IKondixDbContext db)
                 d.ExerciseGroups.Select(g => new ExerciseGroupDto(
                     g.Id, g.GroupType, g.RestSeconds,
                     g.Exercises.Select(e => new ExerciseDto(
-                        e.Id, e.Name, e.Notes, e.VideoSource, e.VideoUrl, e.Tempo,
+                        e.Id, e.Name, e.Notes, e.Tempo, e.CatalogExerciseId,
+                        e.CatalogExercise != null ? e.CatalogExercise.VideoSource : VideoSource.None,
+                        e.CatalogExercise?.VideoUrl,
+                        e.CatalogExercise?.ImageUrl,
                         e.Sets.Select(s => new ExerciseSetDto(
                             s.Id, s.SetType, s.TargetReps, s.TargetWeight, s.TargetRpe, s.RestSeconds
                         )).ToList()
