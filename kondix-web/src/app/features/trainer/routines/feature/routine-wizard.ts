@@ -6,6 +6,7 @@ import { RoutineDetailDto, BlockType, SetType, RoutineUsageDto } from '../../../
 import { ToastService } from '../../../../shared/ui/toast';
 import { KxWizardStepper } from '../../../../shared/ui/wizard-stepper';
 import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxIconButton } from '../../../../shared/ui/icon-button';
 
 // ── Wizard data model ──
 
@@ -56,7 +57,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
 @Component({
   selector: 'app-routine-wizard',
-  imports: [FormsModule, KxWizardStepper, KxSpinner],
+  imports: [FormsModule, KxWizardStepper, KxSpinner, KxIconButton],
   template: `
     <div class="animate-fade-up max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
 
@@ -190,20 +191,22 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
                     <!-- Reorder -->
                     @if (days().length > 1) {
-                      <div class="flex flex-col gap-0.5">
+                      <div class="flex flex-col gap-1">
                         @if (di > 0) {
-                          <button type="button" (click)="moveDay(di, -1)" class="text-text-muted hover:text-primary text-xs transition" aria-label="Mover arriba">&#9650;</button>
+                          <kx-icon-button icon="arrow-up" ariaLabel="Subir día" size="sm"
+                            (clicked)="moveDay(di, -1)" />
                         }
                         @if (di < days().length - 1) {
-                          <button type="button" (click)="moveDay(di, 1)" class="text-text-muted hover:text-primary text-xs transition" aria-label="Mover abajo">&#9660;</button>
+                          <kx-icon-button icon="arrow-down" ariaLabel="Bajar día" size="sm"
+                            (clicked)="moveDay(di, 1)" />
                         }
                       </div>
                     }
 
                     <!-- Delete -->
-                    <button type="button" (click)="removeDay(di)"
+                    <kx-icon-button icon="x" ariaLabel="Eliminar día" variant="danger" size="sm"
                       [attr.data-testid]="'wizard-day-' + di + '-remove'"
-                      class="text-text-muted hover:text-danger text-lg px-1 transition" aria-label="Eliminar dia">&#10005;</button>
+                      (clicked)="removeDay(di)" />
                   </div>
                 }
               </div>
@@ -422,15 +425,17 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                           class="w-16 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="seg"
                                           [attr.aria-label]="'Descanso'"
                                           [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-rest'" />
-                                        <button type="button" (click)="removeSet(bi, ei, si)"
-                                          class="w-6 text-text-muted hover:text-danger text-xs transition" aria-label="Eliminar serie"
-                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-remove'">&#10005;</button>
+                                        <kx-icon-button icon="x" ariaLabel="Eliminar serie" variant="danger" size="sm"
+                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-remove'"
+                                          (clicked)="removeSet(bi, ei, si)" />
                                       </div>
                                     }
 
-                                    <button type="button" (click)="addSet(bi, ei)"
-                                      [attr.data-testid]="'wizard-set-add-' + bi + '-' + ei"
-                                      class="text-primary text-xs hover:underline mt-1">+ Agregar serie</button>
+                                    <div class="mt-1">
+                                      <kx-icon-button icon="plus" ariaLabel="Agregar serie" label="Serie" size="sm"
+                                        [attr.data-testid]="'wizard-set-add-' + bi + '-' + ei"
+                                        (clicked)="addSet(bi, ei)" />
+                                    </div>
                                   </div>
                                 </div>
 
@@ -449,19 +454,22 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                               }
                             }
 
-                            <!-- Add exercise -->
-                            <button type="button" (click)="addExercise(bi)"
-                              [attr.data-testid]="'wizard-exercise-add-' + bi"
-                              class="text-primary text-xs hover:underline">+ Agregar ejercicio</button>
+                            <!-- Add exercise into this block (unites into superset/triset/circuit) -->
+                            <div>
+                              <kx-icon-button icon="plus" ariaLabel="Agregar al bloque"
+                                [label]="block.exercises.length === 1 ? 'Unir a bloque' : 'Ejercicio'" size="sm"
+                                [attr.data-testid]="'wizard-exercise-add-' + bi"
+                                (clicked)="addExercise(bi)" />
+                            </div>
                           </div>
                         </div>
                       }
 
-                      <!-- Add group -->
+                      <!-- Add new standalone block (individual exercise by default) -->
                       <button type="button" (click)="addBlock()"
-                        data-testid="wizard-group-add"
+                        data-testid="wizard-block-add"
                         class="w-full border border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-xl py-2.5 text-sm transition">
-                        + Agregar grupo de ejercicios
+                        + Nuevo ejercicio
                       </button>
                     </div>
                   }
