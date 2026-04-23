@@ -16,10 +16,10 @@ public sealed record CreateRoutineCommand(
 
 public sealed record CreateDayInput(
     string Name,
-    List<CreateExerciseGroupInput> Groups);
+    List<CreateExerciseBlockInput> Blocks);
 
-public sealed record CreateExerciseGroupInput(
-    GroupType GroupType,
+public sealed record CreateExerciseBlockInput(
+    BlockType? BlockType,
     int RestSeconds,
     List<CreateExerciseInput> Exercises);
 

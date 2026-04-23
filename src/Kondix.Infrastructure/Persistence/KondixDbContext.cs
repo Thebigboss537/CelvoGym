@@ -13,7 +13,7 @@ public class KondixDbContext(DbContextOptions<KondixDbContext> options)
     public DbSet<StudentInvitation> StudentInvitations => Set<StudentInvitation>();
     public DbSet<Routine> Routines => Set<Routine>();
     public DbSet<Day> Days => Set<Day>();
-    public DbSet<ExerciseGroup> ExerciseGroups => Set<ExerciseGroup>();
+    public DbSet<ExerciseBlock> ExerciseBlocks => Set<ExerciseBlock>();
     public DbSet<Exercise> Exercises => Set<Exercise>();
     public DbSet<ExerciseSet> ExerciseSets => Set<ExerciseSet>();
     public DbSet<Program> Programs => Set<Program>();

@@ -22,7 +22,7 @@ public sealed class GetRoutinesHandler(IKondixDbContext db)
                 r.Name,
                 r.Description,
                 r.Days.Count,
-                r.Days.SelectMany(d => d.ExerciseGroups)
+                r.Days.SelectMany(d => d.Blocks)
                     .SelectMany(g => g.Exercises).Count(),
                 r.Tags,
                 r.Category,

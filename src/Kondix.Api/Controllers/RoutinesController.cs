@@ -73,8 +73,8 @@ public class RoutinesController(IMediator mediator) : ControllerBase
     private static List<CreateDayInput> MapDays(List<DayRequest> days)
         => days.Select(d => new CreateDayInput(
             d.Name,
-            d.Groups.Select(g => new CreateExerciseGroupInput(
-                g.GroupType, g.RestSeconds,
+            d.Blocks.Select(g => new CreateExerciseBlockInput(
+                g.BlockType, g.RestSeconds,
                 g.Exercises.Select(e => new CreateExerciseInput(
                     e.Name, e.Notes, e.Tempo, e.CatalogExerciseId,
                     e.Sets.Select(s => new CreateExerciseSetInput(
@@ -94,10 +94,10 @@ public sealed record CreateRoutineRequest(
 
 public sealed record DayRequest(
     string Name,
-    List<ExerciseGroupRequest> Groups);
+    List<ExerciseBlockRequest> Blocks);
 
-public sealed record ExerciseGroupRequest(
-    GroupType GroupType,
+public sealed record ExerciseBlockRequest(
+    BlockType? BlockType,
     int RestSeconds,
     List<ExerciseRequest> Exercises);
 

@@ -9,5 +9,5 @@ public class Day : BaseEntity
     public int SortOrder { get; set; }
 
     public Routine Routine { get; set; } = null!;
-    public ICollection<ExerciseGroup> ExerciseGroups { get; set; } = [];
+    public ICollection<ExerciseBlock> Blocks { get; set; } = [];
 }

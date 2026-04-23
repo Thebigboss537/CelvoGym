@@ -16,14 +16,14 @@ public sealed class UpdateRoutineValidator : AbstractValidator<UpdateRoutineComm
         RuleForEach(x => x.Days).ChildRules(day =>
         {
             day.RuleFor(d => d.Name).NotEmpty().MaximumLength(200);
-            day.RuleFor(d => d.Groups).NotEmpty();
+            day.RuleFor(d => d.Blocks).NotEmpty();
 
-            day.RuleForEach(d => d.Groups).ChildRules(group =>
+            day.RuleForEach(d => d.Blocks).ChildRules(block =>
             {
-                group.RuleFor(g => g.RestSeconds).GreaterThanOrEqualTo(0);
-                group.RuleFor(g => g.Exercises).NotEmpty();
+                block.RuleFor(b => b.RestSeconds).GreaterThanOrEqualTo(0);
+                block.RuleFor(b => b.Exercises).NotEmpty();
 
-                group.RuleForEach(g => g.Exercises).ChildRules(exercise =>
+                block.RuleForEach(b => b.Exercises).ChildRules(exercise =>
                 {
                     exercise.RuleFor(e => e.Name).NotEmpty().MaximumLength(200);
                     exercise.RuleFor(e => e.Sets).NotEmpty();

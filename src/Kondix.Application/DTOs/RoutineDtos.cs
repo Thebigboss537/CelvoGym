@@ -26,11 +26,11 @@ public sealed record RoutineDetailDto(
 public sealed record DayDto(
     Guid Id,
     string Name,
-    List<ExerciseGroupDto> Groups);
+    List<ExerciseBlockDto> Blocks);
 
-public sealed record ExerciseGroupDto(
+public sealed record ExerciseBlockDto(
     Guid Id,
-    GroupType GroupType,
+    BlockType? BlockType,
     int RestSeconds,
     List<ExerciseDto> Exercises);
 

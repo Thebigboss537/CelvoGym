@@ -19,7 +19,7 @@ public sealed class DuplicateRoutineHandler(IKondixDbContext db)
         var source = await db.Routines
             .AsNoTracking()
             .Include(r => r.Days.OrderBy(d => d.SortOrder))
-                .ThenInclude(d => d.ExerciseGroups.OrderBy(g => g.SortOrder))
+                .ThenInclude(d => d.Blocks.OrderBy(g => g.SortOrder))
                     .ThenInclude(g => g.Exercises.OrderBy(e => e.SortOrder))
                         .ThenInclude(e => e.Sets.OrderBy(s => s.SortOrder))
             .FirstOrDefaultAsync(r => r.Id == request.RoutineId
@@ -44,13 +44,13 @@ public sealed class DuplicateRoutineHandler(IKondixDbContext db)
         foreach (var sourceDay in source.Days)
         {
             var day = new Day { Name = sourceDay.Name, SortOrder = sourceDay.SortOrder };
-            var groupDtos = new List<ExerciseGroupDto>();
+            var groupDtos = new List<ExerciseBlockDto>();
 
-            foreach (var sourceGroup in sourceDay.ExerciseGroups)
+            foreach (var sourceGroup in sourceDay.Blocks)
             {
-                var group = new ExerciseGroup
+                var group = new ExerciseBlock
                 {
-                    GroupType = sourceGroup.GroupType,
+                    BlockType = sourceGroup.BlockType,
                     RestSeconds = sourceGroup.RestSeconds,
                     SortOrder = sourceGroup.SortOrder
                 };
@@ -91,8 +91,8 @@ public sealed class DuplicateRoutineHandler(IKondixDbContext db)
                         VideoSource.None, null, null, setDtos));
                 }
 
-                day.ExerciseGroups.Add(group);
-                groupDtos.Add(new ExerciseGroupDto(group.Id, group.GroupType, group.RestSeconds, exerciseDtos));
+                day.Blocks.Add(group);
+                groupDtos.Add(new ExerciseBlockDto(group.Id, group.BlockType, group.RestSeconds, exerciseDtos));
             }
 
             routine.Days.Add(day);

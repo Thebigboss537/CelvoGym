@@ -3,10 +3,12 @@ using Kondix.Domain.Enums;
 
 namespace Kondix.Domain.Entities;
 
-public class ExerciseGroup : BaseEntity
+public class ExerciseBlock : BaseEntity
 {
     public Guid DayId { get; set; }
-    public GroupType GroupType { get; set; } = GroupType.Single;
+    // null => single-exercise block (implicit "Individual"); Superset/Triset/
+    // Circuit are only set when the block actually groups 2+ exercises.
+    public BlockType? BlockType { get; set; }
     public int RestSeconds { get; set; }
     public int SortOrder { get; set; }
 

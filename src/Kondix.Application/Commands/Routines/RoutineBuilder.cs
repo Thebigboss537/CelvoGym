@@ -15,14 +15,14 @@ public static class RoutineBuilder
         {
             var dayInput = inputs[di];
             var day = new Day { Name = dayInput.Name, SortOrder = di };
-            var groupDtos = new List<ExerciseGroupDto>();
+            var groupDtos = new List<ExerciseBlockDto>();
 
-            for (var gi = 0; gi < dayInput.Groups.Count; gi++)
+            for (var gi = 0; gi < dayInput.Blocks.Count; gi++)
             {
-                var groupInput = dayInput.Groups[gi];
-                var group = new ExerciseGroup
+                var groupInput = dayInput.Blocks[gi];
+                var group = new ExerciseBlock
                 {
-                    GroupType = groupInput.GroupType,
+                    BlockType = groupInput.BlockType,
                     RestSeconds = groupInput.RestSeconds,
                     SortOrder = gi
                 };
@@ -67,8 +67,8 @@ public static class RoutineBuilder
                         VideoSource.None, null, null, setDtos));
                 }
 
-                day.ExerciseGroups.Add(group);
-                groupDtos.Add(new ExerciseGroupDto(group.Id, group.GroupType, group.RestSeconds, exerciseDtos));
+                day.Blocks.Add(group);
+                groupDtos.Add(new ExerciseBlockDto(group.Id, group.BlockType, group.RestSeconds, exerciseDtos));
             }
 
             entities.Add(day);

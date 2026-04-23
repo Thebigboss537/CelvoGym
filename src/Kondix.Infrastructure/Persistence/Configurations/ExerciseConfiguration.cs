@@ -18,11 +18,11 @@ public class ExerciseConfiguration : IEntityTypeConfiguration<Exercise>
         builder.Property(e => e.SortOrder).HasDefaultValue(0);
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()");
 
-        builder.HasIndex(e => e.GroupId);
+        builder.HasIndex(e => e.BlockId);
 
-        builder.HasOne(e => e.Group)
-            .WithMany(g => g.Exercises)
-            .HasForeignKey(e => e.GroupId)
+        builder.HasOne(e => e.Block)
+            .WithMany(b => b.Exercises)
+            .HasForeignKey(e => e.BlockId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

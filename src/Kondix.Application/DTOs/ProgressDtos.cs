@@ -34,7 +34,7 @@ public sealed record StudentRoutineDetailDto(
 public sealed record StudentDayDto(
     Guid Id,
     string Name,
-    List<ExerciseGroupDto> Groups,
+    List<ExerciseBlockDto> Blocks,
     List<SetLogDto> SetLogs,
     ProgressSummaryDto Progress);
 
