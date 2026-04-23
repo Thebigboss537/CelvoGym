@@ -23,6 +23,11 @@ interface FlatExercise {
   exercise: ExerciseDto;
   groupRestSeconds: number;
   groupType: string;
+  // Position within the containing group — used to decide whether the
+  // just-completed set finished a round of a multi-exercise block
+  // (Superset/Triset/Circuit), in which case the group's rest applies.
+  indexInGroup: number;
+  groupSize: number;
 }
 
 @Component({
@@ -165,7 +170,7 @@ interface FlatExercise {
           @if (showRestTimer()) {
             <div class="animate-fade-up">
               <kx-rest-timer
-                [durationSeconds]="restDuration()"
+                [durationSeconds]="nextRestSeconds()"
                 [active]="showRestTimer()"
                 (finished)="onRestFinished()"
                 (skip)="onRestSkip()"
@@ -191,7 +196,10 @@ export class ExerciseLogging implements OnInit {
   sets = signal<ExerciseSetDto[]>([]);
   setLogMap = signal<Map<string, SetLogDto>>(new Map());
   showRestTimer = signal(false);
-  restDuration = signal(90);
+  // Tracks the most-recently-completed set on this page. `nextRestSeconds`
+  // derives the timer duration from this + the current group's layout, so
+  // the template binding stays reactive (see OnPush-signals gotcha note).
+  lastCompletedSet = signal<ExerciseSetDto | null>(null);
   showVideo = signal(false);
 
   routineId = '';
@@ -205,6 +213,33 @@ export class ExerciseLogging implements OnInit {
     const total = this.totalExercises();
     if (total === 0) return 0;
     return Math.round(((this.exerciseIndex() + 1) / total) * 100);
+  });
+
+  /**
+   * Duration for the rest timer after the most-recent set completion.
+   *
+   * Inside a multi-exercise block (Superset/Triset/Circuit), finishing a set
+   * on the LAST exercise of the block closes a "round" — the student rotates
+   * back to the first exercise next, so the block-level rest applies.
+   * Otherwise use the set's own rest override, falling back to the block's
+   * rest, then to a 90s default.
+   *
+   * Naming keeps `group` / `groupType` on purpose: Phase 2 of the exercise-
+   * catalog refactor renames groups to blocks across the codebase and ships
+   * separately. This derived signal will be renamed as part of that sweep.
+   */
+  readonly nextRestSeconds = computed<number>(() => {
+    const last = this.lastCompletedSet();
+    const flat = this.flatExercises[this.exerciseIndex()];
+    if (!last || !flat) return 90;
+
+    const isMultiExerciseGroup = flat.groupSize > 1;
+    const isLastExerciseInGroup = flat.indexInGroup === flat.groupSize - 1;
+
+    if (isMultiExerciseGroup && isLastExerciseInGroup && flat.groupRestSeconds > 0) {
+      return flat.groupRestSeconds;
+    }
+    return last.restSeconds ?? (flat.groupRestSeconds > 0 ? flat.groupRestSeconds : 90);
   });
 
   ngOnInit(): void {
@@ -238,11 +273,13 @@ export class ExerciseLogging implements OnInit {
         // Build flat exercise list with group context
         this.flatExercises = [];
         for (const group of day.groups) {
-          for (const exercise of group.exercises) {
+          for (let i = 0; i < group.exercises.length; i++) {
             this.flatExercises.push({
-              exercise,
+              exercise: group.exercises[i],
               groupRestSeconds: group.restSeconds,
               groupType: group.groupType,
+              indexInGroup: i,
+              groupSize: group.exercises.length,
             });
           }
         }
@@ -260,9 +297,11 @@ export class ExerciseLogging implements OnInit {
         this.exercise.set(flat.exercise);
         this.sets.set(flat.exercise.sets);
 
-        // Determine default rest duration: set-level > group-level > 90s default
-        const firstSetRest = flat.exercise.sets.find(s => s.restSeconds != null)?.restSeconds;
-        this.restDuration.set(firstSetRest ?? flat.groupRestSeconds > 0 ? (firstSetRest ?? flat.groupRestSeconds) : 90);
+        // Reset the last-completed-set tracker on navigation so the rest
+        // timer derivation doesn't carry over stale state between
+        // exercises. `nextRestSeconds` falls back to 90s until a set is
+        // completed on this page.
+        this.lastCompletedSet.set(null);
 
         // Build setLogMap from day's setLogs
         const map = new Map<string, SetLogDto>();
@@ -340,11 +379,9 @@ export class ExerciseLogging implements OnInit {
       next: (log) => {
         this.updateLog(log);
         if (log.completed) {
-          // Determine rest duration from set-level or group-level
-          const flat = this.flatExercises[this.exerciseIndex()];
-          const setRest = set.restSeconds;
-          const duration = setRest ?? (flat?.groupRestSeconds > 0 ? flat.groupRestSeconds : 90);
-          this.restDuration.set(duration);
+          // `lastCompletedSet` drives `nextRestSeconds`, which the
+          // kx-rest-timer binding reads reactively.
+          this.lastCompletedSet.set(set);
           this.showRestTimer.set(true);
           this.checkAllSetsCompleted();
         }
