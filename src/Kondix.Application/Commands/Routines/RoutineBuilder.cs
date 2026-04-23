@@ -1,12 +1,21 @@
+using Kondix.Application.Common.Interfaces;
 using Kondix.Application.DTOs;
 using Kondix.Domain.Entities;
 using Kondix.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kondix.Application.Commands.Routines;
 
 public static class RoutineBuilder
 {
-    public static (List<Day> Entities, List<DayDto> Dtos) BuildDays(List<CreateDayInput> inputs)
+    /// <summary>
+    /// Builds the Day/Block/Exercise/Set entity tree from wizard input and
+    /// returns matching DTOs for the response. Unlinked exercise names get
+    /// auto-upserted into the trainer's catalog so every routine-exercise
+    /// ends up linked to a catalog entry — keeps media + metrics unified.
+    /// </summary>
+    public static async Task<(List<Day> Entities, List<DayDto> Dtos)> BuildDaysAsync(
+        List<CreateDayInput> inputs, IKondixDbContext db, Guid trainerId, CancellationToken ct)
     {
         var entities = new List<Day>();
         var dtos = new List<DayDto>();
@@ -15,28 +24,31 @@ public static class RoutineBuilder
         {
             var dayInput = inputs[di];
             var day = new Day { Name = dayInput.Name, SortOrder = di };
-            var groupDtos = new List<ExerciseBlockDto>();
+            var blockDtos = new List<ExerciseBlockDto>();
 
-            for (var gi = 0; gi < dayInput.Blocks.Count; gi++)
+            for (var bi = 0; bi < dayInput.Blocks.Count; bi++)
             {
-                var groupInput = dayInput.Blocks[gi];
-                var group = new ExerciseBlock
+                var blockInput = dayInput.Blocks[bi];
+                var block = new ExerciseBlock
                 {
-                    BlockType = groupInput.BlockType,
-                    RestSeconds = groupInput.RestSeconds,
-                    SortOrder = gi
+                    BlockType = blockInput.BlockType,
+                    RestSeconds = blockInput.RestSeconds,
+                    SortOrder = bi
                 };
                 var exerciseDtos = new List<ExerciseDto>();
 
-                for (var ei = 0; ei < groupInput.Exercises.Count; ei++)
+                for (var ei = 0; ei < blockInput.Exercises.Count; ei++)
                 {
-                    var exInput = groupInput.Exercises[ei];
+                    var exInput = blockInput.Exercises[ei];
+                    var catalogId = await EnsureCatalogEntryAsync(
+                        db, trainerId, exInput.Name, exInput.CatalogExerciseId, ct);
+
                     var exercise = new Exercise
                     {
                         Name = exInput.Name,
                         Notes = exInput.Notes,
                         Tempo = exInput.Tempo,
-                        CatalogExerciseId = exInput.CatalogExerciseId,
+                        CatalogExerciseId = catalogId,
                         SortOrder = ei
                     };
                     var setDtos = new List<ExerciseSetDto>();
@@ -59,7 +71,7 @@ public static class RoutineBuilder
                             exerciseSet.TargetRpe, exerciseSet.RestSeconds));
                     }
 
-                    group.Exercises.Add(exercise);
+                    block.Exercises.Add(exercise);
                     // Media fields (VideoSource/VideoUrl/ImageUrl) come from the catalog join
                     // on GET — write-paths return nulls. Client merges from its catalog cache.
                     exerciseDtos.Add(new ExerciseDto(exercise.Id, exercise.Name, exercise.Notes,
@@ -67,14 +79,48 @@ public static class RoutineBuilder
                         VideoSource.None, null, null, setDtos));
                 }
 
-                day.Blocks.Add(group);
-                groupDtos.Add(new ExerciseBlockDto(group.Id, group.BlockType, group.RestSeconds, exerciseDtos));
+                day.Blocks.Add(block);
+                blockDtos.Add(new ExerciseBlockDto(block.Id, block.BlockType, block.RestSeconds, exerciseDtos));
             }
 
             entities.Add(day);
-            dtos.Add(new DayDto(day.Id, day.Name, groupDtos));
+            dtos.Add(new DayDto(day.Id, day.Name, blockDtos));
         }
 
         return (entities, dtos);
+    }
+
+    /// <summary>
+    /// Returns the linked catalog id if already set; otherwise looks up the
+    /// trainer's catalog by a case-insensitive name match and returns that id;
+    /// otherwise creates a new catalog entry and returns its id. The entry is
+    /// Add'ed to the context — the outer SaveChangesAsync persists it.
+    /// </summary>
+    private static async Task<Guid?> EnsureCatalogEntryAsync(
+        IKondixDbContext db, Guid trainerId, string name, Guid? catalogExerciseId,
+        CancellationToken ct)
+    {
+        if (catalogExerciseId is Guid existing) return existing;
+
+        var trimmed = name.Trim();
+        if (string.IsNullOrEmpty(trimmed)) return null;
+
+        var lowered = trimmed.ToLowerInvariant();
+        var match = await db.CatalogExercises
+            .Where(c => c.TrainerId == trainerId && c.IsActive && c.Name.ToLower() == lowered)
+            .Select(c => (Guid?)c.Id)
+            .FirstOrDefaultAsync(ct);
+        if (match is Guid found) return found;
+
+        var entity = new CatalogExercise
+        {
+            TrainerId = trainerId,
+            Name = trimmed,
+            IsActive = true,
+            UpdatedAt = DateTimeOffset.UtcNow,
+            VideoSource = VideoSource.None,
+        };
+        db.CatalogExercises.Add(entity);
+        return entity.Id;
     }
 }

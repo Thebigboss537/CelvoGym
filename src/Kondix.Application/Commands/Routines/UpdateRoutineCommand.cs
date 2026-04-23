@@ -39,7 +39,8 @@ public sealed class UpdateRoutineHandler(IKondixDbContext db)
         routine.Category = request.Category;
         routine.UpdatedAt = DateTimeOffset.UtcNow;
 
-        var (days, dayDtos) = RoutineBuilder.BuildDays(request.Days);
+        var (days, dayDtos) = await RoutineBuilder.BuildDaysAsync(
+            request.Days, db, request.TrainerId, cancellationToken);
         foreach (var day in days) { day.RoutineId = routine.Id; db.Days.Add(day); }
 
         await db.SaveChangesAsync(cancellationToken);
