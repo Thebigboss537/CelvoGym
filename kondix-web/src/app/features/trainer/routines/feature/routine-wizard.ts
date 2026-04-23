@@ -336,6 +336,11 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                         </div>
                                       }
                                     </div>
+                                    @if (!ex.catalogExerciseId && ex.name.trim().length > 1) {
+                                      <span class="text-[10px] font-semibold text-warning bg-warning/10 border border-warning/30 px-1.5 py-0.5 rounded uppercase tracking-wide"
+                                        title="Este ejercicio no está en el catálogo. Al guardar la rutina se agregará automáticamente."
+                                        data-testid="wizard-exercise-new-badge">nuevo</span>
+                                    }
                                     <button type="button" (click)="$event.stopPropagation(); removeExercise(bi, ei)"
                                       class="text-text-muted hover:text-danger text-xs px-1.5 py-1 rounded transition" aria-label="Eliminar ejercicio"
                                       [attr.data-testid]="'wizard-exercise-' + bi + '-' + ei + '-remove'">&#10005;</button>
