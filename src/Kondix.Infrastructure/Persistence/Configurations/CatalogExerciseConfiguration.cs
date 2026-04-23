@@ -18,6 +18,7 @@ public class CatalogExerciseConfiguration : IEntityTypeConfiguration<CatalogExer
         builder.Property(ce => ce.VideoSource).HasConversion<string>().HasMaxLength(20)
             .HasDefaultValue(VideoSource.None);
         builder.Property(ce => ce.VideoUrl).HasMaxLength(500);
+        builder.Property(ce => ce.ImageUrl).HasMaxLength(500);
         builder.Property(ce => ce.Notes).HasMaxLength(2000);
         builder.Property(ce => ce.IsActive).HasDefaultValue(true);
         builder.Property(ce => ce.CreatedAt).HasDefaultValueSql("NOW()");
