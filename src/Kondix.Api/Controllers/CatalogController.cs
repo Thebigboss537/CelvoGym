@@ -46,6 +46,14 @@ public class CatalogController(IMediator mediator) : ControllerBase
         await mediator.Send(new DeleteCatalogExerciseCommand(id, HttpContext.GetTrainerId()), ct);
         return NoContent();
     }
+
+    [HttpPost("seed")]
+    public async Task<IActionResult> Seed(CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var inserted = await mediator.Send(new SeedCatalogCommand(HttpContext.GetTrainerId()), ct);
+        return Ok(new { inserted });
+    }
 }
 
 public sealed record CatalogExerciseRequest(
