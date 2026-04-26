@@ -124,15 +124,21 @@ interface FlatExercise {
                     class="w-full"
                   ></video>
                 } @else {
-                  <div class="aspect-video">
-                    <iframe
-                      [src]="embedUrl()"
-                      class="w-full h-full"
-                      frameborder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
-                  </div>
+                  @if (embedUrl(); as src) {
+                    <div class="aspect-video">
+                      <iframe
+                        [src]="src"
+                        class="w-full h-full"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                      ></iframe>
+                    </div>
+                  } @else {
+                    <div class="aspect-video flex items-center justify-center bg-card text-text-muted text-sm">
+                      Video no disponible
+                    </div>
+                  }
                 }
               }
             </div>
@@ -230,11 +236,15 @@ export class ExerciseLogging implements OnInit {
   /**
    * Sanitized iframe src for the current exercise's YouTube video.
    * Uses the shared `youtubeEmbedUrl` util to normalize short/watch/embed
-   * URL forms; falls back to empty string when no video is set.
+   * URL forms; returns null when the URL is missing or doesn't normalize,
+   * so the template can guard against an empty-src iframe (which would
+   * otherwise recursively render the host document).
    */
-  readonly embedUrl = computed<SafeResourceUrl>(() => {
-    const url = this.exercise()?.videoUrl ?? null;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(youtubeEmbedUrl(url) ?? '');
+  readonly embedUrl = computed<SafeResourceUrl | null>(() => {
+    const url = this.exercise()?.videoUrl;
+    if (!url) return null;
+    const normalized = youtubeEmbedUrl(url);
+    return normalized ? this.sanitizer.bypassSecurityTrustResourceUrl(normalized) : null;
   });
 
   /**

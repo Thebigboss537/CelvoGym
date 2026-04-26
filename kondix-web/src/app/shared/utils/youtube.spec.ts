@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import { youtubeEmbedUrl } from './youtube';
 
 describe('youtubeEmbedUrl', () => {
@@ -20,6 +19,11 @@ describe('youtubeEmbedUrl', () => {
   it('normalizes youtube.com/shorts/ links', () => {
     expect(youtubeEmbedUrl('https://www.youtube.com/shorts/abc123')).toBe(
       'https://www.youtube.com/embed/abc123?autoplay=1&rel=0',
+    );
+  });
+  it('normalizes watch URLs with leading query params', () => {
+    expect(youtubeEmbedUrl('https://www.youtube.com/watch?si=abcd&v=xyz789')).toBe(
+      'https://www.youtube.com/embed/xyz789?autoplay=1&rel=0',
     );
   });
   it('returns null for non-YouTube URLs', () => {
