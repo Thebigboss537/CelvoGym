@@ -197,7 +197,7 @@ export class WorkoutOverview implements OnInit, OnDestroy {
     if (!r || !nw) return [];
     const day = r.days.find(d => d.id === nw.dayId);
     if (!day) return [];
-    return day.groups.flatMap(g => g.exercises);
+    return day.blocks.flatMap(g => g.exercises);
   });
 
   exercisesWithState = computed<ExerciseWithState[]>(() => {

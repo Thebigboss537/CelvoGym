@@ -1,5 +1,6 @@
 using Kondix.Application.Common.Interfaces;
 using Kondix.Application.DTOs;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,9 +16,11 @@ public sealed class GetRoutineByIdHandler(IKondixDbContext db)
         var routine = await db.Routines
             .AsNoTracking()
             .Include(r => r.Days.OrderBy(d => d.SortOrder))
-                .ThenInclude(d => d.ExerciseGroups.OrderBy(g => g.SortOrder))
+                .ThenInclude(d => d.Blocks.OrderBy(g => g.SortOrder))
                     .ThenInclude(g => g.Exercises.OrderBy(e => e.SortOrder))
-                        .ThenInclude(e => e.Sets.OrderBy(s => s.SortOrder))
+                        .ThenInclude(e => e.CatalogExercise)
+            .Include(r => r.Days).ThenInclude(d => d.Blocks)
+                .ThenInclude(g => g.Exercises).ThenInclude(e => e.Sets.OrderBy(s => s.SortOrder))
             .FirstOrDefaultAsync(r => r.Id == request.RoutineId
                 && r.TrainerId == request.TrainerId
                 && r.IsActive, cancellationToken)
@@ -30,17 +33,19 @@ public sealed class GetRoutineByIdHandler(IKondixDbContext db)
             routine.Days.Select(d => new DayDto(
                 d.Id,
                 d.Name,
-                d.ExerciseGroups.Select(g => new ExerciseGroupDto(
+                d.Blocks.Select(g => new ExerciseBlockDto(
                     g.Id,
-                    g.GroupType,
+                    g.BlockType,
                     g.RestSeconds,
                     g.Exercises.Select(e => new ExerciseDto(
                         e.Id,
                         e.Name,
                         e.Notes,
-                        e.VideoSource,
-                        e.VideoUrl,
                         e.Tempo,
+                        e.CatalogExerciseId,
+                        e.CatalogExercise != null ? e.CatalogExercise.VideoSource : VideoSource.None,
+                        e.CatalogExercise?.VideoUrl,
+                        e.CatalogExercise?.ImageUrl,
                         e.Sets.Select(s => new ExerciseSetDto(
                             s.Id,
                             s.SetType,

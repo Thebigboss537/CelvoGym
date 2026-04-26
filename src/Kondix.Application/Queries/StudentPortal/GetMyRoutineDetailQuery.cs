@@ -27,9 +27,11 @@ public sealed class GetMyRoutineDetailHandler(IKondixDbContext db)
         var routine = await db.Routines
             .AsNoTracking()
             .Include(r => r.Days.OrderBy(d => d.SortOrder))
-                .ThenInclude(d => d.ExerciseGroups.OrderBy(g => g.SortOrder))
+                .ThenInclude(d => d.Blocks.OrderBy(g => g.SortOrder))
                     .ThenInclude(g => g.Exercises.OrderBy(e => e.SortOrder))
-                        .ThenInclude(e => e.Sets.OrderBy(s => s.SortOrder))
+                        .ThenInclude(e => e.CatalogExercise)
+            .Include(r => r.Days).ThenInclude(d => d.Blocks)
+                .ThenInclude(g => g.Exercises).ThenInclude(e => e.Sets.OrderBy(s => s.SortOrder))
             .FirstOrDefaultAsync(r => r.Id == request.RoutineId && r.IsActive, cancellationToken)
             ?? throw new InvalidOperationException("Routine not found");
 
@@ -49,7 +51,7 @@ public sealed class GetMyRoutineDetailHandler(IKondixDbContext db)
             var dayEffective = 0;
             var dayCompleted = 0;
 
-            foreach (var group in d.ExerciseGroups)
+            foreach (var group in d.Blocks)
             foreach (var exercise in group.Exercises)
             foreach (var set in exercise.Sets)
             {
@@ -78,10 +80,13 @@ public sealed class GetMyRoutineDetailHandler(IKondixDbContext db)
             return new StudentDayDto(
                 d.Id,
                 d.Name,
-                d.ExerciseGroups.Select(g => new ExerciseGroupDto(
-                    g.Id, g.GroupType, g.RestSeconds,
+                d.Blocks.Select(g => new ExerciseBlockDto(
+                    g.Id, g.BlockType, g.RestSeconds,
                     g.Exercises.Select(e => new ExerciseDto(
-                        e.Id, e.Name, e.Notes, e.VideoSource, e.VideoUrl, e.Tempo,
+                        e.Id, e.Name, e.Notes, e.Tempo, e.CatalogExerciseId,
+                        e.CatalogExercise != null ? e.CatalogExercise.VideoSource : VideoSource.None,
+                        e.CatalogExercise?.VideoUrl,
+                        e.CatalogExercise?.ImageUrl,
                         e.Sets.Select(s => new ExerciseSetDto(
                             s.Id, s.SetType, s.TargetReps, s.TargetWeight, s.TargetRpe, s.RestSeconds
                         )).ToList()

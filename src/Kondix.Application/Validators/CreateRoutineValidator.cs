@@ -15,18 +15,17 @@ public sealed class CreateRoutineValidator : AbstractValidator<CreateRoutineComm
         RuleForEach(x => x.Days).ChildRules(day =>
         {
             day.RuleFor(d => d.Name).NotEmpty().MaximumLength(200);
-            day.RuleFor(d => d.Groups).NotEmpty().WithMessage("At least one exercise group is required");
+            day.RuleFor(d => d.Blocks).NotEmpty().WithMessage("At least one exercise block is required");
 
-            day.RuleForEach(d => d.Groups).ChildRules(group =>
+            day.RuleForEach(d => d.Blocks).ChildRules(block =>
             {
-                group.RuleFor(g => g.RestSeconds).GreaterThanOrEqualTo(0);
-                group.RuleFor(g => g.Exercises).NotEmpty().WithMessage("At least one exercise is required");
+                block.RuleFor(b => b.RestSeconds).GreaterThanOrEqualTo(0);
+                block.RuleFor(b => b.Exercises).NotEmpty().WithMessage("At least one exercise is required");
 
-                group.RuleForEach(g => g.Exercises).ChildRules(exercise =>
+                block.RuleForEach(b => b.Exercises).ChildRules(exercise =>
                 {
                     exercise.RuleFor(e => e.Name).NotEmpty().MaximumLength(200);
                     exercise.RuleFor(e => e.Notes).MaximumLength(2000);
-                    exercise.RuleFor(e => e.VideoUrl).MaximumLength(500);
                     exercise.RuleFor(e => e.Tempo).MaximumLength(20);
                     exercise.RuleFor(e => e.Sets).NotEmpty().WithMessage("At least one set is required");
 

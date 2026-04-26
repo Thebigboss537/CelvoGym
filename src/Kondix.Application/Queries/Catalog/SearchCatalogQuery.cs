@@ -29,7 +29,7 @@ public sealed class SearchCatalogHandler(IKondixDbContext db)
             .OrderBy(ce => ce.Name)
             .Take(50)
             .Select(ce => new CatalogExerciseDto(ce.Id, ce.Name, ce.MuscleGroup,
-                ce.VideoSource, ce.VideoUrl, ce.Notes, ce.UpdatedAt))
+                ce.VideoSource, ce.VideoUrl, ce.ImageUrl, ce.Notes, ce.UpdatedAt))
             .ToListAsync(cancellationToken);
     }
 }

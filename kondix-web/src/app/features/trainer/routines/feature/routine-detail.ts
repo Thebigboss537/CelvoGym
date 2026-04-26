@@ -6,7 +6,7 @@ import { KxBadge } from '../../../../shared/ui/badge';
 import { KxSpinner } from '../../../../shared/ui/spinner';
 import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
-import { groupTypeLabel } from '../../../../shared/utils/labels';
+import { blockTypeLabel } from '../../../../shared/utils/labels';
 
 const SET_TYPE_ABBREV: Record<string, string> = {
   Warmup: 'W',
@@ -120,19 +120,19 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
               <!-- Day content (collapsible) -->
               @if (expandedDays().has(i)) {
                 <div class="border-t border-border divide-y divide-border-light" [attr.data-testid]="'routine-day-content-' + i">
-                  @for (group of day.groups; track group.id) {
+                  @for (block of day.blocks; track block.id) {
                     <div class="px-4 py-3">
-                      @if (group.groupType !== 'Single') {
+                      @if (block.blockType) {
                         <span class="text-overline text-primary mb-2 block">
-                          {{ groupTypeLabel(group.groupType) }} · {{ group.restSeconds }}s descanso
+                          {{ blockTypeLabel(block.blockType) }} · {{ block.restSeconds }}s entre rondas
                         </span>
                       }
-                      @for (exercise of group.exercises; track exercise.id) {
+                      @for (exercise of block.exercises; track exercise.id) {
                         <div class="py-2">
                           <div class="flex items-center gap-2">
                             <span class="text-text font-medium text-sm">{{ exercise.name }}</span>
-                            @if (group.groupType !== 'Single') {
-                              <kx-badge [text]="groupTypeLabel(group.groupType)" variant="info" />
+                            @if (block.blockType) {
+                              <kx-badge [text]="blockTypeLabel(block.blockType)" variant="info" />
                             }
                           </div>
                           <div class="flex items-center gap-2 mt-1">
@@ -143,8 +143,8 @@ function summarizeSets(sets: ExerciseSetDto[]): string {
                           </div>
                         </div>
                       }
-                      @if (group.groupType === 'Single' && group.restSeconds > 0) {
-                        <span class="text-xs text-text-muted block mt-1">{{ group.restSeconds }}s descanso</span>
+                      @if (!block.blockType && block.restSeconds > 0) {
+                        <span class="text-xs text-text-muted block mt-1">{{ block.restSeconds }}s descanso</span>
                       }
                     </div>
                   }
@@ -173,7 +173,7 @@ export class RoutineDetail implements OnInit {
   private router = inject(Router);
   private api = inject(ApiService);
   private toast = inject(ToastService);
-  groupTypeLabel = groupTypeLabel;
+  blockTypeLabel = blockTypeLabel;
   summarizeSets = summarizeSets;
 
   routine = signal<RoutineDetailDto | null>(null);
@@ -207,7 +207,7 @@ export class RoutineDetail implements OnInit {
   }
 
   exerciseCountLabel(day: RoutineDetailDto['days'][number]): string {
-    const count = day.groups.reduce((acc, g) => acc + g.exercises.length, 0);
+    const count = day.blocks.reduce((acc, g) => acc + g.exercises.length, 0);
     return `${count} ej.`;
   }
 

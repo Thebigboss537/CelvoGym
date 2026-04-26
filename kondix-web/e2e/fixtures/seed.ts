@@ -16,9 +16,20 @@ const KEY = process.env.E2E_INTERNAL_KEY ?? 'dev-internal-key-change-me';
 export function clearRateLimits(): void {
   const container = process.env.E2E_REDIS_CONTAINER ?? 'kondix-redis-1';
   const redisPass = process.env.E2E_REDIS_PASSWORD ?? 'dev';
+  // Clear both operator (trainer) and end-user (student) auth rate-limit keys.
+  // Specs that seed a student via invite-accept hit `/api/v1/enduser/register`
+  // (5/hour cap), so without this a second run quickly trips the limit.
+  const paths = [
+    '/api/v1/auth/register',
+    '/api/v1/auth/login',
+    '/api/v1/enduser/register',
+    '/api/v1/enduser/login',
+  ];
+  const ips = [':::1', ':::ffff:127.0.0.1'];
+  const keys = paths.flatMap(p => ips.map(ip => `rate:${p}:${ip}`)).join(' ');
   try {
     execSync(
-      `docker exec ${container} redis-cli -a ${redisPass} --no-auth-warning DEL rate:/api/v1/auth/register:::1 rate:/api/v1/auth/register:::ffff:127.0.0.1 rate:/api/v1/auth/login:::1 rate:/api/v1/auth/login:::ffff:127.0.0.1`,
+      `docker exec ${container} redis-cli -a ${redisPass} --no-auth-warning DEL ${keys}`,
       { stdio: 'pipe' },
     );
   } catch {

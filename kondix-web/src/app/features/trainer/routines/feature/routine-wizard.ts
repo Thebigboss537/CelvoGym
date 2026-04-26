@@ -2,10 +2,11 @@ import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { RoutineDetailDto, GroupType, SetType, VideoSource, RoutineUsageDto } from '../../../../shared/models';
+import { RoutineDetailDto, BlockType, SetType, RoutineUsageDto } from '../../../../shared/models';
 import { ToastService } from '../../../../shared/ui/toast';
 import { KxWizardStepper } from '../../../../shared/ui/wizard-stepper';
 import { KxSpinner } from '../../../../shared/ui/spinner';
+import { KxIconButton } from '../../../../shared/ui/icon-button';
 
 // ── Wizard data model ──
 
@@ -20,25 +21,27 @@ interface WizardSet {
 interface WizardExercise {
   name: string;
   notes: string;
-  videoSource: VideoSource;
-  videoUrl: string;
   tempo: string;
+  catalogExerciseId: string | null;
   sets: WizardSet[];
-  // UI-only state
-  videoInputMode: 'youtube' | 'upload';
-  uploading: boolean;
-  showVideo: boolean;
+  // Read-only preview from the linked catalog entry — not edited here, shown
+  // so the trainer can recognize the exercise at a glance while building.
+  // Trainer edits media on the catalog screen.
+  catalogImageUrl: string | null;
+  catalogVideoUrl: string | null;
 }
 
-interface WizardGroup {
-  groupType: GroupType;
+interface WizardBlock {
+  // null = implicit Individual (1 exercise in the block). Superset/Triset/
+  // Circuit are only set when a second exercise joins the block.
+  blockType: BlockType | null;
   restSeconds: number;
   exercises: WizardExercise[];
 }
 
 interface WizardDay {
   name: string;
-  groups: WizardGroup[];
+  blocks: WizardBlock[];
 }
 
 interface CatalogSuggestion {
@@ -46,7 +49,7 @@ interface CatalogSuggestion {
   name: string;
   muscleGroup: string | null;
   videoUrl: string | null;
-  videoSource: VideoSource | null;
+  imageUrl: string | null;
   notes: string | null;
 }
 
@@ -54,7 +57,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
 @Component({
   selector: 'app-routine-wizard',
-  imports: [FormsModule, KxWizardStepper, KxSpinner],
+  imports: [FormsModule, KxWizardStepper, KxSpinner, KxIconButton],
   template: `
     <div class="animate-fade-up max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
 
@@ -188,20 +191,22 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
                     <!-- Reorder -->
                     @if (days().length > 1) {
-                      <div class="flex flex-col gap-0.5">
+                      <div class="flex flex-col gap-1">
                         @if (di > 0) {
-                          <button type="button" (click)="moveDay(di, -1)" class="text-text-muted hover:text-primary text-xs transition" aria-label="Mover arriba">&#9650;</button>
+                          <kx-icon-button icon="arrow-up" ariaLabel="Subir día" size="sm"
+                            (clicked)="moveDay(di, -1)" />
                         }
                         @if (di < days().length - 1) {
-                          <button type="button" (click)="moveDay(di, 1)" class="text-text-muted hover:text-primary text-xs transition" aria-label="Mover abajo">&#9660;</button>
+                          <kx-icon-button icon="arrow-down" ariaLabel="Bajar día" size="sm"
+                            (clicked)="moveDay(di, 1)" />
                         }
                       </div>
                     }
 
                     <!-- Delete -->
-                    <button type="button" (click)="removeDay(di)"
+                    <kx-icon-button icon="x" ariaLabel="Eliminar día" variant="danger" size="sm"
                       [attr.data-testid]="'wizard-day-' + di + '-remove'"
-                      class="text-text-muted hover:text-danger text-lg px-1 transition" aria-label="Eliminar dia">&#10005;</button>
+                      (clicked)="removeDay(di)" />
                   </div>
                 }
               </div>
@@ -263,56 +268,67 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                 <div class="flex-1 min-w-0">
                   @if (currentDay(); as day) {
                     <div class="space-y-3">
-                      @for (group of day.groups; track $index; let gi = $index) {
+                      @for (block of day.blocks; track $index; let bi = $index) {
                         <div class="bg-card border border-border rounded-xl overflow-hidden">
-                          <!-- Group header -->
-                          <div class="flex flex-wrap items-center gap-2 px-4 py-2.5 bg-bg-raised border-b border-border-light">
-                            <select [ngModel]="group.groupType" (ngModelChange)="updateGroupType(gi, $event)" [name]="'gt-' + gi"
-                              class="bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-text"
-                              [attr.aria-label]="'Tipo de grupo'"
-                              [attr.data-testid]="'wizard-group-' + gi + '-type'">
-                              <option value="Single">Individual</option>
-                              <option value="Superset">Superset</option>
-                              <option value="Triset">Triset</option>
-                              <option value="Circuit">Circuito</option>
-                            </select>
-                            <div class="flex items-center gap-1.5">
-                              <input type="number" [ngModel]="group.restSeconds" (ngModelChange)="updateGroupRest(gi, $event)" [name]="'grest-' + gi"
-                                class="bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text w-16 text-center" placeholder="90"
-                                [attr.aria-label]="'Descanso del grupo'"
-                                [attr.data-testid]="'wizard-group-' + gi + '-rest'" />
-                              <span class="text-text-muted text-xs">seg</span>
+                          <!-- Block header — selector + inter-round rest only show
+                               when the block actually groups 2+ exercises. A single-
+                               exercise block is the implicit Individual and needs
+                               neither a type nor a group-level rest. -->
+                          @if (block.exercises.length > 1) {
+                            <div class="flex flex-wrap items-center gap-2 px-4 py-2.5 bg-bg-raised border-b border-border-light">
+                              <select [ngModel]="block.blockType" (ngModelChange)="updateBlockType(bi, $event)" [name]="'gt-' + bi"
+                                class="bg-card border border-border rounded-lg px-2.5 py-1.5 text-xs text-text"
+                                [attr.aria-label]="'Tipo de bloque'"
+                                [attr.data-testid]="'wizard-block-' + bi + '-type'">
+                                <option value="Superset">Superset</option>
+                                <option value="Triset">Triset</option>
+                                <option value="Circuit">Circuito</option>
+                              </select>
+                              <div class="flex items-center gap-1.5">
+                                <input type="number" [ngModel]="block.restSeconds" (ngModelChange)="updateBlockRest(bi, $event)" [name]="'grest-' + bi"
+                                  class="bg-card border border-border rounded-lg px-2 py-1.5 text-xs text-text w-16 text-center" placeholder="90"
+                                  [attr.aria-label]="'Descanso entre rondas'"
+                                  [attr.data-testid]="'wizard-block-' + bi + '-rest'" />
+                                <span class="text-text-muted text-xs">seg entre rondas</span>
+                              </div>
+                              <button type="button" (click)="removeBlock(bi)"
+                                class="text-text-muted hover:text-danger text-xs px-2 py-1 rounded transition ml-auto" aria-label="Eliminar bloque"
+                                [attr.data-testid]="'wizard-block-' + bi + '-remove'">&#10005;</button>
                             </div>
-                            <button type="button" (click)="removeGroup(gi)"
-                              class="text-text-muted hover:text-danger text-xs px-2 py-1 rounded transition ml-auto" aria-label="Eliminar grupo"
-                              [attr.data-testid]="'wizard-group-' + gi + '-remove'">&#10005;</button>
-                          </div>
+                          } @else {
+                            <div class="flex justify-end px-3 pt-2">
+                              <button type="button" (click)="removeBlock(bi)"
+                                class="text-text-muted hover:text-danger text-xs px-2 py-0.5 rounded transition"
+                                aria-label="Eliminar ejercicio"
+                                [attr.data-testid]="'wizard-block-' + bi + '-remove'">&#10005;</button>
+                            </div>
+                          }
 
-                          <!-- Exercises within group -->
+                          <!-- Exercises within block -->
                           <div class="p-3 space-y-2">
-                            @for (ex of group.exercises; track $index; let ei = $index) {
-                              @if (isExerciseExpanded(gi, ei)) {
+                            @for (ex of block.exercises; track $index; let ei = $index) {
+                              @if (isExerciseExpanded(bi, ei)) {
                                 <!-- Expanded exercise -->
                                 <div class="bg-bg-raised rounded-lg border border-border-light overflow-hidden expanded">
                                   <!-- Exercise header -->
-                                  <div class="flex items-center gap-2 px-3 py-2.5 cursor-pointer" (click)="toggleExercise(gi, ei)">
+                                  <div class="flex items-center gap-2 px-3 py-2.5 cursor-pointer" (click)="toggleExercise(bi, ei)">
                                     <span class="w-6 h-6 rounded bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                                       {{ ei + 1 }}
                                     </span>
                                     <div class="flex-1 relative" (click)="$event.stopPropagation()">
-                                      <input type="text" [ngModel]="ex.name" (ngModelChange)="updateExerciseName(gi, ei, $event)"
-                                        (input)="searchCatalog(gi, ei)"
-                                        (focus)="searchCatalog(gi, ei)"
+                                      <input type="text" [ngModel]="ex.name" (ngModelChange)="updateExerciseName(bi, ei, $event)"
+                                        (input)="searchCatalog(bi, ei)"
+                                        (focus)="searchCatalog(bi, ei)"
                                         (blur)="hideSuggestionsDelayed()"
-                                        [name]="'ex-' + gi + '-' + ei"
+                                        [name]="'ex-' + bi + '-' + ei"
                                         autocomplete="off"
-                                        [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-name'"
+                                        [attr.data-testid]="'wizard-exercise-' + bi + '-' + ei + '-name'"
                                         class="w-full bg-transparent text-sm font-medium text-text focus:outline-none border-b border-border-light focus:border-primary pb-0.5"
                                         placeholder="Nombre del ejercicio" />
-                                      @if (catalogSuggestions().length > 0 && activeGroupIndex === gi && activeExerciseIndex === ei) {
+                                      @if (catalogSuggestions().length > 0 && activeGroupIndex === bi && activeExerciseIndex === ei) {
                                         <div class="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
                                           @for (s of catalogSuggestions(); track s.id) {
-                                            <button type="button" (mousedown)="selectCatalogExercise(gi, ei, s)"
+                                            <button type="button" (mousedown)="selectCatalogExercise(bi, ei, s)"
                                               class="w-full px-3 py-2 text-left text-sm hover:bg-card-hover transition flex items-center justify-between">
                                               <span class="text-text">{{ s.name }}</span>
                                               @if (s.muscleGroup) {
@@ -323,58 +339,41 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                         </div>
                                       }
                                     </div>
-                                    <button type="button" (click)="$event.stopPropagation(); toggleVideo(gi, ei)"
-                                      class="text-xs px-2 py-1 rounded transition"
-                                      [class.text-primary]="ex.showVideo || ex.videoUrl"
-                                      [class.text-text-muted]="!ex.showVideo && !ex.videoUrl">Video</button>
-                                    <button type="button" (click)="$event.stopPropagation(); removeExercise(gi, ei)"
+                                    @if (!ex.catalogExerciseId && ex.name.trim().length > 1) {
+                                      <span class="text-[10px] font-semibold text-warning bg-warning/10 border border-warning/30 px-1.5 py-0.5 rounded uppercase tracking-wide"
+                                        title="Este ejercicio no está en el catálogo. Al guardar la rutina se agregará automáticamente."
+                                        data-testid="wizard-exercise-new-badge">nuevo</span>
+                                    }
+                                    <button type="button" (click)="$event.stopPropagation(); removeExercise(bi, ei)"
                                       class="text-text-muted hover:text-danger text-xs px-1.5 py-1 rounded transition" aria-label="Eliminar ejercicio"
-                                      [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-remove'">&#10005;</button>
+                                      [attr.data-testid]="'wizard-exercise-' + bi + '-' + ei + '-remove'">&#10005;</button>
                                     <span class="text-text-muted text-xs cursor-pointer">&#9650;</span>
                                   </div>
 
-                                  <!-- Video section -->
-                                  @if (ex.showVideo) {
-                                    <div class="mx-3 mb-2 bg-card rounded-lg p-2.5 space-y-2">
-                                      <div class="flex gap-1">
-                                        <button type="button" (click)="setVideoMode(gi, ei, 'youtube')"
-                                          class="px-2.5 py-1 text-xs rounded-lg transition"
-                                          [class.bg-primary]="ex.videoInputMode === 'youtube'"
-                                          [class.text-white]="ex.videoInputMode === 'youtube'"
-                                          [class.bg-card-hover]="ex.videoInputMode !== 'youtube'"
-                                          [class.text-text-muted]="ex.videoInputMode !== 'youtube'">YouTube</button>
-                                        <button type="button" (click)="setVideoMode(gi, ei, 'upload')"
-                                          class="px-2.5 py-1 text-xs rounded-lg transition"
-                                          [class.bg-primary]="ex.videoInputMode === 'upload'"
-                                          [class.text-white]="ex.videoInputMode === 'upload'"
-                                          [class.bg-card-hover]="ex.videoInputMode !== 'upload'"
-                                          [class.text-text-muted]="ex.videoInputMode !== 'upload'">Subir</button>
-                                      </div>
-                                      @if (ex.videoInputMode === 'youtube') {
-                                        <input type="url" [ngModel]="ex.videoUrl" (ngModelChange)="onVideoUrlChange(gi, ei, $event)"
-                                          [name]="'vid-' + gi + '-' + ei"
-                                          class="w-full bg-bg-raised border border-border-light rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-primary"
-                                          placeholder="URL de YouTube" />
-                                      } @else {
-                                        @if (ex.uploading) {
-                                          <p class="text-xs text-primary py-1">Subiendo video...</p>
-                                        } @else {
-                                          <input type="file" accept="video/mp4,video/webm,video/quicktime"
-                                            (change)="onVideoUpload(gi, ei, $event)"
-                                            class="w-full text-xs text-text-muted file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-primary file:text-white file:cursor-pointer" />
-                                        }
+                                  <!-- Catalog media preview (read-only) -->
+                                  @if (ex.catalogImageUrl || ex.catalogVideoUrl) {
+                                    <div class="mx-3 mb-2 flex items-center gap-2 text-xs text-text-muted">
+                                      @if (ex.catalogImageUrl) {
+                                        <img [src]="ex.catalogImageUrl" [alt]="ex.name"
+                                          class="w-10 h-10 rounded object-cover border border-border-light" />
                                       }
-                                      @if (ex.videoUrl) {
-                                        <p class="text-xs text-success truncate">{{ ex.videoSource === 'Upload' ? 'Video subido' : 'Video agregado' }}</p>
+                                      @if (ex.catalogVideoUrl) {
+                                        <span class="flex items-center gap-1 text-text-muted">
+                                          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7L8 5z"/>
+                                          </svg>
+                                          video
+                                        </span>
                                       }
+                                      <span class="text-text-subtle">· editable en catálogo</span>
                                     </div>
                                   }
 
                                   <!-- Notes -->
                                   <div class="mx-3 mb-2">
-                                    <input type="text" [ngModel]="ex.notes" (ngModelChange)="updateExerciseNotes(gi, ei, $event)"
-                                      [name]="'notes-' + gi + '-' + ei"
-                                      [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-notes'"
+                                    <input type="text" [ngModel]="ex.notes" (ngModelChange)="updateExerciseNotes(bi, ei, $event)"
+                                      [name]="'notes-' + bi + '-' + ei"
+                                      [attr.data-testid]="'wizard-exercise-' + bi + '-' + ei + '-notes'"
                                       class="w-full bg-card border border-border-light rounded-lg px-3 py-1.5 text-xs text-text focus:outline-none focus:border-primary"
                                       placeholder="Notas del ejercicio (opcional)" />
                                   </div>
@@ -395,54 +394,56 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                     @for (set of ex.sets; track $index; let si = $index) {
                                       <div class="flex items-center gap-2 text-sm">
                                         <span class="w-8 text-center text-text-muted text-xs font-medium">{{ si + 1 }}</span>
-                                        <select [ngModel]="set.setType" (ngModelChange)="updateSetType(gi, ei, si, $event)"
-                                          [name]="'st-' + gi + '-' + ei + '-' + si"
+                                        <select [ngModel]="set.setType" (ngModelChange)="updateSetType(bi, ei, si, $event)"
+                                          [name]="'st-' + bi + '-' + ei + '-' + si"
                                           class="w-24 bg-bg-raised border border-border-light rounded-lg px-1.5 py-1.5 text-xs text-text select-styled"
                                           [attr.aria-label]="'Tipo de serie'"
-                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-type'">
+                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-type'">
                                           <option value="Warmup">Calentam.</option>
                                           <option value="Effective">Efectiva</option>
                                           <option value="DropSet">Drop set</option>
                                           <option value="RestPause">Rest-pause</option>
                                           <option value="AMRAP">AMRAP</option>
                                         </select>
-                                        <input type="text" [ngModel]="set.targetReps" (ngModelChange)="updateSetField(gi, ei, si, 'targetReps', $event)"
-                                          [name]="'reps-' + gi + '-' + ei + '-' + si"
+                                        <input type="text" [ngModel]="set.targetReps" (ngModelChange)="updateSetField(bi, ei, si, 'targetReps', $event)"
+                                          [name]="'reps-' + bi + '-' + ei + '-' + si"
                                           class="w-14 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="Reps"
                                           [attr.aria-label]="'Repeticiones'"
-                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-reps'" />
-                                        <input type="text" [ngModel]="set.targetWeight" (ngModelChange)="updateSetField(gi, ei, si, 'targetWeight', $event)"
-                                          [name]="'wt-' + gi + '-' + ei + '-' + si"
+                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-reps'" />
+                                        <input type="text" [ngModel]="set.targetWeight" (ngModelChange)="updateSetField(bi, ei, si, 'targetWeight', $event)"
+                                          [name]="'wt-' + bi + '-' + ei + '-' + si"
                                           class="w-14 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="kg"
                                           [attr.aria-label]="'Peso'"
-                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-weight'" />
-                                        <input type="number" [ngModel]="set.targetRpe" (ngModelChange)="updateSetRpe(gi, ei, si, $event)"
-                                          [name]="'rpe-' + gi + '-' + ei + '-' + si"
+                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-weight'" />
+                                        <input type="number" [ngModel]="set.targetRpe" (ngModelChange)="updateSetRpe(bi, ei, si, $event)"
+                                          [name]="'rpe-' + bi + '-' + ei + '-' + si"
                                           class="w-14 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="RPE"
                                           min="1" max="10" [attr.aria-label]="'RPE'"
-                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-rpe'" />
-                                        <input type="number" [ngModel]="set.restSeconds" (ngModelChange)="updateSetRest(gi, ei, si, $event)"
-                                          [name]="'srest-' + gi + '-' + ei + '-' + si"
+                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-rpe'" />
+                                        <input type="number" [ngModel]="set.restSeconds" (ngModelChange)="updateSetRest(bi, ei, si, $event)"
+                                          [name]="'srest-' + bi + '-' + ei + '-' + si"
                                           class="w-16 bg-bg-raised border border-border-light rounded-lg px-2 py-1.5 text-xs text-text text-center" placeholder="seg"
                                           [attr.aria-label]="'Descanso'"
-                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-rest'" />
-                                        <button type="button" (click)="removeSet(gi, ei, si)"
-                                          class="w-6 text-text-muted hover:text-danger text-xs transition" aria-label="Eliminar serie"
-                                          [attr.data-testid]="'wizard-set-' + gi + '-' + ei + '-' + si + '-remove'">&#10005;</button>
+                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-rest'" />
+                                        <kx-icon-button icon="x" ariaLabel="Eliminar serie" variant="danger" size="sm"
+                                          [attr.data-testid]="'wizard-set-' + bi + '-' + ei + '-' + si + '-remove'"
+                                          (clicked)="removeSet(bi, ei, si)" />
                                       </div>
                                     }
 
-                                    <button type="button" (click)="addSet(gi, ei)"
-                                      [attr.data-testid]="'wizard-set-add-' + gi + '-' + ei"
-                                      class="text-primary text-xs hover:underline mt-1">+ Agregar serie</button>
+                                    <div class="mt-1">
+                                      <kx-icon-button icon="plus" ariaLabel="Agregar serie" label="Serie" size="sm"
+                                        [attr.data-testid]="'wizard-set-add-' + bi + '-' + ei"
+                                        (clicked)="addSet(bi, ei)" />
+                                    </div>
                                   </div>
                                 </div>
 
                               } @else {
                                 <!-- Collapsed exercise -->
                                 <div class="flex items-center gap-2 px-3 py-2.5 bg-bg-raised rounded-lg cursor-pointer hover:bg-card-hover transition"
-                                  (click)="toggleExercise(gi, ei)"
-                                  [attr.data-testid]="'wizard-exercise-' + gi + '-' + ei + '-toggle'">
+                                  (click)="toggleExercise(bi, ei)"
+                                  [attr.data-testid]="'wizard-exercise-' + bi + '-' + ei + '-toggle'">
                                   <span class="w-6 h-6 rounded bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                                     {{ ei + 1 }}
                                   </span>
@@ -453,19 +454,33 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                               }
                             }
 
-                            <!-- Add exercise -->
-                            <button type="button" (click)="addExercise(gi)"
-                              [attr.data-testid]="'wizard-exercise-add-' + gi"
-                              class="text-primary text-xs hover:underline">+ Agregar ejercicio</button>
+                            <!-- Add exercise into this block — labels the outcome, not the
+                                 internal concept: a single-exercise block invites grouping
+                                 into a Superset (trainer can switch to Triset/Circuito from
+                                 the selector that appears). A multi-exercise block already
+                                 has a type, so we just offer to extend it. -->
+                            <div>
+                              @if (block.exercises.length === 1) {
+                                <kx-icon-button icon="link-2" ariaLabel="Convertir en superset"
+                                  label="Hacer superset" size="sm" variant="primary"
+                                  [attr.data-testid]="'wizard-exercise-add-' + bi"
+                                  (clicked)="addExercise(bi)" />
+                              } @else {
+                                <kx-icon-button icon="plus" ariaLabel="Agregar ejercicio al bloque"
+                                  label="Otro ejercicio" size="sm"
+                                  [attr.data-testid]="'wizard-exercise-add-' + bi"
+                                  (clicked)="addExercise(bi)" />
+                              }
+                            </div>
                           </div>
                         </div>
                       }
 
-                      <!-- Add group -->
-                      <button type="button" (click)="addGroup()"
-                        data-testid="wizard-group-add"
+                      <!-- Add new standalone block (individual exercise by default) -->
+                      <button type="button" (click)="addBlock()"
+                        data-testid="wizard-block-add"
                         class="w-full border border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-xl py-2.5 text-sm transition">
-                        + Agregar grupo de ejercicios
+                        + Nuevo ejercicio
                       </button>
                     </div>
                   }
@@ -538,11 +553,11 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                     </div>
 
                     <div class="p-4 space-y-2">
-                      @for (group of day.groups; track $index) {
-                        @if (group.groupType !== 'Single') {
-                          <div class="text-xs text-text-muted mb-1">{{ group.groupType }} &middot; {{ group.restSeconds }}s descanso</div>
+                      @for (block of day.blocks; track $index) {
+                        @if (block.blockType) {
+                          <div class="text-xs text-text-muted mb-1">{{ block.blockType }} &middot; {{ block.restSeconds }}s entre rondas</div>
                         }
-                        @for (ex of group.exercises; track $index) {
+                        @for (ex of block.exercises; track $index) {
                           <div class="flex items-center gap-2 text-sm">
                             <span class="text-text">{{ ex.name || 'Sin nombre' }}</span>
                             <span class="text-text-muted text-xs ml-auto">{{ summarizeSets(ex) }}</span>
@@ -597,7 +612,7 @@ export class RoutineWizard implements OnInit, OnDestroy {
 
   // ── UI state ──
   selectedDayIndex = signal(0);
-  expandedExercise = signal<{ gi: number; ei: number } | null>(null);
+  expandedExercise = signal<{ bi: number; ei: number } | null>(null);
   saving = signal(false);
   loading = signal(false);
   isEdit = signal(false);
@@ -712,216 +727,175 @@ export class RoutineWizard implements OnInit, OnDestroy {
 
   // ── Group management (operates on selectedDayIndex) ──
 
-  addGroup() {
+  addBlock() {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups.push(this.newGroup());
+      d[di].blocks.push(this.newBlock());
       return [...d];
     });
   }
 
-  removeGroup(gi: number) {
+  removeBlock(bi: number) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups.splice(gi, 1);
+      d[di].blocks.splice(bi, 1);
       return [...d];
     });
   }
 
-  updateGroupType(gi: number, groupType: GroupType) {
+  updateBlockType(bi: number, blockType: BlockType) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].groupType = groupType;
+      d[di].blocks[bi].blockType = blockType;
       return [...d];
     });
   }
 
-  updateGroupRest(gi: number, restSeconds: number) {
+  updateBlockRest(bi: number, restSeconds: number) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].restSeconds = restSeconds;
+      d[di].blocks[bi].restSeconds = restSeconds;
       return [...d];
     });
   }
 
   // ── Exercise management ──
 
-  addExercise(gi: number) {
+  addExercise(bi: number) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises.push(this.newExercise());
+      const block = d[di].blocks[bi];
+      block.exercises.push(this.newExercise());
+      // First grouping: reaching 2 exercises flips the implicit Individual
+      // into an explicit Superset. Trainer can change to Triset/Circuit
+      // afterwards from the selector that's now visible.
+      if (block.exercises.length === 2 && block.blockType === null) {
+        block.blockType = 'Superset';
+      }
       return [...d];
     });
     // Expand the newly added exercise
-    const newEi = this.days()[di].groups[gi].exercises.length - 1;
-    this.expandedExercise.set({ gi, ei: newEi });
+    const newEi = this.days()[di].blocks[bi].exercises.length - 1;
+    this.expandedExercise.set({ bi, ei: newEi });
   }
 
-  removeExercise(gi: number, ei: number) {
+
+  removeExercise(bi: number, ei: number) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises.splice(ei, 1);
+      const block = d[di].blocks[bi];
+      block.exercises.splice(ei, 1);
+      // Back to 1 exercise — collapse to implicit Individual so the selector
+      // and inter-round rest stop being visible. The block itself stays,
+      // removing the whole block is a separate action (X in header).
+      if (block.exercises.length === 1) {
+        block.blockType = null;
+      }
       return [...d];
     });
     // Clear expanded if it was this one
     const exp = this.expandedExercise();
-    if (exp && exp.gi === gi && exp.ei === ei) {
+    if (exp && exp.bi === bi && exp.ei === ei) {
       this.expandedExercise.set(null);
     }
   }
 
-  updateExerciseName(gi: number, ei: number, name: string) {
+  updateExerciseName(bi: number, ei: number, name: string) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].name = name;
+      const ex = d[di].blocks[bi].exercises[ei];
+      ex.name = name;
+      // Free-text edits break the catalog link — drop it so stale media doesn't
+      // reach the student. selectCatalogExercise re-links and restores preview.
+      // Phase 3 auto-cataloging will upsert on save if the name is still new.
+      ex.catalogExerciseId = null;
+      ex.catalogImageUrl = null;
+      ex.catalogVideoUrl = null;
       return [...d];
     });
   }
 
-  updateExerciseNotes(gi: number, ei: number, notes: string) {
+  updateExerciseNotes(bi: number, ei: number, notes: string) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].notes = notes;
+      d[di].blocks[bi].exercises[ei].notes = notes;
       return [...d];
     });
   }
 
-  toggleExercise(gi: number, ei: number) {
+  toggleExercise(bi: number, ei: number) {
     const exp = this.expandedExercise();
-    if (exp && exp.gi === gi && exp.ei === ei) {
+    if (exp && exp.bi === bi && exp.ei === ei) {
       this.expandedExercise.set(null);
     } else {
-      this.expandedExercise.set({ gi, ei });
+      this.expandedExercise.set({ bi, ei });
     }
   }
 
-  isExerciseExpanded(gi: number, ei: number): boolean {
+  isExerciseExpanded(bi: number, ei: number): boolean {
     const exp = this.expandedExercise();
-    return !!exp && exp.gi === gi && exp.ei === ei;
-  }
-
-  // ── Video management ──
-
-  toggleVideo(gi: number, ei: number) {
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      d[di].groups[gi].exercises[ei].showVideo = !d[di].groups[gi].exercises[ei].showVideo;
-      return [...d];
-    });
-  }
-
-  setVideoMode(gi: number, ei: number, mode: 'youtube' | 'upload') {
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      d[di].groups[gi].exercises[ei].videoInputMode = mode;
-      return [...d];
-    });
-  }
-
-  onVideoUrlChange(gi: number, ei: number, url: string) {
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      const ex = d[di].groups[gi].exercises[ei];
-      ex.videoUrl = url;
-      ex.videoSource = url ? 'YouTube' : 'None';
-      return [...d];
-    });
-  }
-
-  onVideoUpload(gi: number, ei: number, event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-    const maxSize = 100 * 1024 * 1024;
-    if (file.size > maxSize) {
-      this.toast.show('El video no puede superar 100MB', 'error');
-      return;
-    }
-    const di = this.selectedDayIndex();
-    this.days.update(d => {
-      d[di].groups[gi].exercises[ei].uploading = true;
-      return [...d];
-    });
-    const formData = new FormData();
-    formData.append('file', file);
-    this.api.upload<{ url: string; key: string }>('/videos/upload', formData).subscribe({
-      next: (res) => {
-        this.days.update(d => {
-          const ex = d[di].groups[gi].exercises[ei];
-          ex.videoUrl = res.url;
-          ex.videoSource = 'Upload';
-          ex.uploading = false;
-          return [...d];
-        });
-      },
-      error: () => {
-        this.days.update(d => {
-          d[di].groups[gi].exercises[ei].uploading = false;
-          return [...d];
-        });
-        this.toast.show('Error al subir video', 'error');
-      },
-    });
+    return !!exp && exp.bi === bi && exp.ei === ei;
   }
 
   // ── Set management ──
 
-  addSet(gi: number, ei: number) {
+  addSet(bi: number, ei: number) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].sets.push(this.newSet());
+      d[di].blocks[bi].exercises[ei].sets.push(this.newSet());
       return [...d];
     });
   }
 
-  removeSet(gi: number, ei: number, si: number) {
+  removeSet(bi: number, ei: number, si: number) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].sets.splice(si, 1);
+      d[di].blocks[bi].exercises[ei].sets.splice(si, 1);
       return [...d];
     });
   }
 
-  updateSetType(gi: number, ei: number, si: number, setType: SetType) {
+  updateSetType(bi: number, ei: number, si: number, setType: SetType) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].sets[si].setType = setType;
+      d[di].blocks[bi].exercises[ei].sets[si].setType = setType;
       return [...d];
     });
   }
 
-  updateSetField(gi: number, ei: number, si: number, field: 'targetReps' | 'targetWeight', value: string) {
+  updateSetField(bi: number, ei: number, si: number, field: 'targetReps' | 'targetWeight', value: string) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].sets[si][field] = value;
+      d[di].blocks[bi].exercises[ei].sets[si][field] = value;
       return [...d];
     });
   }
 
-  updateSetRpe(gi: number, ei: number, si: number, value: number | null) {
+  updateSetRpe(bi: number, ei: number, si: number, value: number | null) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].sets[si].targetRpe = value;
+      d[di].blocks[bi].exercises[ei].sets[si].targetRpe = value;
       return [...d];
     });
   }
 
-  updateSetRest(gi: number, ei: number, si: number, value: number | null) {
+  updateSetRest(bi: number, ei: number, si: number, value: number | null) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      d[di].groups[gi].exercises[ei].sets[si].restSeconds = value;
+      d[di].blocks[bi].exercises[ei].sets[si].restSeconds = value;
       return [...d];
     });
   }
 
   // ── Catalog autocomplete ──
 
-  searchCatalog(gi: number, ei: number) {
-    this.activeGroupIndex = gi;
+  searchCatalog(bi: number, ei: number) {
+    this.activeGroupIndex = bi;
     this.activeExerciseIndex = ei;
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       const di = this.selectedDayIndex();
-      const q = this.days()[di].groups[gi].exercises[ei].name.trim();
+      const q = this.days()[di].blocks[bi].exercises[ei].name.trim();
       if (q.length < 2) {
         this.catalogSuggestions.set([]);
         return;
@@ -933,16 +907,14 @@ export class RoutineWizard implements OnInit, OnDestroy {
     }, 300);
   }
 
-  selectCatalogExercise(gi: number, ei: number, catalog: CatalogSuggestion) {
+  selectCatalogExercise(bi: number, ei: number, catalog: CatalogSuggestion) {
     const di = this.selectedDayIndex();
     this.days.update(d => {
-      const ex = d[di].groups[gi].exercises[ei];
+      const ex = d[di].blocks[bi].exercises[ei];
       ex.name = catalog.name;
-      if (catalog.videoUrl) {
-        ex.videoUrl = catalog.videoUrl;
-        ex.videoSource = catalog.videoSource ?? 'None';
-        ex.showVideo = catalog.videoSource !== 'None';
-      }
+      ex.catalogExerciseId = catalog.id;
+      ex.catalogImageUrl = catalog.imageUrl;
+      ex.catalogVideoUrl = catalog.videoUrl;
       if (catalog.notes) ex.notes = catalog.notes;
       return [...d];
     });
@@ -968,7 +940,7 @@ export class RoutineWizard implements OnInit, OnDestroy {
   }
 
   countExercisesInDay(day: WizardDay): number {
-    return day.groups.reduce((sum, g) => sum + g.exercises.length, 0);
+    return day.blocks.reduce((sum, g) => sum + g.exercises.length, 0);
   }
 
   summarizeSets(ex: WizardExercise): string {
@@ -1001,15 +973,16 @@ export class RoutineWizard implements OnInit, OnDestroy {
         this.days.set(
           r.days.map((d) => ({
             name: d.name,
-            groups: d.groups.map((g) => ({
-              groupType: g.groupType,
+            blocks: d.blocks.map((g) => ({
+              blockType: g.blockType,
               restSeconds: g.restSeconds,
               exercises: g.exercises.map((e) => ({
                 name: e.name,
                 notes: e.notes ?? '',
-                videoSource: e.videoSource,
-                videoUrl: e.videoUrl ?? '',
                 tempo: e.tempo ?? '',
+                catalogExerciseId: e.catalogExerciseId ?? null,
+                catalogImageUrl: e.imageUrl ?? null,
+                catalogVideoUrl: e.videoUrl ?? null,
                 sets: e.sets.map((s) => ({
                   setType: s.setType,
                   targetReps: s.targetReps ?? '',
@@ -1017,9 +990,6 @@ export class RoutineWizard implements OnInit, OnDestroy {
                   targetRpe: s.targetRpe,
                   restSeconds: s.restSeconds,
                 })),
-                videoInputMode: (e.videoSource === 'Upload' ? 'upload' : 'youtube') as 'youtube' | 'upload',
-                uploading: false,
-                showVideo: e.videoSource !== 'None',
               })),
             })),
           }))
@@ -1050,15 +1020,14 @@ export class RoutineWizard implements OnInit, OnDestroy {
       category: this.category || null,
       days: this.days().map((d) => ({
         name: d.name,
-        groups: d.groups.map((g) => ({
-          groupType: g.groupType,
+        blocks: d.blocks.map((g) => ({
+          blockType: g.blockType,
           restSeconds: g.restSeconds,
           exercises: g.exercises.map((e) => ({
             name: e.name,
             notes: e.notes || null,
-            videoSource: e.videoSource,
-            videoUrl: e.videoUrl || null,
             tempo: e.tempo || null,
+            catalogExerciseId: e.catalogExerciseId,
             sets: e.sets.map((s) => ({
               setType: s.setType,
               targetReps: s.targetReps || null,
@@ -1090,24 +1059,24 @@ export class RoutineWizard implements OnInit, OnDestroy {
   // ── Factory helpers ──
 
   private newDay(): WizardDay {
-    return { name: '', groups: [this.newGroup()] };
+    return { name: '', blocks: [this.newBlock()] };
   }
 
-  private newGroup(): WizardGroup {
-    return { groupType: 'Single', restSeconds: 90, exercises: [this.newExercise()] };
+  private newBlock(): WizardBlock {
+    // blockType stays null for a fresh block — it only gets an explicit
+    // Superset/Triset/Circuit once the trainer adds a second exercise.
+    return { blockType: null, restSeconds: 90, exercises: [this.newExercise()] };
   }
 
   private newExercise(): WizardExercise {
     return {
       name: '',
       notes: '',
-      videoSource: 'None',
-      videoUrl: '',
       tempo: '',
+      catalogExerciseId: null,
+      catalogImageUrl: null,
+      catalogVideoUrl: null,
       sets: [this.newSet()],
-      videoInputMode: 'youtube',
-      uploading: false,
-      showVideo: false,
     };
   }
 

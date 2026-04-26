@@ -54,16 +54,18 @@ export interface RoutineDetailDto {
 export interface DayDto {
   id: string;
   name: string;
-  groups: ExerciseGroupDto[];
+  blocks: ExerciseBlockDto[];
 }
 
-export type GroupType = 'Single' | 'Superset' | 'Triset' | 'Circuit';
+// null blockType = implicit Individual (single-exercise block); explicit
+// values only appear when the block actually groups 2+ exercises.
+export type BlockType = 'Superset' | 'Triset' | 'Circuit';
 export type SetType = 'Warmup' | 'Effective' | 'DropSet' | 'RestPause' | 'AMRAP';
 export type VideoSource = 'None' | 'YouTube' | 'Upload';
 
-export interface ExerciseGroupDto {
+export interface ExerciseBlockDto {
   id: string;
-  groupType: GroupType;
+  blockType: BlockType | null;
   restSeconds: number;
   exercises: ExerciseDto[];
 }
@@ -72,9 +74,13 @@ export interface ExerciseDto {
   id: string;
   name: string;
   notes: string | null;
+  tempo: string | null;
+  catalogExerciseId: string | null;
+  // Read-only media projected from the linked catalog entry on GET.
+  // Write paths (create/update) return nulls here.
   videoSource: VideoSource;
   videoUrl: string | null;
-  tempo: string | null;
+  imageUrl: string | null;
   sets: ExerciseSetDto[];
 }
 
@@ -167,7 +173,7 @@ export interface StudentRoutineDetailDto {
 export interface StudentDayDto {
   id: string;
   name: string;
-  groups: ExerciseGroupDto[];
+  blocks: ExerciseBlockDto[];
   setLogs: SetLogDto[];
   progress: ProgressSummaryDto;
 }

@@ -10,6 +10,7 @@ public class CatalogExercise : BaseEntity
     public string? MuscleGroup { get; set; }
     public VideoSource VideoSource { get; set; } = VideoSource.None;
     public string? VideoUrl { get; set; }
+    public string? ImageUrl { get; set; }
     public string? Notes { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset UpdatedAt { get; set; }

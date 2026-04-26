@@ -20,7 +20,7 @@ public sealed class GetMyProgramHandler(IKondixDbContext db)
                 .ThenInclude(p => p.ProgramRoutines.OrderBy(pr => pr.SortOrder))
                     .ThenInclude(pr => pr.Routine)
                         .ThenInclude(r => r.Days)
-                            .ThenInclude(d => d.ExerciseGroups)
+                            .ThenInclude(d => d.Blocks)
                                 .ThenInclude(g => g.Exercises)
                                     .ThenInclude(e => e.Sets)
             .Where(pa => pa.StudentId == request.StudentId
@@ -45,7 +45,7 @@ public sealed class GetMyProgramHandler(IKondixDbContext db)
         {
             var routine = pr.Routine;
             var allSets = routine.Days
-                .SelectMany(d => d.ExerciseGroups)
+                .SelectMany(d => d.Blocks)
                 .SelectMany(g => g.Exercises)
                 .SelectMany(e => e.Sets)
                 .ToList();

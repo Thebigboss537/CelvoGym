@@ -8,5 +8,6 @@ public sealed record CatalogExerciseDto(
     string? MuscleGroup,
     VideoSource VideoSource,
     string? VideoUrl,
+    string? ImageUrl,
     string? Notes,
     DateTimeOffset UpdatedAt);

@@ -12,7 +12,7 @@ public interface IKondixDbContext
     DbSet<StudentInvitation> StudentInvitations { get; }
     DbSet<Routine> Routines { get; }
     DbSet<Day> Days { get; }
-    DbSet<ExerciseGroup> ExerciseGroups { get; }
+    DbSet<ExerciseBlock> ExerciseBlocks { get; }
     DbSet<Exercise> Exercises { get; }
     DbSet<ExerciseSet> ExerciseSets { get; }
     DbSet<Program> Programs { get; }

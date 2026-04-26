@@ -13,6 +13,7 @@ public sealed record UpdateCatalogExerciseCommand(
     string? MuscleGroup,
     VideoSource VideoSource,
     string? VideoUrl,
+    string? ImageUrl,
     string? Notes) : IRequest<CatalogExerciseDto>;
 
 public sealed class UpdateCatalogExerciseHandler(IKondixDbContext db)
@@ -30,12 +31,13 @@ public sealed class UpdateCatalogExerciseHandler(IKondixDbContext db)
         exercise.MuscleGroup = request.MuscleGroup;
         exercise.VideoSource = request.VideoSource;
         exercise.VideoUrl = request.VideoUrl;
+        exercise.ImageUrl = request.ImageUrl;
         exercise.Notes = request.Notes;
         exercise.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);
 
         return new CatalogExerciseDto(exercise.Id, exercise.Name, exercise.MuscleGroup,
-            exercise.VideoSource, exercise.VideoUrl, exercise.Notes, exercise.UpdatedAt);
+            exercise.VideoSource, exercise.VideoUrl, exercise.ImageUrl, exercise.Notes, exercise.UpdatedAt);
     }
 }

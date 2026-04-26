@@ -16,19 +16,18 @@ public sealed record CreateRoutineCommand(
 
 public sealed record CreateDayInput(
     string Name,
-    List<CreateExerciseGroupInput> Groups);
+    List<CreateExerciseBlockInput> Blocks);
 
-public sealed record CreateExerciseGroupInput(
-    GroupType GroupType,
+public sealed record CreateExerciseBlockInput(
+    BlockType? BlockType,
     int RestSeconds,
     List<CreateExerciseInput> Exercises);
 
 public sealed record CreateExerciseInput(
     string Name,
     string? Notes,
-    VideoSource VideoSource,
-    string? VideoUrl,
     string? Tempo,
+    Guid? CatalogExerciseId,
     List<CreateExerciseSetInput> Sets);
 
 public sealed record CreateExerciseSetInput(
@@ -53,7 +52,8 @@ public sealed class CreateRoutineHandler(IKondixDbContext db)
             UpdatedAt = DateTimeOffset.UtcNow
         };
 
-        var (days, dayDtos) = RoutineBuilder.BuildDays(request.Days);
+        var (days, dayDtos) = await RoutineBuilder.BuildDaysAsync(
+            request.Days, db, request.TrainerId, cancellationToken);
         foreach (var day in days) routine.Days.Add(day);
 
         db.Routines.Add(routine);

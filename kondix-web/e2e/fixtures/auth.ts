@@ -160,7 +160,7 @@ export async function registerStudentViaInvite(
   email: string,
   password: string,
   displayName: string,
-): Promise<void> {
+): Promise<{ studentId: string; tenantId: string }> {
   // Load invitation info to discover tenantId
   const infoRes = await fetch(`${API}/api/v1/public/invite/${encodeURIComponent(token)}`);
   if (!infoRes.ok) {
@@ -225,6 +225,8 @@ export async function registerStudentViaInvite(
   if (!acceptRes.ok) {
     throw new Error(`invite accept failed: ${acceptRes.status} ${await acceptRes.text()}`);
   }
+  const studentDto = (await acceptRes.json()) as { id: string };
+  return { studentId: studentDto.id, tenantId: info.tenantId };
 }
 
 /**
@@ -287,16 +289,15 @@ export async function createRoutineViaApi(
     tags: [],
     days: input.days.map(d => ({
       name: d.name,
-      groups: [
+      blocks: [
         {
-          groupType: 'Single',
+          blockType: null,
           restSeconds: 90,
           exercises: d.exercises.map(e => ({
             name: e.name,
             notes: null,
-            videoSource: 'None',
-            videoUrl: null,
             tempo: null,
+            catalogExerciseId: null,
             sets: [
               {
                 setType: 'Effective',
@@ -324,6 +325,187 @@ export async function createRoutineViaApi(
   });
   if (!res.ok) {
     throw new Error(`createRoutineViaApi failed: ${res.status} ${await res.text()}`);
+  }
+  const data = (await res.json()) as { id: string };
+  return data.id;
+}
+
+/**
+ * Builds `cg-*` cookie header + decoded CSRF token from the current browser
+ * context. Shared by helpers that need to make authenticated, CSRF-protected
+ * API calls on behalf of a logged-in trainer. Decodes CSRF because Playwright
+ * stores cookie values URL-encoded but the server compares header verbatim.
+ */
+async function getTrainerAuthHeaders(page: Page): Promise<{
+  csrf: string;
+  cookieHeader: string;
+}> {
+  const cookies = await page.context().cookies();
+  const csrfRaw = cookies.find(c => c.name === 'cg-csrf-kondix')?.value;
+  if (!csrfRaw) {
+    throw new Error('cg-csrf-kondix cookie missing — trainer must be logged in first');
+  }
+  const csrf = decodeURIComponent(csrfRaw);
+  const cookieHeader = cookies
+    .filter(c => c.name.startsWith('cg-'))
+    .map(c => `${c.name}=${c.value}`)
+    .join('; ');
+  return { csrf, cookieHeader };
+}
+
+/**
+ * Richer sibling of `createRoutineViaApi` that lets callers express multiple
+ * exercise groups per day (e.g. a Superset block) and per-set rest overrides.
+ * Use this when a spec needs to exercise block-level behaviour (e.g. round-
+ * level rest timer for Phase 4). For the simple one-exercise-per-day shape,
+ * prefer `createRoutineViaApi` to keep call sites terse.
+ */
+export async function createRoutineWithBlocksViaApi(
+  page: Page,
+  input: {
+    name: string;
+    category?: string;
+    description?: string;
+    days: {
+      name: string;
+      blocks: {
+        blockType: null | 'Superset' | 'Triset' | 'Circuit';
+        restSeconds: number;
+        exercises: {
+          name: string;
+          sets: {
+            setType?: 'Warmup' | 'Effective' | 'DropSet' | 'RestPause' | 'AMRAP';
+            targetReps?: string | null;
+            targetWeight?: string | null;
+            targetRpe?: number | null;
+            restSeconds?: number | null;
+          }[];
+        }[];
+      }[];
+    }[];
+  },
+): Promise<string> {
+  const { csrf, cookieHeader } = await getTrainerAuthHeaders(page);
+
+  const body = {
+    name: input.name,
+    description: input.description ?? null,
+    category: input.category ?? null,
+    tags: [],
+    days: input.days.map(d => ({
+      name: d.name,
+      blocks: d.blocks.map(b => ({
+        blockType: b.blockType,
+        restSeconds: b.restSeconds,
+        exercises: b.exercises.map(e => ({
+          name: e.name,
+          notes: null,
+          tempo: null,
+          catalogExerciseId: null,
+          sets: e.sets.map(s => ({
+            setType: s.setType ?? 'Effective',
+            targetReps: s.targetReps ?? '8-12',
+            targetWeight: s.targetWeight ?? null,
+            targetRpe: s.targetRpe ?? null,
+            restSeconds: s.restSeconds ?? null,
+          })),
+        })),
+      })),
+    })),
+  };
+
+  const res = await fetch(`${API}/api/v1/routines`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrf,
+      'Cookie': cookieHeader,
+      'Origin': 'http://localhost:4201',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`createRoutineWithBlocksViaApi failed: ${res.status} ${await res.text()}`);
+  }
+  const data = (await res.json()) as { id: string };
+  return data.id;
+}
+
+/**
+ * Creates a Program wrapping one or more routines via the real trainer
+ * endpoint. Programs are the assignment unit; a student receives one Program
+ * (not individual routines). Returns the created program id.
+ */
+export async function createProgramViaApi(
+  page: Page,
+  input: {
+    name: string;
+    description?: string | null;
+    durationWeeks: number;
+    routines: { routineId: string; label?: string | null }[];
+  },
+): Promise<string> {
+  const { csrf, cookieHeader } = await getTrainerAuthHeaders(page);
+
+  const body = {
+    name: input.name,
+    description: input.description ?? null,
+    durationWeeks: input.durationWeeks,
+    routines: input.routines.map(r => ({ routineId: r.routineId, label: r.label ?? null })),
+  };
+
+  const res = await fetch(`${API}/api/v1/programs`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrf,
+      'Cookie': cookieHeader,
+      'Origin': 'http://localhost:4201',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`createProgramViaApi failed: ${res.status} ${await res.text()}`);
+  }
+  const data = (await res.json()) as { id: string };
+  return data.id;
+}
+
+/**
+ * Assigns a program to a student in Rotation mode. Rotation is the simplest
+ * mode for workflow specs: next-workout advances through each day in order
+ * regardless of calendar day, which means the student always has *some*
+ * workout queued. Returns the assignment id.
+ */
+export async function assignProgramViaApi(
+  page: Page,
+  input: {
+    programId: string;
+    studentId: string;
+    trainingDays?: number[];
+  },
+): Promise<string> {
+  const { csrf, cookieHeader } = await getTrainerAuthHeaders(page);
+
+  const body = {
+    programId: input.programId,
+    studentId: input.studentId,
+    mode: 'Rotation',
+    trainingDays: input.trainingDays ?? [1, 2, 3, 4, 5],
+  };
+
+  const res = await fetch(`${API}/api/v1/program-assignments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrf,
+      'Cookie': cookieHeader,
+      'Origin': 'http://localhost:4201',
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    throw new Error(`assignProgramViaApi failed: ${res.status} ${await res.text()}`);
   }
   const data = (await res.json()) as { id: string };
   return data.id;

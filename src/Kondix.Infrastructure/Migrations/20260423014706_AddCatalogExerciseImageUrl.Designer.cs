@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Kondix.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kondix.Infrastructure.Migrations
 {
     [DbContext(typeof(KondixDbContext))]
-    partial class KondixDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260423014706_AddCatalogExerciseImageUrl")]
+    partial class AddCatalogExerciseImageUrl
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -328,10 +331,6 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnName("id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<Guid>("BlockId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("block_id");
-
                     b.Property<Guid?>("CatalogExerciseId")
                         .HasColumnType("uuid")
                         .HasColumnName("catalog_exercise_id");
@@ -341,6 +340,10 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -364,30 +367,38 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("tempo");
 
+                    b.Property<string>("VideoSource")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("None")
+                        .HasColumnName("video_source");
+
+                    b.Property<string>("VideoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("video_url");
+
                     b.HasKey("Id")
                         .HasName("pk_exercises");
-
-                    b.HasIndex("BlockId")
-                        .HasDatabaseName("ix_exercises_block_id");
 
                     b.HasIndex("CatalogExerciseId")
                         .HasDatabaseName("ix_exercises_catalog_exercise_id");
 
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_exercises_group_id");
+
                     b.ToTable("exercises", "kondix");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ExerciseBlock", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ExerciseGroup", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id")
                         .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("BlockType")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("block_type");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -398,6 +409,14 @@ namespace Kondix.Infrastructure.Migrations
                     b.Property<Guid>("DayId")
                         .HasColumnType("uuid")
                         .HasColumnName("day_id");
+
+                    b.Property<string>("GroupType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("Single")
+                        .HasColumnName("group_type");
 
                     b.Property<int>("RestSeconds")
                         .ValueGeneratedOnAdd()
@@ -412,12 +431,12 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnName("sort_order");
 
                     b.HasKey("Id")
-                        .HasName("pk_exercise_blocks");
+                        .HasName("pk_exercise_groups");
 
                     b.HasIndex("DayId")
-                        .HasDatabaseName("ix_exercise_blocks_day_id");
+                        .HasDatabaseName("ix_exercise_groups_day_id");
 
-                    b.ToTable("exercise_blocks", "kondix");
+                    b.ToTable("exercise_groups", "kondix");
                 });
 
             modelBuilder.Entity("Kondix.Domain.Entities.ExerciseSet", b =>
@@ -1330,31 +1349,31 @@ namespace Kondix.Infrastructure.Migrations
 
             modelBuilder.Entity("Kondix.Domain.Entities.Exercise", b =>
                 {
-                    b.HasOne("Kondix.Domain.Entities.ExerciseBlock", "Block")
-                        .WithMany("Exercises")
-                        .HasForeignKey("BlockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_exercises_exercise_blocks_block_id");
-
                     b.HasOne("Kondix.Domain.Entities.CatalogExercise", "CatalogExercise")
                         .WithMany()
                         .HasForeignKey("CatalogExerciseId")
                         .HasConstraintName("fk_exercises_catalog_exercises_catalog_exercise_id");
 
-                    b.Navigation("Block");
+                    b.HasOne("Kondix.Domain.Entities.ExerciseGroup", "Group")
+                        .WithMany("Exercises")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_exercises_exercise_groups_group_id");
 
                     b.Navigation("CatalogExercise");
+
+                    b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ExerciseBlock", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ExerciseGroup", b =>
                 {
                     b.HasOne("Kondix.Domain.Entities.Day", "Day")
-                        .WithMany("Blocks")
+                        .WithMany("ExerciseGroups")
                         .HasForeignKey("DayId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_exercise_blocks_days_day_id");
+                        .HasConstraintName("fk_exercise_groups_days_day_id");
 
                     b.Navigation("Day");
                 });
@@ -1609,7 +1628,7 @@ namespace Kondix.Infrastructure.Migrations
 
             modelBuilder.Entity("Kondix.Domain.Entities.Day", b =>
                 {
-                    b.Navigation("Blocks");
+                    b.Navigation("ExerciseGroups");
                 });
 
             modelBuilder.Entity("Kondix.Domain.Entities.Exercise", b =>
@@ -1617,7 +1636,7 @@ namespace Kondix.Infrastructure.Migrations
                     b.Navigation("Sets");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ExerciseBlock", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ExerciseGroup", b =>
                 {
                     b.Navigation("Exercises");
                 });
