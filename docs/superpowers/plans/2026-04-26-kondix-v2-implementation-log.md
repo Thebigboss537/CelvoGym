@@ -74,5 +74,40 @@ _Started:_ 2026-04-26
 - New surface: red "Ver demo" pill in the student logging screen → opens `<kx-video-demo-overlay>` (full-screen YouTube iframe with backdrop click-to-close + 🏆-grade celebration ready for Phase 3 PR toast).
 - Frontend-only — no backend, no DTOs, no migrations, no new env vars.
 - Carryover items to address opportunistically: Esc-key close + focus management on `<kx-video-demo-overlay>` (and `<kx-confirm-dialog>` together) as a Phase 4 / visual-polish sweep; revisit pill placement in Phase 3 once muscle-group/equipment badges land alongside it; if MinIO uploads ever go live, either extend `<kx-video-demo-overlay>` to render `<video>` for `videoSource='Upload'` or relax the pill gate.
-- Branch ready to merge to main with `--no-ff`.
+- Branch merged to main via `81dc3ab6` and pushed to `origin/main` on 2026-04-26.
+
+---
+
+## ▶ Next up: Phase 3 — Bidirectional feedback loop
+
+_Plan reference:_ `docs/superpowers/plans/2026-04-26-kondix-v2-implementation.md` Phase 3 (largest phase: ~23 tasks across sub-phases 3.A backend, 3.B UI components, 3.C student-side integration, 3.D trainer drawer split).
+
+_Spec reference:_ `docs/superpowers/specs/2026-04-26-kondix-v2-feedback-loop-recovery-and-visual-refresh-design.md` §3 decisions Q1–Q4, §4 data model, §5 API §5.1–5.8, §6.1–6.3 components, §7 phase 3 roadmap.
+
+**Resume playbook (for a fresh Claude session):**
+
+1. Confirm starting state: `git status` shows clean on `main`, `git log -1 --oneline` shows `81dc3ab6 Merge branch 'feat/v2-phase-2' into main`. Working tree is sync'd with `origin/main`.
+2. Create the phase branch: `git checkout -b feat/v2-phase-3`.
+3. Invoke `Skill: superpowers:subagent-driven-development` (the same flow used for phases 1, 1.5, 2). Per-task: implementer → spec compliance review → code quality review → next task. Two reviewers per task, fixes loop until approved.
+4. Phase 3 sub-phase order (per plan):
+   - **3.A backend** (Tasks 3.A.1–3.A.10): `MoodType` enum, `ExerciseFeedback` entity + EF config + DbContext, fields on `SetLog`/`WorkoutSession`, migration `AddSessionAndSetFeedbackFields`, commands `UpdateSetNoteCommand` / `UpsertExerciseFeedbackCommand` / idempotent `CompleteSessionCommand` + mood / inline PR detection in `UpdateSetDataCommand` / `MarkFeedbackReadCommand`, query `GetRecentFeedbackQuery`, controller wiring on `StudentPortalController` + trainer students controller.
+   - **3.B UI components** (Tasks 3.B.1–3.B.6): `<kx-rpe-stepper>`, `<kx-mood-picker>`, `<kx-set-chip>`, `<kx-session-row>`, `<kx-exercise-feedback-modal>`, extend `<kx-set-row>` with note toggle.
+   - **3.C student-side integration** (Tasks 3.C.1–3.C.4): wire per-set note + exercise feedback modal + PR toast in `exercise-logging.ts`; mood + notes in `workout-complete.ts`.
+   - **3.D trainer drawer split** (Tasks 3.D.1–3.D.8): split `student-detail.ts` (443 lines) into shell + 4 tabs (`student-detail-{summary,program,progress,notes}.ts`), wire `<kx-segmented-control>`, badge from `recent-feedback`, banner CTA, mark-read on Progreso mount.
+5. Per-phase closeout same as 1/1.5/2: log deviations + closeout summary block; build verde (.NET + Angular + Karma); final phase-wide code review; merge `--no-ff` to main; push; delete local branch.
+6. Apply known carryovers opportunistically while in those areas:
+   - Extract `MUSCLE_TOKEN` from `<kx-exercise-thumb>` to `shared/utils/muscle-color.ts` if a Phase 3 task adds a second consumer (e.g., `<kx-set-chip>` or session-row colored markers).
+   - Add `XML doc` on `PendingTrainerDto.CelvoGuardUserId` (cross-schema email resolution note) if you happen to touch that file.
+
+**Pre-Phase-3 verification (sanity, not blocking):**
+- `dotnet test Kondix.slnx` should show 38 backend specs (20 unit + 8 arch + 10 integration) all passing.
+- `cd kondix-web && npx ng test --watch=false --browsers=ChromeHeadless` should show 10 Karma specs all passing.
+- `cd kondix-web && npx ng build` clean.
+- No uncommitted changes.
+
+**Plan defects to watch for in Phase 3** (based on phases 1/1.5/2 patterns):
+- Field-name drift between plan and entities (Phase 1.5 hit this twice with `UserId` vs `CelvoGuardUserId` and missing `Email`). Verify each entity field reference in the plan against the actual `*.cs` before writing tests.
+- Test infra paths: project uses Karma+Jasmine (not Vitest, despite the rules file). Frontend specs go in `*.spec.ts` colocated with source, no `import { describe ... } from 'vitest'`.
+- Middleware bypass: any new endpoints under `/api/v1/internal/*` are already covered (Phase 1.5 widened the bypass). Endpoints under other paths follow the standard auth chain — if a new endpoint should bypass it, update `Program.cs` `UseWhen` exclusion list explicitly.
+- xUnit cross-class parallelism is disabled at the assembly level (Phase 1.5 added `tests/Kondix.IntegrationTests/AssemblyInfo.cs`). New integration test classes inherit this — no extra config needed.
 
