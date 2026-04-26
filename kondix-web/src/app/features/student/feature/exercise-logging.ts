@@ -7,7 +7,6 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ApiService } from '../../../core/services/api.service';
 import {
   ExerciseDto,
@@ -18,7 +17,7 @@ import {
 import { KxSetRow } from '../../../shared/ui/set-row';
 import { KxRestTimer } from '../../../shared/ui/rest-timer';
 import { KxSpinner } from '../../../shared/ui/spinner';
-import { youtubeEmbedUrl } from '../../../shared/utils/youtube';
+import { KxVideoDemoOverlay } from '../../../shared/ui/video-demo-overlay';
 
 interface FlatExercise {
   exercise: ExerciseDto;
@@ -33,7 +32,7 @@ interface FlatExercise {
 
 @Component({
   selector: 'app-exercise-logging',
-  imports: [KxSetRow, KxRestTimer, KxSpinner],
+  imports: [KxSetRow, KxRestTimer, KxSpinner, KxVideoDemoOverlay],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-bg flex flex-col">
@@ -85,6 +84,21 @@ interface FlatExercise {
             @if (exercise()!.tempo) {
               <p class="text-text-muted text-xs mt-1 tracking-widest uppercase">Tempo {{ exercise()!.tempo }}</p>
             }
+            @if (exercise()!.videoUrl) {
+              <div class="mt-3 flex justify-center">
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary-hover transition press"
+                  (click)="showVideo.set(true)"
+                  aria-label="Ver demo"
+                >
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                  Ver demo
+                </button>
+              </div>
+            }
           </div>
 
           <!-- Catalog thumbnail -->
@@ -96,51 +110,6 @@ interface FlatExercise {
                 class="w-full h-44 object-cover"
                 loading="lazy"
               />
-            </div>
-          }
-
-          <!-- Video card -->
-          @if (exercise()!.videoSource !== 'None' && exercise()!.videoUrl) {
-            <div class="rounded-xl overflow-hidden border border-border">
-              @if (!showVideo()) {
-                <button
-                  type="button"
-                  class="w-full bg-card flex items-center justify-center gap-3 py-5 hover:bg-card-hover transition press"
-                  (click)="showVideo.set(true)"
-                >
-                  <div class="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-primary ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                  <span class="text-text-secondary text-sm font-medium">Ver demostración</span>
-                </button>
-              } @else {
-                @if (exercise()!.videoSource === 'Upload') {
-                  <video
-                    [src]="exercise()!.videoUrl!"
-                    controls
-                    preload="metadata"
-                    class="w-full"
-                  ></video>
-                } @else {
-                  @if (embedUrl(); as src) {
-                    <div class="aspect-video">
-                      <iframe
-                        [src]="src"
-                        class="w-full h-full"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                      ></iframe>
-                    </div>
-                  } @else {
-                    <div class="aspect-video flex items-center justify-center bg-card text-text-muted text-sm">
-                      Video no disponible
-                    </div>
-                  }
-                }
-              }
             </div>
           }
 
@@ -197,6 +166,14 @@ interface FlatExercise {
             </div>
           }
         </div>
+
+        <!-- Video demo overlay -->
+        <kx-video-demo-overlay
+          [url]="exercise()?.videoUrl ?? ''"
+          [exerciseName]="exercise()?.name ?? ''"
+          [open]="showVideo()"
+          (close)="showVideo.set(false)"
+        />
       }
     </div>
   `,
@@ -205,7 +182,6 @@ export class ExerciseLogging implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);
-  private sanitizer = inject(DomSanitizer);
 
   loading = signal(true);
   error = signal('');
@@ -231,20 +207,6 @@ export class ExerciseLogging implements OnInit {
     const total = this.totalExercises();
     if (total === 0) return 0;
     return Math.round(((this.exerciseIndex() + 1) / total) * 100);
-  });
-
-  /**
-   * Sanitized iframe src for the current exercise's YouTube video.
-   * Uses the shared `youtubeEmbedUrl` util to normalize short/watch/embed
-   * URL forms; returns null when the URL is missing or doesn't normalize,
-   * so the template can guard against an empty-src iframe (which would
-   * otherwise recursively render the host document).
-   */
-  readonly embedUrl = computed<SafeResourceUrl | null>(() => {
-    const url = this.exercise()?.videoUrl;
-    if (!url) return null;
-    const normalized = youtubeEmbedUrl(url);
-    return normalized ? this.sanitizer.bypassSecurityTrustResourceUrl(normalized) : null;
   });
 
   /**
