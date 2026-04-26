@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kondix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root {
+    /* Kondix brand */
+    --color-primary: #E62639;
+    --color-primary-hover: #d11e31;
+    --color-primary-subtle: rgba(230, 38, 57, 0.12);
+
+    /* Dark tuned backgrounds */
+    --color-bg-deep: #0a0a0b;
+    --color-bg: #0f0f11;
+    --color-bg-raised: #17171a;
+    --color-card: #1a1a1d;
+    --color-card-hover: #222227;
+
+    --color-border: #27272c;
+    --color-border-light: #1e1e22;
+
+    --color-text: #fafafa;
+    --color-text-secondary: #c5c5cb;
+    --color-text-muted: #78787f;
+
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+
+    --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+    --shadow-lg: 0 12px 32px -8px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--color-bg-deep);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body { overflow: hidden; }
+  #root { height: 100vh; }
+
+  .k-overline {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+  }
+
+  .k-focus-ring:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+  .scroll-thin::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+  }
+  .scroll-thin::-webkit-scrollbar-thumb:hover {
+    background: var(--color-card-hover);
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .k-fade-up { animation: fade-up .18s ease-out; }
+
+  @keyframes slide-in-left {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+  .k-slide-in-left { animation: slide-in-left .2s ease-out; }
+
+  @keyframes slide-in-right {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  .k-slide-in-right { animation: slide-in-right .2s ease-out; }
+
+  button { font-family: inherit; }
+  input, textarea, select { font-family: inherit; }
+
+  .k-join-row { transition: opacity .15s; }
+  .k-join-row:hover { opacity: 1 !important; }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  input[type=number] { -moz-appearance: textfield; }
+
+  * { -webkit-tap-highlight-color: transparent; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="data.jsx"></script>
+  <script type="text/babel" src="seed-data.jsx"></script>
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="ui.jsx"></script>
+  <script type="text/babel" src="ui-extras.jsx"></script>
+  <script type="text/babel" src="exercise-picker.jsx"></script>
+  <script type="text/babel" src="exercise-card.jsx"></script>
+  <script type="text/babel" src="day-panel.jsx"></script>
+  <script type="text/babel" src="days-sidebar.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+  <script type="text/babel" src="app-shell.jsx"></script>
+  <script type="text/babel" src="view-library.jsx"></script>
+  <script type="text/babel" src="views-extra.jsx"></script>
+  <script type="text/babel" src="view-programs.jsx"></script>
+  <script type="text/babel" src="students-progress-tab.jsx"></script>
+  <script type="text/babel" src="view-students.jsx"></script>
+
+  <script type="text/babel">
+    function Root() {
+      const [route, setRoute] = React.useState(() => {
+        try { return localStorage.getItem('kondix-route') || 'routines'; } catch { return 'routines'; }
+      });
+      const [library, setLibrary] = React.useState(() => seedLibrary());
+
+      React.useEffect(() => {
+        try { localStorage.setItem('kondix-route', route); } catch {}
+      }, [route]);
+
+      const SCREEN_LABELS = {
+        dashboard: 'Coach · Dashboard',
+        routines: 'Coach · Rutinas',
+        programs: 'Coach · Programas',
+        library: 'Coach · Biblioteca',
+        students: 'Coach · Estudiantes',
+      };
+
+      let view;
+      switch (route) {
+        case 'dashboard':
+          view = <DashboardView onNavigate={setRoute} />; break;
+        case 'routines':
+          view = <RoutinesView />; break;
+        case 'programs':
+          view = <ProgramsView />; break;
+        case 'library':
+          view = <LibraryView library={library} onChange={setLibrary} />; break;
+        case 'students':
+          view = <StudentsView />; break;
+        default:
+          view = <RoutinesView />;
+      }
+
+      return (
+        <AppShell route={route} setRoute={setRoute}>
+          <div data-screen-label={SCREEN_LABELS[route] || 'Coach'} style={{ height: '100%' }}>
+            {view}
+          </div>
+        </AppShell>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Root />);
+  </script>
+</body>
+</html>

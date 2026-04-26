@@ -1,0 +1,129 @@
+/* Kondix — aligned to real brand-guidelines.md */
+
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Primary — KONDIX Crimson */
+  --color-primary: #E62639;
+  --color-primary-hover: #CF2233;
+  --color-primary-active: #B31D2C;
+  --color-primary-subtle: #2A0F14;
+  --color-primary-glow: rgba(230,38,57,0.15);
+
+  /* Backgrounds — blue-black */
+  --color-bg-deep: #050507;
+  --color-bg: #09090B;
+  --color-bg-raised: #111113;
+  --color-card: #16161A;
+  --color-card-hover: #1E1E24;
+
+  /* Muscle palette — single source of truth */
+  --muscle-pecho:      #E62639;
+  --muscle-espalda:    #38BDF8;
+  --muscle-hombro:     #F59E0B;
+  --muscle-biceps:     #A855F7;
+  --muscle-triceps:    #F472B6;
+  --muscle-cuadriceps: #22C55E;
+  --muscle-femoral:    #14B8A6;
+  --muscle-gluteo:     #EC4899;
+  --muscle-gemelo:     #84CC16;
+  --muscle-core:       #FB923C;
+  --muscle-antebrazo:  #06B6D4;
+
+  /* Text */
+  --color-text: #F4F4F5;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #71717A;
+
+  /* Borders */
+  --color-border: #27272A;
+  --color-border-light: #1E1E22;
+
+  /* Semantic */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+
+  /* Aliases used throughout the prototype */
+  --bg-0: var(--color-bg);
+  --bg-1: var(--color-bg-raised);
+  --bg-2: var(--color-card);
+  --bg-3: var(--color-card-hover);
+  --bg-4: #24242B;
+  --border-subtle: var(--color-border-light);
+  --border: var(--color-border);
+  --border-strong: #3A3A42;
+  --text-0: var(--color-text);
+  --text-1: #E5E5E7;
+  --text-2: var(--color-text-secondary);
+  --text-3: var(--color-text-muted);
+  --text-4: #52525B;
+  --red-900: var(--color-primary-subtle);
+  --red-700: var(--color-primary-active);
+  --red-600: var(--color-primary);
+  --red-500: var(--color-primary);
+  --red-400: #F14D5E;
+  --red-glow: var(--color-primary-glow);
+  --accent: var(--color-primary);
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+
+  --r-xs: 4px;
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button { font-family: inherit; }
+input, textarea, select { font-family: inherit; }
+
+.scroll-thin::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-thin::-webkit-scrollbar-track { background: transparent; }
+.scroll-thin::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 4px; }
+.scroll-thin::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+.k-focus-ring:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+}
+
+.k-display { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.02em; }
+.k-overline {
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+
+@keyframes k-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.k-fade-up { animation: k-fade-up .35s ease-out both; }
+.k-modal-center { animation: k-fade-center .2s ease-out both; }
+@keyframes k-fade-center {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 6px)); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@keyframes k-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-primary-glow); }
+  50% { box-shadow: 0 0 0 6px rgba(230,38,57,0); }
+}
