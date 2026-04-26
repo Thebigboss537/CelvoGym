@@ -132,3 +132,15 @@ docker compose -f docker-compose.prod.yml up -d kondix-api kondix-web
 curl -sf https://kondix.celvo.dev/api/v1/health
 # Expected: {"status":"healthy","timestamp":"..."}
 ```
+
+## Phase 1.5 — Trainer approval
+
+Add to `deploy/docker-compose.prod.yml` under `kondix-api.environment`:
+- `Internal__ApiKey=${KONDIX_INTERNAL_API_KEY}`
+
+Add to `deploy/.env`:
+- `KONDIX_INTERNAL_API_KEY=<32+ random hex chars>`
+
+Confirm CelvoAdmin's deploy gets the same secret as `Kondix__InternalApiKey`
+when the CelvoAdmin-side work ships (separate plan).
+
