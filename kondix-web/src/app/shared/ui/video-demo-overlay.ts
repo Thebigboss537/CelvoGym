@@ -74,7 +74,7 @@ export class KxVideoDemoOverlay {
     return normalized ? this.sanitizer.bypassSecurityTrustResourceUrl(normalized) : null;
   });
 
-  onBackdropClick(_event: MouseEvent): void {
-    this.close.emit();
+  onBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.close.emit();
   }
 }
