@@ -55,3 +55,24 @@ _Started:_ 2026-04-26
 - CelvoAdmin-side work (UI + proxy controller) is OUT OF SCOPE for this plan. The CelvoAdmin spec/plan in its own repo must consume `Internal__ApiKey` as `Kondix__InternalApiKey` and resolve emails by joining `celvoguard.users` on the returned `CelvoGuardUserId`.
 - Branch ready to merge to main with `--no-ff`.
 
+## Phase 2 — Video demo overlay
+
+_Branch:_ `feat/v2-phase-2`
+_Started:_ 2026-04-26
+
+| Tarea | Tipo | Descripción | Resolución |
+|---|---|---|---|
+| Task 2.1 | decision | Tightened backdrop click handler to compare `event.target === event.currentTarget` so events bubbling from the inner iframe (which can vary across browsers) don't accidentally close the overlay. | Resolved in commit `1c8a6e37`. |
+| Task 2.2 | deviation | Plan said gate the "Ver demo" pill on `exercise.videoUrl` only. The overlay only handles YouTube URLs — exposing the pill for `videoSource === 'Upload'` would render "No se pudo cargar el vídeo." Tightened the gate to `videoSource === 'YouTube' && videoUrl` so the surface matches actual capability. Latent regression — Upload not enabled in prod today (MinIO bucket `kondix-videos` not provisioned). | Resolved in commit `5833d38a`. |
+
+---
+
+**Phase 2 closeout (2026-04-26):**
+- 2 tasks complete in 5 commits across `feat/v2-phase-2`.
+- 2 deviations logged above (both improvements over the plan, approved by per-task and final phase reviews).
+- Tests green: .NET 20 unit + 8 arch + 10 integration (unchanged — this phase is frontend-only) + Karma 10 specs (7 youtube + 3 toast, unchanged) = 48 specs.
+- New surface: red "Ver demo" pill in the student logging screen → opens `<kx-video-demo-overlay>` (full-screen YouTube iframe with backdrop click-to-close + 🏆-grade celebration ready for Phase 3 PR toast).
+- Frontend-only — no backend, no DTOs, no migrations, no new env vars.
+- Carryover items to address opportunistically: Esc-key close + focus management on `<kx-video-demo-overlay>` (and `<kx-confirm-dialog>` together) as a Phase 4 / visual-polish sweep; revisit pill placement in Phase 3 once muscle-group/equipment badges land alongside it; if MinIO uploads ever go live, either extend `<kx-video-demo-overlay>` to render `<video>` for `videoSource='Upload'` or relax the pill gate.
+- Branch ready to merge to main with `--no-ff`.
+
