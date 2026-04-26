@@ -58,15 +58,17 @@ public sealed class InternalTrainersEndpointsTests : IClassFixture<InternalTrain
 
         var body = await res.Content.ReadFromJsonAsync<ApprovalBody>();
         body!.AlreadyApproved.Should().BeFalse();
-        body.ExercisesSeeded.Should().BeGreaterThan(40); // Seed list has ~50 entries
+        body.ExercisesSeeded.Should().BeInRange(40, 100); // Seed list has 50 entries; upper bound catches accidental duplication
+        body.ApprovedAt.Should().NotBeNull();
 
         using (var scope = _factory.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
             var t = await db.Trainers.FirstAsync(x => x.Id == trainerId);
             t.IsApproved.Should().BeTrue();
+            t.ApprovedAt.Should().NotBeNull();
             var catalog = await db.CatalogExercises.CountAsync(c => c.TrainerId == trainerId);
-            catalog.Should().BeGreaterThan(40);
+            catalog.Should().BeInRange(40, 100);
         }
     }
 
@@ -99,7 +101,48 @@ public sealed class InternalTrainersEndpointsTests : IClassFixture<InternalTrain
         body.ExercisesSeeded.Should().Be(0);
     }
 
+    [Fact]
+    public async Task ListPending_WithKey_ReturnsOnlyUnapproved()
+    {
+        // Seed: one unapproved (recent), one approved.
+        var unapprovedId = Guid.NewGuid();
+        var approvedId = Guid.NewGuid();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<KondixDbContext>();
+            db.Trainers.Add(new Trainer
+            {
+                Id = unapprovedId,
+                CelvoGuardUserId = Guid.NewGuid(),
+                TenantId = Guid.NewGuid(),
+                DisplayName = "Pending listing",
+                IsApproved = false,
+            });
+            db.Trainers.Add(new Trainer
+            {
+                Id = approvedId,
+                CelvoGuardUserId = Guid.NewGuid(),
+                TenantId = Guid.NewGuid(),
+                DisplayName = "Already approved listing",
+                IsApproved = true,
+                ApprovedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            });
+            await db.SaveChangesAsync();
+        }
+
+        using var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Internal-Key", InternalTrainersFactory.Key);
+        var res = await client.GetAsync("/api/v1/internal/trainers/pending");
+        res.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var list = await res.Content.ReadFromJsonAsync<List<PendingTrainerBody>>();
+        list.Should().NotBeNull();
+        list!.Select(p => p.TrainerId).Should().Contain(unapprovedId);
+        list.Select(p => p.TrainerId).Should().NotContain(approvedId);
+    }
+
     private sealed record ApprovalBody(DateTimeOffset? ApprovedAt, int ExercisesSeeded, bool AlreadyApproved);
+    private sealed record PendingTrainerBody(Guid TrainerId, string DisplayName, Guid CelvoGuardUserId, DateTimeOffset RegisteredAt);
 }
 
 public sealed class InternalTrainersFactory : WebApplicationFactory<Program>
