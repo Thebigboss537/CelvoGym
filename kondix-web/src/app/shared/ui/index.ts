@@ -19,3 +19,4 @@ export { KxStudentCard } from './student-card';
 export { KxTimeline, type TimelineItem } from './timeline';
 export { KxWizardStepper } from './wizard-stepper';
 export { KxIconButton } from './icon-button';
+export * from './exercise-thumb';
