@@ -87,6 +87,7 @@ public sealed class GetMyRoutineDetailHandler(IKondixDbContext db)
                         e.CatalogExercise != null ? e.CatalogExercise.VideoSource : VideoSource.None,
                         e.CatalogExercise?.VideoUrl,
                         e.CatalogExercise?.ImageUrl,
+                        e.CatalogExercise?.MuscleGroup,
                         e.Sets.Select(s => new ExerciseSetDto(
                             s.Id, s.SetType, s.TargetReps, s.TargetWeight, s.TargetRpe, s.RestSeconds
                         )).ToList()

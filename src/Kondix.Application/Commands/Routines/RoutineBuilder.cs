@@ -72,11 +72,11 @@ public static class RoutineBuilder
                     }
 
                     block.Exercises.Add(exercise);
-                    // Media fields (VideoSource/VideoUrl/ImageUrl) come from the catalog join
+                    // Media fields (VideoSource/VideoUrl/ImageUrl/MuscleGroup) come from the catalog join
                     // on GET — write-paths return nulls. Client merges from its catalog cache.
                     exerciseDtos.Add(new ExerciseDto(exercise.Id, exercise.Name, exercise.Notes,
                         exercise.Tempo, exercise.CatalogExerciseId,
-                        VideoSource.None, null, null, setDtos));
+                        VideoSource.None, null, null, null, setDtos));
                 }
 
                 day.Blocks.Add(block);
