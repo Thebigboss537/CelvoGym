@@ -18,6 +18,7 @@ public class SetLogConfiguration : IEntityTypeConfiguration<SetLog>
         builder.Property(sl => sl.SnapshotExerciseName).HasMaxLength(200);
         builder.Property(sl => sl.SnapshotTargetWeight).HasMaxLength(50);
         builder.Property(sl => sl.SnapshotTargetReps).HasMaxLength(50);
+        builder.Property(sl => sl.Notes).HasMaxLength(2000);
         builder.Property(sl => sl.CreatedAt).HasDefaultValueSql("NOW()");
 
         builder.HasIndex(sl => new { sl.SessionId, sl.SetId }).IsUnique();

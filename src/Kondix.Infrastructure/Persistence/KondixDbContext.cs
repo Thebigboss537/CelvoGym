@@ -29,6 +29,7 @@ public class KondixDbContext(DbContextOptions<KondixDbContext> options)
     public DbSet<BodyMeasurement> BodyMeasurements => Set<BodyMeasurement>();
     public DbSet<ProgressPhoto> ProgressPhotos => Set<ProgressPhoto>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<ExerciseFeedback> ExerciseFeedback => Set<ExerciseFeedback>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
