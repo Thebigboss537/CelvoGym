@@ -18,6 +18,7 @@ import {
 import { KxSetRow } from '../../../shared/ui/set-row';
 import { KxRestTimer } from '../../../shared/ui/rest-timer';
 import { KxSpinner } from '../../../shared/ui/spinner';
+import { youtubeEmbedUrl } from '../../../shared/utils/youtube';
 
 interface FlatExercise {
   exercise: ExerciseDto;
@@ -123,15 +124,21 @@ interface FlatExercise {
                     class="w-full"
                   ></video>
                 } @else {
-                  <div class="aspect-video">
-                    <iframe
-                      [src]="getEmbedUrl(exercise()!.videoUrl!)"
-                      class="w-full h-full"
-                      frameborder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen
-                    ></iframe>
-                  </div>
+                  @if (embedUrl(); as src) {
+                    <div class="aspect-video">
+                      <iframe
+                        [src]="src"
+                        class="w-full h-full"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                      ></iframe>
+                    </div>
+                  } @else {
+                    <div class="aspect-video flex items-center justify-center bg-card text-text-muted text-sm">
+                      Video no disponible
+                    </div>
+                  }
                 }
               }
             </div>
@@ -219,12 +226,25 @@ export class ExerciseLogging implements OnInit {
   dayId = '';
 
   private flatExercises: FlatExercise[] = [];
-  private embedUrlCache = new Map<string, SafeResourceUrl>();
 
   progressPercent = computed(() => {
     const total = this.totalExercises();
     if (total === 0) return 0;
     return Math.round(((this.exerciseIndex() + 1) / total) * 100);
+  });
+
+  /**
+   * Sanitized iframe src for the current exercise's YouTube video.
+   * Uses the shared `youtubeEmbedUrl` util to normalize short/watch/embed
+   * URL forms; returns null when the URL is missing or doesn't normalize,
+   * so the template can guard against an empty-src iframe (which would
+   * otherwise recursively render the host document).
+   */
+  readonly embedUrl = computed<SafeResourceUrl | null>(() => {
+    const url = this.exercise()?.videoUrl;
+    if (!url) return null;
+    const normalized = youtubeEmbedUrl(url);
+    return normalized ? this.sanitizer.bypassSecurityTrustResourceUrl(normalized) : null;
   });
 
   /**
@@ -442,25 +462,5 @@ export class ExerciseLogging implements OnInit {
       ['/workout/session/overview'],
       { queryParams: { routineId: this.routineId, dayId: this.dayId, sessionId: this.sessionId } }
     );
-  }
-
-  getEmbedUrl(url: string): SafeResourceUrl {
-    const cached = this.embedUrlCache.get(url);
-    if (cached) return cached;
-    const videoId = this.extractYouTubeId(url);
-    const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : url;
-    const safe = this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
-    this.embedUrlCache.set(url, safe);
-    return safe;
-  }
-
-  private extractYouTubeId(url: string): string | null {
-    let match = url.match(/[?&]v=([^&#]+)/);
-    if (match) return match[1];
-    match = url.match(/youtu\.be\/([^?&#]+)/);
-    if (match) return match[1];
-    match = url.match(/youtube\.com\/shorts\/([^?&#]+)/);
-    if (match) return match[1];
-    return null;
   }
 }

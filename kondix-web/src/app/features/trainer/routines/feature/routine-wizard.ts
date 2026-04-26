@@ -7,6 +7,7 @@ import { ToastService } from '../../../../shared/ui/toast';
 import { KxWizardStepper } from '../../../../shared/ui/wizard-stepper';
 import { KxSpinner } from '../../../../shared/ui/spinner';
 import { KxIconButton } from '../../../../shared/ui/icon-button';
+import { KxExerciseThumb } from '../../../../shared/ui/exercise-thumb';
 
 // ── Wizard data model ──
 
@@ -57,7 +58,7 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
 
 @Component({
   selector: 'app-routine-wizard',
-  imports: [FormsModule, KxWizardStepper, KxSpinner, KxIconButton],
+  imports: [FormsModule, KxWizardStepper, KxSpinner, KxIconButton, KxExerciseThumb],
   template: `
     <div class="animate-fade-up max-w-4xl mx-auto px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
 
@@ -329,10 +330,17 @@ const CATEGORIES = ['Hipertrofia', 'Fuerza', 'Resistencia', 'Funcional', 'Otro']
                                         <div class="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
                                           @for (s of catalogSuggestions(); track s.id) {
                                             <button type="button" (mousedown)="selectCatalogExercise(bi, ei, s)"
-                                              class="w-full px-3 py-2 text-left text-sm hover:bg-card-hover transition flex items-center justify-between">
-                                              <span class="text-text">{{ s.name }}</span>
+                                              class="w-full px-3 py-2 text-left text-sm hover:bg-card-hover transition flex items-center gap-2.5">
+                                              <kx-exercise-thumb
+                                                [name]="s.name"
+                                                [muscleGroup]="s.muscleGroup"
+                                                [photoUrl]="s.imageUrl"
+                                                size="sm"
+                                                [hasVideo]="!!s.videoUrl"
+                                              />
+                                              <span class="text-text flex-1 min-w-0 truncate">{{ s.name }}</span>
                                               @if (s.muscleGroup) {
-                                                <span class="text-text-muted text-xs">{{ s.muscleGroup }}</span>
+                                                <span class="text-text-muted text-xs shrink-0">{{ s.muscleGroup }}</span>
                                               }
                                             </button>
                                           }

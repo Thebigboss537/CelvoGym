@@ -81,6 +81,7 @@ export interface ExerciseDto {
   videoSource: VideoSource;
   videoUrl: string | null;
   imageUrl: string | null;
+  muscleGroup: string | null;
   sets: ExerciseSetDto[];
 }
 

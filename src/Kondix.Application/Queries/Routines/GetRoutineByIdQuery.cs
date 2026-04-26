@@ -46,6 +46,7 @@ public sealed class GetRoutineByIdHandler(IKondixDbContext db)
                         e.CatalogExercise != null ? e.CatalogExercise.VideoSource : VideoSource.None,
                         e.CatalogExercise?.VideoUrl,
                         e.CatalogExercise?.ImageUrl,
+                        e.CatalogExercise?.MuscleGroup,
                         e.Sets.Select(s => new ExerciseSetDto(
                             s.Id,
                             s.SetType,

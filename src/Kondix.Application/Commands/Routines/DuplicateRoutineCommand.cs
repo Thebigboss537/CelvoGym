@@ -88,7 +88,7 @@ public sealed class DuplicateRoutineHandler(IKondixDbContext db)
                     group.Exercises.Add(exercise);
                     exerciseDtos.Add(new ExerciseDto(exercise.Id, exercise.Name, exercise.Notes,
                         exercise.Tempo, exercise.CatalogExerciseId,
-                        VideoSource.None, null, null, setDtos));
+                        VideoSource.None, null, null, null, setDtos));
                 }
 
                 day.Blocks.Add(group);

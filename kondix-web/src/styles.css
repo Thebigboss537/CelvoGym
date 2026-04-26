@@ -38,6 +38,18 @@
   --color-set-restpause: #22D3EE;
   --color-set-amrap: #F97316;
 
+  /* Muscle group tints — used as 12% opacity gradient fallback in <kx-exercise-thumb> */
+  --color-muscle-pecho: #EF4444;
+  --color-muscle-espalda: #3B82F6;
+  --color-muscle-hombro: #F59E0B;
+  --color-muscle-biceps: #A855F7;
+  --color-muscle-triceps: #EC4899;
+  --color-muscle-cuadriceps: #22C55E;
+  --color-muscle-gluteos: #06B6D4;
+  --color-muscle-femoral: #10B981;
+  --color-muscle-pantorrilla: #84CC16;
+  --color-muscle-core: #F97316;
+
   /* Sidebar & active state */
   --color-bg-sidebar: #111113;
   --color-border-active: rgba(230, 38, 57, 0.3);

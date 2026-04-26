@@ -46,6 +46,7 @@ public sealed record ExerciseDto(
     VideoSource VideoSource,
     string? VideoUrl,
     string? ImageUrl,
+    string? MuscleGroup,
     List<ExerciseSetDto> Sets);
 
 public sealed record ExerciseSetDto(
