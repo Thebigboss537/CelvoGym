@@ -40,6 +40,7 @@ The handoff bundle (`design_handoff_kondix_v2/`) is the source of truth for visu
 | Q7 | Per-week program overrides | New entity `ProgramWeekOverride (Id, ProgramId, WeekIndex, Notes)`, `UNIQUE(ProgramId, WeekIndex)` | Scales for future per-week metadata; semantic clarity (overrides are of the week, not of the routine-program junction). |
 | Q8 | Video pill on `<kx-exercise-thumb>` | Show pill **only** in catalog grid and exercise picker. Hidden in routine wizard, student logging, and trainer timeline. | Avoid visual noise where redundant ("Ver demo" button already covers logging) or out-of-context (timeline is historical). |
 | Q9 | `muscleGroup` access in frontend | Project from catalog into `ExerciseDto` (server side) | Avoids extra join on client; consistent with how `imageUrl` / `videoUrl` are already projected. |
+| Q10 | Trainer auto-seed + approval flow location | (a) `ApproveTrainerCommand` in Kondix triggers `SeedCatalogCommand` in the same transaction. (b) Approval UI lives in CelvoAdmin as a new sidebar section. (c) Cross-app call uses `X-Internal-Key` shared-secret pattern — same as CelvoGuard's `/internal/tenants/{id}/plan`. | Cumple "que el trainer tenga ya algunos ejercicios creados". CelvoAdmin owns admin actions per ecosystem CLAUDE.md. Established pattern. |
 
 **Out-of-band agreement:** the user accepts wiping Kondix data if migrations need to be destructive. Default approach is still additive + nullable for safety; destructive paths are explicitly flagged below when chosen.
 
@@ -253,6 +254,12 @@ Each phase ends with a green build, optional E2E coverage, and is independently 
 - `youtubeEmbedUrl` util extracted.
 - Project `muscleGroup` into `ExerciseDto` (backend, no migration — add to projections).
 
+### Phase 1.5 — Trainer approval & auto-seed (parallel, no migration)
+Independently shippable. Can run alongside Phase 1 since they don't conflict. Detail in §11.
+- Kondix: `ApproveTrainerCommand` (idempotent; calls `SeedCatalogCommand` in same transaction).
+- Kondix: new `InternalTrainersController` with `POST /api/v1/internal/trainers/{id}/approve` and `GET /api/v1/internal/trainers/pending`, both gated by `X-Internal-Key`.
+- CelvoAdmin: companion spec + plan in its own repo (out of scope for this spec to design in detail; outlined in §11.3).
+
 ### Phase 2 — Video demo overlay (no migration)
 - `<kx-video-demo-overlay>`.
 - "Ver demo" button in `exercise-logging.ts`. Visual sólo.
@@ -318,6 +325,64 @@ Each phase ends with a green build, optional E2E coverage, and is independently 
 
 - Student can: take a per-set note, give per-exercise RPE+note feedback, choose mood + note at session end, recover a missed training day, see PR toast on new record, watch demo video inline.
 - Trainer can: see "unread" badge on Progreso tab, see banner CTA on Resumen when there's recent feedback, expand sessions in timeline to read all notes/RPE/mood, drag-drop routines into a weekly program grid, add per-week notes.
+- Admin (CelvoAdmin operator) can: see pending Kondix trainers and approve them with one click, with the catalog auto-populated.
 - All shared components consistent with `kondix-web/.impeccable.md` design tokens. No new color tokens outside the existing system.
 - Each phase shippable independently; production deploy applies migrations cleanly without backfill scripts.
 - Build green (.NET + Angular + ArchTests + IntegrationTests + Playwright E2E for changed flows).
+
+---
+
+## 11. Cross-repo: CelvoAdmin integration for trainer approval
+
+### 11.1 Goal
+Make the Kondix catalog already populated with 50 canonical exercises by the time a newly-approved trainer logs in for the first time. Move the manual approval step from "edit DB by hand" to a one-click action in CelvoAdmin.
+
+### 11.2 Kondix-side (this spec covers in detail)
+
+**`ApproveTrainerCommand`** — `Kondix.Application/Commands/Onboarding/ApproveTrainerCommand.cs`:
+```csharp
+public sealed record ApproveTrainerCommand(Guid TrainerId) : IRequest<ApprovalResult>;
+public sealed record ApprovalResult(DateTimeOffset ApprovedAt, int ExercisesSeeded, bool AlreadyApproved);
+```
+Handler:
+- Loads `Trainer` by id; 404 if not found.
+- If `IsApproved == true` → return `AlreadyApproved = true, ExercisesSeeded = 0` without re-seeding.
+- Otherwise: set `IsApproved = true`, `ApprovedAt = DateTimeOffset.UtcNow`, then dispatch `SeedCatalogCommand(trainerId)` inside the same `SaveChangesAsync` boundary; return `{ approvedAt, exercisesSeeded, alreadyApproved: false }`.
+- Idempotent under concurrent calls (the seed handler is already idempotent by case-insensitive name match).
+
+**`InternalTrainersController`** — `Kondix.Api/Controllers/InternalTrainersController.cs` (new, registered always):
+- `[Route("api/v1/internal/trainers")]`.
+- Auth: same `X-Internal-Key` validation as `InternalTestController`, reading from `Internal:ApiKey` config. Helper extracted into `Kondix.Api/Internal/InternalAuth.cs` and reused by both controllers (no copy-paste).
+- `GET /pending` → `ListPendingTrainersQuery` returns `[{ trainerId, displayName, email, registeredAt }]`. Ordered oldest first.
+- `POST /{trainerId:guid}/approve` → dispatches `ApproveTrainerCommand`; returns 200 with `ApprovalResult` body or 404 if trainer not found.
+
+**Config:**
+- `appsettings.json` adds `"Internal": { "ApiKey": "" }`. Real key only via env var `Internal__ApiKey` in deploy.
+- `deploy/docker-compose.prod.yml` adds env var passthrough; secret stored in `deploy/.env` next to existing `INTERNAL_API_KEY` (CelvoGuard already uses one — confirm whether to share or split; recommend **split** so each app has its own scope).
+
+**Existing `InternalTestController.approve-trainer`** stays untouched. It is registered only in Dev/Testing for E2E cleanup; production wisdom is unchanged.
+
+### 11.3 CelvoAdmin-side (high-level outline; needs its own spec)
+
+The detailed design lives in CelvoAdmin's own repo (`docs/superpowers/specs/`) — this section is a placeholder so the Kondix plan knows what depends on it. Outline:
+
+- **Backend**: new `KondixTrainersController` proxying:
+  - `GET /api/v1/kondix/trainers/pending` → calls Kondix `GET /internal/trainers/pending`.
+  - `POST /api/v1/kondix/trainers/{id}/approve` → calls Kondix `POST /internal/trainers/{id}/approve`.
+  - Auth: CelvoGuard JWT for the CelvoAdmin operator. Inline `RequirePermission("celvoadmin:kondix-trainers:approve")`.
+  - HttpClient configured from `Kondix:ApiUrl` + `Kondix:InternalApiKey` (resolved from env vars `KONDIX__APIURL` and `KONDIX__INTERNALAPIKEY` in deploy).
+- **Frontend**: new feature `celvoadmin-web/src/app/features/kondix-trainers/` with route `/admin/kondix/trainers`, lazy-loaded. Sidebar entry under a new "Aprobaciones" group. Lists pending trainers with avatar, name, email, fecha registro; "Aprobar" button → POST → toast "Trainer aprobado · 50 ejercicios cargados" (uses returned `exercisesSeeded`). Tras aprobación el trainer desaparece de la lista.
+- **CelvoGuard**: register permission `celvoadmin:kondix-trainers:approve` for the `celvoadmin` app (one row in `celvoguard.permissions`).
+
+### 11.4 Sequencing
+
+1. Land **Kondix-side** first (`ApproveTrainerCommand` + `InternalTrainersController` + config). Ship behind the existing `InternalTestController.approve-trainer` for E2E coverage. Verifiable in production via `curl` against Kondix from VM with the shared secret.
+2. Land **CelvoAdmin-side** in its own PR/branch in the CelvoAdmin repo. Until that ships, prod approvals can be done ad-hoc by SSH-ing the VM and calling Kondix internal endpoint directly.
+3. Both pieces are independently shippable; the user-facing benefit (one-click approve in CelvoAdmin UI) only lands once both are deployed.
+
+### 11.5 Out of scope for §11
+
+- Trainer rejection flow (no `IsRejected` field added). Add later if needed.
+- Auto-approval on registration (manual approval is intentional per CLAUDE.md trainer onboarding flow).
+- Re-seeding the catalog after approval (the seed is one-shot per trainer; if they delete exercises, the manual button in empty-state still works as fallback).
+- Notifying the trainer by email/push that they were approved — relies on whatever trainer-onboarding email infra exists or doesn't (Resend mention in CLAUDE.md is per-app and out of scope here).
