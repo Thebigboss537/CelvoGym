@@ -4,6 +4,7 @@ import { ApiService } from '../../../../core/services/api.service';
 import { KxSpinner } from '../../../../shared/ui/spinner';
 import { KxEmptyState } from '../../../../shared/ui/empty-state';
 import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
+import { KxExerciseThumb } from '../../../../shared/ui/exercise-thumb';
 import { ToastService } from '../../../../shared/ui/toast';
 
 interface CatalogExercise {
@@ -23,7 +24,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
 @Component({
   selector: 'app-catalog-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, KxSpinner, KxEmptyState, KxConfirmDialog],
+  imports: [FormsModule, KxSpinner, KxEmptyState, KxConfirmDialog, KxExerciseThumb],
   template: `
     <div class="animate-fade-up px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
 
@@ -248,26 +249,13 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
               (click)="editExercise(ex)"
             >
               <!-- Thumbnail -->
-              <div class="h-24 bg-bg-raised flex items-center justify-center relative overflow-hidden">
-                @if (ex.imageUrl) {
-                  <img [src]="ex.imageUrl" [alt]="ex.name" class="w-full h-full object-cover" loading="lazy" />
-                  @if (ex.videoUrl) {
-                    <span class="absolute top-1.5 right-1.5 bg-black/60 text-white text-[10px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1">
-                      <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z"/></svg>
-                      video
-                    </span>
-                  }
-                } @else if (ex.videoUrl) {
-                  <svg class="w-10 h-10 text-text-muted/40" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7L8 5z"/>
-                  </svg>
-                } @else {
-                  <svg class="w-8 h-8 text-text-muted/30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M6.5 6.5h11M6.5 17.5h11M4 12h1.5m13 0H20M6 8.5A2.5 2.5 0 018.5 6h7A2.5 2.5 0 0118 8.5v7A2.5 2.5 0 0115.5 18h-7A2.5 2.5 0 016 15.5v-7z"/>
-                  </svg>
-                }
-              </div>
+              <kx-exercise-thumb
+                [name]="ex.name"
+                [muscleGroup]="ex.muscleGroup"
+                [photoUrl]="ex.imageUrl"
+                size="lg"
+                [hasVideo]="!!ex.videoUrl"
+              />
               <!-- Card body -->
               <div class="p-3">
                 <p class="text-sm font-semibold text-text leading-tight line-clamp-2">{{ ex.name }}</p>
