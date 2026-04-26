@@ -84,7 +84,7 @@ interface FlatExercise {
             @if (exercise()!.tempo) {
               <p class="text-text-muted text-xs mt-1 tracking-widest uppercase">Tempo {{ exercise()!.tempo }}</p>
             }
-            @if (exercise()!.videoUrl) {
+            @if (exercise()!.videoSource === 'YouTube' && exercise()!.videoUrl) {
               <div class="mt-3 flex justify-center">
                 <button
                   type="button"
