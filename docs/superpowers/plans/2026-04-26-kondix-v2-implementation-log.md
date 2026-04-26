@@ -55,3 +55,13 @@ _Started:_ 2026-04-26
 - CelvoAdmin-side work (UI + proxy controller) is OUT OF SCOPE for this plan. The CelvoAdmin spec/plan in its own repo must consume `Internal__ApiKey` as `Kondix__InternalApiKey` and resolve emails by joining `celvoguard.users` on the returned `CelvoGuardUserId`.
 - Branch ready to merge to main with `--no-ff`.
 
+## Phase 2 — Video demo overlay
+
+_Branch:_ `feat/v2-phase-2`
+_Started:_ 2026-04-26
+
+| Tarea | Tipo | Descripción | Resolución |
+|---|---|---|---|
+| Task 2.1 | decision | Tightened backdrop click handler to compare `event.target === event.currentTarget` so events bubbling from the inner iframe (which can vary across browsers) don't accidentally close the overlay. | Resolved in commit `1c8a6e37`. |
+| Task 2.2 | deviation | Plan said gate the "Ver demo" pill on `exercise.videoUrl` only. The overlay only handles YouTube URLs — exposing the pill for `videoSource === 'Upload'` would render "No se pudo cargar el vídeo." Tightened the gate to `videoSource === 'YouTube' && videoUrl` so the surface matches actual capability. Latent regression — Upload not enabled in prod today (MinIO bucket `kondix-videos` not provisioned). | Resolved in commit (post-`f53150ea`). |
+
