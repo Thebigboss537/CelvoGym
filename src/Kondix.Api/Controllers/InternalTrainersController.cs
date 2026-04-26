@@ -30,7 +30,7 @@ public class InternalTrainersController(IMediator mediator, IConfiguration confi
             var result = await mediator.Send(new ApproveTrainerCommand(trainerId), ct);
             return Ok(result);
         }
-        catch (InvalidOperationException ex) when (ex.Message == "Trainer not found")
+        catch (InvalidOperationException ex) when (ex.Message == ApproveTrainerCommand.TrainerNotFoundMessage)
         {
             return NotFound(new { error = "trainer not found" });
         }

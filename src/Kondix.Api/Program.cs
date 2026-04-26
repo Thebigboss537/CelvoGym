@@ -119,7 +119,7 @@ try
         ctx => ctx.Request.Path.StartsWithSegments("/api/v1")
                && !ctx.Request.Path.StartsWithSegments("/api/v1/public")
                && !ctx.Request.Path.StartsWithSegments("/api/v1/health")
-               && !ctx.Request.Path.StartsWithSegments("/api/v1/internal/test"),
+               && !ctx.Request.Path.StartsWithSegments("/api/v1/internal"),
         branch =>
         {
             branch.UseMiddleware<CelvoGuardMiddleware>();

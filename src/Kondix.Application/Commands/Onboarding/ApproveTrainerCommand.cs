@@ -5,7 +5,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kondix.Application.Commands.Onboarding;
 
-public sealed record ApproveTrainerCommand(Guid TrainerId) : IRequest<ApprovalResult>;
+public sealed record ApproveTrainerCommand(Guid TrainerId) : IRequest<ApprovalResult>
+{
+    public const string TrainerNotFoundMessage = "Trainer not found";
+}
 
 public sealed record ApprovalResult(
     DateTimeOffset? ApprovedAt,
@@ -18,7 +21,7 @@ public sealed class ApproveTrainerCommandHandler(IKondixDbContext db, IMediator 
     public async Task<ApprovalResult> Handle(ApproveTrainerCommand request, CancellationToken cancellationToken)
     {
         var trainer = await db.Trainers.FirstOrDefaultAsync(t => t.Id == request.TrainerId, cancellationToken)
-            ?? throw new InvalidOperationException("Trainer not found");
+            ?? throw new InvalidOperationException(ApproveTrainerCommand.TrainerNotFoundMessage);
 
         if (trainer.IsApproved)
             return new ApprovalResult(trainer.ApprovedAt, 0, true);
