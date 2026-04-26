@@ -17,6 +17,11 @@ describe('youtubeEmbedUrl', () => {
       'https://www.youtube.com/embed/foo?autoplay=1&rel=0',
     );
   });
+  it('normalizes youtube.com/shorts/ links', () => {
+    expect(youtubeEmbedUrl('https://www.youtube.com/shorts/abc123')).toBe(
+      'https://www.youtube.com/embed/abc123?autoplay=1&rel=0',
+    );
+  });
   it('returns null for non-YouTube URLs', () => {
     expect(youtubeEmbedUrl('https://vimeo.com/123')).toBeNull();
   });
