@@ -1,8 +1,10 @@
-# KONDIX
+# Kondix
 
-Gym training management app — part of the Celvo ecosystem.
+Gym training management app for personal trainers. Production at `kondix.celvo.dev`.
 
-See `../CLAUDE.md` for ecosystem-wide conventions, auth flow, and infrastructure details.
+> Renombrado desde `gym` a Kondix (abril 2026). Schema DB (`kondix`, migración `20260413184100_RenameSchemaToKondix`), AppSlug CelvoGuard (`kondix`), cookies (`cg-*-kondix`), dominio, imágenes GHCR (`kondix-api`/`kondix-web`) migrados. Caddy mantiene `gym.celvo.dev` como redirect 301 permanente → `kondix.celvo.dev`. Migraciones EF viejas conservan `HasDefaultSchema("gym")` por snapshot histórico (correcto — no tocar).
+
+> See `../CLAUDE.md` for ecosystem-wide conventions, shared infra, and cross-app auth flow.
 
 ## What This App Does
 
@@ -11,10 +13,11 @@ Trainers create workout routines, group them into programs, and assign programs 
 ## Architecture
 
 - **Backend**: .NET 10, Clean Architecture (Domain → Application → Infrastructure → Api)
-- **Frontend**: Angular SPA (`kondix-web/`), Tailwind CSS, dark theme
-- **Auth**: CelvoGuard (trainers = operators, students = end-users, both email+password)
-- **Database**: PostgreSQL schema `gym` in shared `celvo` database
-- **Domain**: `kondix.celvo.dev`
+- **Frontend**: Angular 21 SPA (`kondix-web/`), Tailwind CSS 4, dark theme only
+- **Auth**: CelvoGuard via NuGet `CelvoGuard.Client 2.0.0` (trainers = operators, students = end-users, both email+password)
+- **Database**: PostgreSQL schema `kondix` in shared `celvo` database (same DB as Fidly and Vimor)
+- **Domain**: `kondix.celvo.dev` (redirect: `gym.celvo.dev` 301 → kondix)
+- **Storage**: MinIO bucket `kondix-videos` planeado (trainer-uploaded exercise videos) — **aún NO creado en prod** (verificado 2026-04-23). Por ahora los trainers usan YouTube embed URLs. El bucket debe crearse en MinIO antes de habilitar uploads.
 
 ## Commands
 
@@ -111,6 +114,11 @@ Full design context: `kondix-web/.impeccable.md`
 - **Select styling**: Use `.select-styled` class for dark-themed native selects (defined in `styles.css`)
 - **Shared helpers**: `ProgramWeekHelper.CalculateCurrentWeek()` for week progress calculation — do not inline
 - **Brand assets**: SVG logos in `kondix-web/public/`, brand guidelines in `kondix-web/brand-guidelines.md`
+
+## Known Bugs in Prod (2026-04-23)
+
+- **`Session already completed` exception** — `kondix-api` logs show repeated `System.InvalidOperationException: Session already completed` thrown from `ExceptionHandlerMiddleware`. Middleware chain: `CelvoGuardMiddleware` → `StudentContextMiddleware:42` → `CsrfValidationMiddleware:22`. Cause: middleware writing to response after it's already been flushed. Not fatal (endpoints return, logs show successful commands too), but spamming logs. Needs investigation.
+- **Healthcheck fails** — container image lacks `curl`, so `curl -sf /api/v1/health` always fails. Container shows `unhealthy` despite working. Fix: add `RUN apt-get install -y curl` to Dockerfile OR switch healthcheck to `dotnet --list-runtimes`.
 
 ## Gotchas
 
