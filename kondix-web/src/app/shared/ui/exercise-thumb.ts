@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-type ThumbSize = 'xs' | 'sm' | 'md' | 'lg';
+type ThumbSize = 'xs' | 'sm' | 'md' | 'lg' | 'fill';
 
-const SIZE_PX: Record<ThumbSize, number> = {
+// Pixel sizes for fixed variants. 'fill' is omitted because it grows to its
+// container via `w-full aspect-square` instead of a fixed dimension.
+const SIZE_PX: Record<Exclude<ThumbSize, 'fill'>, number> = {
   xs: 32,
   sm: 40,
   md: 56,
@@ -34,8 +36,10 @@ const MUSCLE_TOKEN: Record<string, string> = {
   template: `
     <div
       class="relative rounded-lg overflow-hidden border border-border bg-card-hover flex items-center justify-center shrink-0"
-      [style.width.px]="px()"
-      [style.height.px]="px()"
+      [class.w-full]="size() === 'fill'"
+      [class.aspect-square]="size() === 'fill'"
+      [style.width.px]="size() === 'fill' ? null : px()"
+      [style.height.px]="size() === 'fill' ? null : px()"
     >
       @if (photoUrl()) {
         <img
@@ -73,7 +77,10 @@ export class KxExerciseThumb {
   size = input<ThumbSize>('md');
   hasVideo = input<boolean>(false);
 
-  px = computed(() => SIZE_PX[this.size()]);
+  px = computed(() => {
+    const s = this.size();
+    return s === 'fill' ? null : SIZE_PX[s];
+  });
 
   initials = computed(() => {
     const words = this.name().trim().split(/\s+/).slice(0, 2);

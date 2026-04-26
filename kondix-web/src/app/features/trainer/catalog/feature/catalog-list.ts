@@ -253,7 +253,7 @@ const EXTRA_CHIPS = ['Glúteos', 'Cardio', 'Movilidad', 'Funcional'];
                 [name]="ex.name"
                 [muscleGroup]="ex.muscleGroup"
                 [photoUrl]="ex.imageUrl"
-                size="lg"
+                size="fill"
                 [hasVideo]="!!ex.videoUrl"
               />
               <!-- Card body -->
