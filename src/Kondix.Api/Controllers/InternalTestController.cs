@@ -1,3 +1,4 @@
+using Kondix.Api.Internal;
 using Kondix.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,13 +13,8 @@ namespace Kondix.Api.Controllers;
 [Route("api/v1/internal/test")]
 public class InternalTestController(KondixDbContext db, IConfiguration config) : ControllerBase
 {
-    private bool AuthorizeInternal()
-    {
-        var expected = config["Testing:InternalApiKey"];
-        if (string.IsNullOrEmpty(expected)) return false;
-        var provided = Request.Headers["X-Internal-Key"].ToString();
-        return !string.IsNullOrEmpty(provided) && provided == expected;
-    }
+    private bool AuthorizeInternal() =>
+        InternalAuth.IsAuthorized(Request, config, "Testing:InternalApiKey");
 
     [HttpPost("approve-trainer")]
     public async Task<IActionResult> ApproveTrainer(
