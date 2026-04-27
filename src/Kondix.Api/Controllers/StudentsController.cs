@@ -3,6 +3,7 @@ using Kondix.Application.Commands.Notes;
 using Kondix.Application.Commands.Sessions;
 using Kondix.Application.Commands.Students;
 using Kondix.Application.Queries.Notes;
+using Kondix.Application.Queries.Sessions;
 using Kondix.Application.Queries.Students;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -94,6 +95,15 @@ public class StudentsController(IMediator mediator) : ControllerBase
         var pngBytes = qrCode.GetGraphic(10);
 
         return File(pngBytes, "image/png", "invite-qr.png");
+    }
+
+    [HttpGet("{id:guid}/sessions")]
+    public async Task<IActionResult> GetSessions(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission("kondix:students:read");
+        var result = await mediator.Send(
+            new GetStudentSessionsForTrainerQuery(HttpContext.GetTrainerId(), id), ct);
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}/recent-feedback")]
