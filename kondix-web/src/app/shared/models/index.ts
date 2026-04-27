@@ -238,6 +238,7 @@ export interface CalendarDayDto {
   completedSets: number;
   totalSets: number;
   durationMinutes: number | null;
+  isRecovery: boolean;
 }
 
 export interface ActiveProgramDto {

@@ -31,7 +31,8 @@ public sealed record CalendarDayDto(
     Guid SessionId,
     int CompletedSets,
     int TotalSets,
-    int? DurationMinutes);
+    int? DurationMinutes,
+    bool IsRecovery);
 
 public sealed record ActiveProgramDto(
     string Name,

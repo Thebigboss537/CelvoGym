@@ -59,7 +59,8 @@ public sealed class GetCalendarHandler(IKondixDbContext db)
                 s.Id,
                 stats.Completed,
                 stats.Total,
-                durationMinutes);
+                durationMinutes,
+                s.IsRecovery);
         }).ToList();
 
         // Program info
