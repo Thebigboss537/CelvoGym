@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
 interface SetTypeConfig {
   bg: string;
@@ -33,7 +33,7 @@ export interface SetCompleteEvent {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
-      class="grid grid-cols-[44px_60px_1fr_1fr_1fr_48px] gap-2 py-2.5 px-1 items-center"
+      class="grid grid-cols-[44px_60px_1fr_1fr_1fr_28px_28px] gap-2 py-2.5 px-1 items-center"
       [class]="rowClass()"
     >
       <!-- Column 1: SET label badge -->
@@ -108,7 +108,41 @@ export interface SetCompleteEvent {
           <div class="w-8 h-8 rounded-full border border-border flex items-center justify-center opacity-50"></div>
         }
       </div>
+
+      <!-- Column 6: NOTE toggle -->
+      @if (showNoteToggle()) {
+        <button
+          type="button"
+          class="w-7 h-7 rounded-md flex items-center justify-center text-text-muted hover:text-primary transition"
+          [class.text-primary]="(note() ?? '').length > 0 || noteOpen()"
+          (click)="toggleNote()"
+          [attr.aria-label]="noteOpen() ? 'Cerrar nota' : 'Añadir nota'"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.243-.95L3 20l1.05-3.757A8.96 8.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
+        </button>
+      } @else {
+        <span></span>
+      }
     </div>
+
+    @if (showNoteToggle()) {
+      <div class="collapse-content" [class.expanded]="noteOpen()">
+        <div class="overflow-hidden pl-12 pr-2 pb-2">
+          <input
+            type="text"
+            class="w-full bg-card-hover border border-border-light rounded-md px-3 py-1.5 text-xs text-text placeholder:text-text-muted focus:outline-none focus:border-primary"
+            placeholder="Nota para esta serie…"
+            [value]="draftNote"
+            (input)="onNoteInput($event)"
+            (blur)="commitNote()"
+            (keydown.enter)="commitNote()"
+            maxlength="2000"
+          />
+        </div>
+      </div>
+    }
   `,
 })
 export class KxSetRow {
@@ -120,10 +154,17 @@ export class KxSetRow {
   rpe = input<number | null>(null);
   previousKg = input<number | null>(null);
 
+  note = input<string | null>(null);
+  showNoteToggle = input<boolean>(false);
+
   complete = output<SetCompleteEvent>();
   kgChange = output<number>();
   repsChange = output<number>();
   rpeChange = output<number>();
+  noteChange = output<string>();
+
+  readonly noteOpen = signal(false);
+  draftNote = '';
 
   badgeConfig = computed((): SetTypeConfig => {
     return SET_TYPE_CONFIG[this.setType()] ?? SET_TYPE_CONFIG['Effective'];
@@ -189,5 +230,20 @@ export class KxSetRow {
     const reps = this.reps();
     if (kg == null || reps == null) return;
     this.complete.emit({ kg, reps, rpe: this.rpe() });
+  }
+
+  toggleNote(): void {
+    this.draftNote = this.note() ?? '';
+    this.noteOpen.update(v => !v);
+  }
+
+  onNoteInput(event: Event): void {
+    this.draftNote = (event.target as HTMLInputElement).value;
+  }
+
+  commitNote(): void {
+    const trimmed = this.draftNote.trim();
+    if (trimmed !== (this.note() ?? '')) this.noteChange.emit(trimmed);
+    this.noteOpen.set(false);
   }
 }
