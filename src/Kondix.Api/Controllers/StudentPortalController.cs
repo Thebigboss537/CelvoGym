@@ -52,7 +52,7 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
     public async Task<IActionResult> CompleteSession(Guid id, [FromBody] CompleteSessionRequest? request, CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
-        var result = await mediator.Send(new CompleteSessionCommand(id, studentId, request?.Notes), ct);
+        var result = await mediator.Send(new CompleteSessionCommand(id, studentId, request?.Notes, request?.Mood), ct);
         return Ok(result);
     }
 
@@ -195,10 +195,26 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
 
         return Created($"/api/v1/public/my/comments/{result.Id}", result);
     }
+
+    [HttpPatch("sets/{setLogId:guid}/note")]
+    public async Task<IActionResult> UpdateSetNote(Guid setLogId, [FromBody] UpdateSetNoteRequest request, CancellationToken ct)
+    {
+        var studentId = HttpContext.GetStudentId();
+        await mediator.Send(new UpdateSetNoteCommand(studentId, setLogId, request.Note), ct);
+        return NoContent();
+    }
+
+    [HttpPost("sessions/{id:guid}/exercise-feedback")]
+    public async Task<IActionResult> UpsertExerciseFeedback(Guid id, [FromBody] UpsertExerciseFeedbackRequest request, CancellationToken ct)
+    {
+        var studentId = HttpContext.GetStudentId();
+        await mediator.Send(new UpsertExerciseFeedbackCommand(studentId, id, request.ExerciseId, request.ActualRpe, request.Notes), ct);
+        return NoContent();
+    }
 }
 
 public sealed record StartSessionRequest(Guid RoutineId, Guid DayId);
-public sealed record CompleteSessionRequest(string? Notes);
+public sealed record CompleteSessionRequest(string? Notes, MoodType? Mood);
 public sealed record ToggleSetRequest(Guid SessionId, Guid SetId, Guid RoutineId);
 public sealed record UpdateSetDataRequest(Guid SessionId, Guid SetId, Guid RoutineId, string? Weight, string? Reps, int? Rpe);
 public sealed record CreateStudentCommentRequest(Guid RoutineId, Guid DayId, Guid? ExerciseId, string Text);
@@ -209,3 +225,5 @@ public sealed record CreateBodyMetricRequest(
     string? Notes,
     List<BodyMeasurementRequest> Measurements);
 public sealed record BodyMeasurementRequest(MeasurementType Type, decimal Value);
+public sealed record UpdateSetNoteRequest(string? Note);
+public sealed record UpsertExerciseFeedbackRequest(Guid ExerciseId, int ActualRpe, string? Notes);

@@ -9,7 +9,8 @@ namespace Kondix.Application.Commands.Sessions;
 public sealed record CompleteSessionCommand(
     Guid SessionId,
     Guid StudentId,
-    string? Notes) : IRequest<WorkoutSessionDto>;
+    string? Notes,
+    MoodType? Mood) : IRequest<WorkoutSessionDto>;
 
 public sealed class CompleteSessionHandler(IKondixDbContext db)
     : IRequestHandler<CompleteSessionCommand, WorkoutSessionDto>
@@ -21,14 +22,14 @@ public sealed class CompleteSessionHandler(IKondixDbContext db)
                 && ws.StudentId == request.StudentId, cancellationToken)
             ?? throw new InvalidOperationException("Session not found");
 
-        if (session.CompletedAt is not null)
-            throw new InvalidOperationException("Session already completed");
+        var firstCompletion = session.CompletedAt is null;
+        if (firstCompletion) session.CompletedAt = DateTimeOffset.UtcNow;
 
-        session.CompletedAt = DateTimeOffset.UtcNow;
         session.Notes = request.Notes;
+        session.Mood = request.Mood;
 
-        // Advance rotation index for rotation-mode programs
-        if (session.ProgramAssignmentId.HasValue)
+        // Advance rotation index and auto-complete only on first completion
+        if (firstCompletion && session.ProgramAssignmentId.HasValue)
         {
             var pa = await db.ProgramAssignments
                 .FirstOrDefaultAsync(p => p.Id == session.ProgramAssignmentId

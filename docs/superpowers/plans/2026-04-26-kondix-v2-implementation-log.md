@@ -76,38 +76,53 @@ _Started:_ 2026-04-26
 - Carryover items to address opportunistically: Esc-key close + focus management on `<kx-video-demo-overlay>` (and `<kx-confirm-dialog>` together) as a Phase 4 / visual-polish sweep; revisit pill placement in Phase 3 once muscle-group/equipment badges land alongside it; if MinIO uploads ever go live, either extend `<kx-video-demo-overlay>` to render `<video>` for `videoSource='Upload'` or relax the pill gate.
 - Branch merged to main via `81dc3ab6` and pushed to `origin/main` on 2026-04-26.
 
+## Phase 3 — Bidirectional feedback loop
+
+_Branch:_ `feat/v2-phase-3`
+_Started:_ 2026-04-26
+
+| Tarea | Tipo | Descripción | Resolución |
+|---|---|---|---|
+| Task 3.A.3 | note | Plan referenced `IKondixDbContext.cs` but actual filename is `ICelvoGymDbContext.cs` (legacy from gym→kondix rename). The interface declared inside is correctly named `IKondixDbContext`. Implementer used the right file. | Resolved (commit `8ea75160`). Follow-up: rename file to `IKondixDbContext.cs` opportunistically. |
+| Task 3.A.4 | deviation | Plan's verification bullet said `set_logs.notes (text NULL)` but the EF `HasMaxLength(2000)` configured in 3.A.3 generates `varchar(2000) NULL`. Functionally equivalent in PostgreSQL (varchar(N) is constrained text). | Resolved as-is (commit `c7b98eeb`). Plan wording was self-inconsistent; the migration matches the EF config. |
+| Task 3.A.7 | note | Plan-vs-actual enum-name verification: `ProgramAssignmentStatus` / `ProgramAssignmentMode` / `pa.EndDate` / `pa.Mode` all matched the actual entity (the generic `.claude/rules/backend-domain.md` lists looser names — informal). No drift to fix. | Resolved (commit `06664c14`). |
+| Task 3.A.7 | deviation | The new `WorkoutSessionDto` returned by `CompleteSessionHandler` carries only `(Id, RoutineId, DayId, StartedAt, CompletedAt, Notes)` — no Duración / Sets / Volumen / PRs stats. The pre-existing `workout-complete.ts` displayed stats from this response; with the simplified DTO the stat cards now show `—`. Plan accepted the simplification because mood capture moved the screen from "auto-complete then redirect" to "user-driven submit". | Resolved with downstream impact in 3.C.4 (commit `444382c3`); follow-up: re-add stats via a separate `GET /sessions/{id}/summary` if MVP feedback flags it. |
+| Task 3.A.8 | note | Plan referenced `src/Kondix.Application/Commands/Sessions/UpdateSetDataCommand.cs` but actual file lives in `Commands/Progress/`. Implementer used the right path; the response DTO `UpdateSetDataResponse` was added to `Application/DTOs/SessionDtos.cs` per plan. | Resolved (commit `432d2b37`). |
+| Task 3.A.8 | deviation | Plan listed only one stub unit test for the PR-inline behavior. Implementer wrote 4 (no-PR path, PR-detected path, exercise-name mismatch, swallowed-failure path) and used NSubstitute to stub `IMediator` — `DetectNewPRsCommand` only fires for `Completed=true` set logs, but `UpdateSetDataCommand` never sets that flag, so a real-DB test could not exercise the PR-found branch. | Resolved (commit `432d2b37`). Coverage tightened beyond plan minimum. |
+| Task 3.A.10 | deviation | Plan code shows `RequirePermission("kondix:students:read")` as a bare method call inside the controller; the actual helper is an extension method on `HttpContext` (`HttpContext.RequirePermission(...)`). Implementer used the actual signature. | Resolved (commit `3e028265`). |
+| Task 3.A.10 | deviation | Adding `using Kondix.Application.Queries.Analytics;` to `StudentsController.cs` triggered an ambiguity with `Kondix.Application.Queries.Students` (both contain `GetStudentOverviewQuery`). Resolved with a namespace alias `using Analytics = Kondix.Application.Queries.Analytics;` and qualifying the call as `Analytics.GetRecentFeedbackQuery(id)`. | Resolved (commit `3e028265`). |
+| Task 3.B.2 | deviation | `[class.bg-primary/10]="..."` does not parse — Angular's class binding key parser rejects forward slashes. Replaced with `[style.backgroundColor]="value() === m.value ? 'rgba(230,38,57,0.10)' : null"`. | Resolved (commit `49c752f8`). Pattern recurred in 3.B.5 / 3.D.* — `[class.X]` accepts simple Tailwind classes only; for opacity-modifier strings (`bg-primary/10`), use `[style.*]` or `[ngClass]` array form. |
+| Task 3.B.5 | deviation | Three template adaptations: (a) `[class.shadow-[0_0_16px_rgba(...)]]` → `[style.boxShadow]` (Angular's `[class.X]` rejects square brackets in the key); (b) `[class.bg-primary/15]` + `[class.text-primary]` → `[ngClass]` array form (slash issue); (c) the `formatSpanishDate` import the plan listed was unused, dropped (TS strict `noUnusedLocals`). Imported `NgClass` from `@angular/common`. | Resolved (commit `40e964bf`). |
+| Task 3.C.1 | deviation | The plan called for `this.api.patch(...)` but `ApiService` had no `patch<T>` method. Implementer added it (`http.patch` with `withCredentials: true`) rather than degrading to `post`. Also pre-staged the `UpdateSetDataResponse` interface in this commit (used in 3.C.3) since both touched the same `models/index.ts`. | Resolved (commit `be0f4075`). |
+| Task 3.C.3 | deviation | Plan's TS `NewPrDto` listed `reps: string \| null`, but the server-side `NewPrDto` in `Kondix.Application/DTOs/PersonalRecordDtos.cs` is `(string ExerciseName, string Weight, string? PreviousWeight)` — no `Reps` field. Implementer kept the TS interface aligned with the server contract; `toast.showPR(name, weight, null)` passes `null` for reps. | Resolved (commit `6ec2d20f`). Future enhancement: extend the server DTO with `Reps` if the toast wants reps detail; until then the toast shows weight only. |
+| Task 3.C.4 | deviation | The pre-existing `workout-complete.ts` auto-called `POST /sessions/{id}/complete` (no-mood, no-notes) on `ngOnInit`. Removed that auto-call so the user explicitly commits via "Finalizar". Side effect: stat cards (Duración / Sets / Volumen / PRs) now show `—` until Finalizar lands the response (and per the 3.A.7 note above, that response no longer carries stats anyway — they show `—` permanently). Navigation target also adjusted from `/workout/home` → `/student/home` per plan. | Resolved (commit `444382c3`). UX follow-up: a `GET /sessions/{id}/summary` endpoint would restore the stat cards. |
+| Task 3.D.1 / 3.D.2 / 3.D.3 / 3.D.6 | deviation | Plan's `KxSegmentedControl` invocations used `[options]="[{value, label}, ...]"` shape, but the actual component takes `string[]` of labels with a `selected: string` value and emits `selectedChange: string`. Implementer adapted via `LABEL_TO_TAB`/`LABEL_TO_FILTER` reverse-maps and `selectedTabLabel`/`selectedLabel` `computed()` signals. | Resolved (commits `91845f56`, `03384db9`, `bec01c09`). Follow-up: extend `<kx-segmented-control>` to accept `{value, label}[]` natively as a Phase 4/5 visual-polish task. |
+| Task 3.D.6 | deviation | Plan said "compare `SetLog.ActualWeight` against `PersonalRecord.Weight` for the matching exercise name and mark the highest as `isPR=true`" — concrete rule chosen: per (session, exercise) group, parse `ActualWeight` strings, find max; if max ≥ existing PR weight, mark **only the first set at that max weight** as PR (avoid spamming PR badges on every set at the same weight). Name match is case-insensitive vs `SnapshotExerciseName`. | Resolved (commit `bec01c09`). |
+| Task 3.D.6 | deviation | `Status` field of `TrainerSessionDto` mapped to MVP rule: `"completed"` if `CompletedAt != null`, else `"partial"`. The `"missed"` value is valid in the TS union but unused server-side; defining a time-based threshold (e.g., 24h after StartedAt) was out of scope. | Resolved (commit `bec01c09`). |
+| Task 3.D.6 | note | `Exercise` entity has no `MuscleGroup`/`ImageUrl` directly — those live on `Exercise.CatalogExercise`. Query projects via `e.CatalogExercise != null ? e.CatalogExercise.MuscleGroup : null` (left join). Plan was loose on this. | Resolved (commit `bec01c09`). |
+| Task 3.D.7 | deviation | Plan said "lift the existing private notes panel" but no frontend panel existed — only the backend (`TrainerNote` domain entity, `Get/Create/Update/DeleteNote` handlers, REST routes `/api/v1/students/{id}/notes`) plus a TS `TrainerNoteDto`. Implementer built the full panel from scratch: list with pinned-first sort, add/edit form with pin toggle, delete with `<kx-confirm-dialog>` confirmation, toasts on mutations. Not a plan defect — the spec/plan implicitly assumed the UI existed. | Resolved (commit `3ba0a906`). The Notas tab is now functional, not just a stub. |
+
 ---
 
-## ▶ Next up: Phase 3 — Bidirectional feedback loop
-
-_Plan reference:_ `docs/superpowers/plans/2026-04-26-kondix-v2-implementation.md` Phase 3 (largest phase: ~23 tasks across sub-phases 3.A backend, 3.B UI components, 3.C student-side integration, 3.D trainer drawer split).
-
-_Spec reference:_ `docs/superpowers/specs/2026-04-26-kondix-v2-feedback-loop-recovery-and-visual-refresh-design.md` §3 decisions Q1–Q4, §4 data model, §5 API §5.1–5.8, §6.1–6.3 components, §7 phase 3 roadmap.
-
-**Resume playbook (for a fresh Claude session):**
-
-1. Confirm starting state: `git status` shows clean on `main`, `git log -1 --oneline` shows `81dc3ab6 Merge branch 'feat/v2-phase-2' into main`. Working tree is sync'd with `origin/main`.
-2. Create the phase branch: `git checkout -b feat/v2-phase-3`.
-3. Invoke `Skill: superpowers:subagent-driven-development` (the same flow used for phases 1, 1.5, 2). Per-task: implementer → spec compliance review → code quality review → next task. Two reviewers per task, fixes loop until approved.
-4. Phase 3 sub-phase order (per plan):
-   - **3.A backend** (Tasks 3.A.1–3.A.10): `MoodType` enum, `ExerciseFeedback` entity + EF config + DbContext, fields on `SetLog`/`WorkoutSession`, migration `AddSessionAndSetFeedbackFields`, commands `UpdateSetNoteCommand` / `UpsertExerciseFeedbackCommand` / idempotent `CompleteSessionCommand` + mood / inline PR detection in `UpdateSetDataCommand` / `MarkFeedbackReadCommand`, query `GetRecentFeedbackQuery`, controller wiring on `StudentPortalController` + trainer students controller.
-   - **3.B UI components** (Tasks 3.B.1–3.B.6): `<kx-rpe-stepper>`, `<kx-mood-picker>`, `<kx-set-chip>`, `<kx-session-row>`, `<kx-exercise-feedback-modal>`, extend `<kx-set-row>` with note toggle.
-   - **3.C student-side integration** (Tasks 3.C.1–3.C.4): wire per-set note + exercise feedback modal + PR toast in `exercise-logging.ts`; mood + notes in `workout-complete.ts`.
-   - **3.D trainer drawer split** (Tasks 3.D.1–3.D.8): split `student-detail.ts` (443 lines) into shell + 4 tabs (`student-detail-{summary,program,progress,notes}.ts`), wire `<kx-segmented-control>`, badge from `recent-feedback`, banner CTA, mark-read on Progreso mount.
-5. Per-phase closeout same as 1/1.5/2: log deviations + closeout summary block; build verde (.NET + Angular + Karma); final phase-wide code review; merge `--no-ff` to main; push; delete local branch.
-6. Apply known carryovers opportunistically while in those areas:
-   - Extract `MUSCLE_TOKEN` from `<kx-exercise-thumb>` to `shared/utils/muscle-color.ts` if a Phase 3 task adds a second consumer (e.g., `<kx-set-chip>` or session-row colored markers).
-   - Add `XML doc` on `PendingTrainerDto.CelvoGuardUserId` (cross-schema email resolution note) if you happen to touch that file.
-
-**Pre-Phase-3 verification (sanity, not blocking):**
-- `dotnet test Kondix.slnx` should show 38 backend specs (20 unit + 8 arch + 10 integration) all passing.
-- `cd kondix-web && npx ng test --watch=false --browsers=ChromeHeadless` should show 10 Karma specs all passing.
-- `cd kondix-web && npx ng build` clean.
-- No uncommitted changes.
-
-**Plan defects to watch for in Phase 3** (based on phases 1/1.5/2 patterns):
-- Field-name drift between plan and entities (Phase 1.5 hit this twice with `UserId` vs `CelvoGuardUserId` and missing `Email`). Verify each entity field reference in the plan against the actual `*.cs` before writing tests.
-- Test infra paths: project uses Karma+Jasmine (not Vitest, despite the rules file). Frontend specs go in `*.spec.ts` colocated with source, no `import { describe ... } from 'vitest'`.
-- Middleware bypass: any new endpoints under `/api/v1/internal/*` are already covered (Phase 1.5 widened the bypass). Endpoints under other paths follow the standard auth chain — if a new endpoint should bypass it, update `Program.cs` `UseWhen` exclusion list explicitly.
-- xUnit cross-class parallelism is disabled at the assembly level (Phase 1.5 added `tests/Kondix.IntegrationTests/AssemblyInfo.cs`). New integration test classes inherit this — no extra config needed.
+**Phase 3 closeout (2026-04-26):**
+- 26 tasks complete in 26 commits + 1 closeout-doc commit + 2 post-review fix commits = **29 commits across `feat/v2-phase-3`**. Sub-phase split: 3.A backend (10 commits), 3.B UI (6 commits), 3.C student-side (4 commits), 3.D trainer drawer (6 commits), closeout (1 doc), post-review fixes (2 commits).
+- 18 deviations + 2 post-review fixes logged above and below (all approved by per-task and final phase-wide reviews).
+- Final phase-wide review (final code-reviewer subagent) flagged 1 critical (missing trainer-student ownership check on `GetRecentFeedbackQuery` + `MarkFeedbackReadCommand`) and 1 important (dead stat-loading code in `workout-complete.ts onFinish()` that the user never saw populate). Both fixed pre-merge:
+  - `dd1ee433 fix(security): trainer ownership checks on recent-feedback + mark-read` — added `TrainerId` to both records, ownership guard via `TrainerStudents.AnyAsync(...)` at the top of each `Handle()`, mirroring the existing pattern in `GetStudentSessionsForTrainerQuery`. Updates `StudentsController` to pass `HttpContext.GetTrainerId()`. Added 3 unit tests (1 fact updated to seed link + pass trainer; 2 new — happy-path mark-read + unauthorized throws).
+  - `68370981 fix(student): drop dead stat-loading code on workout-complete` — removed 145 lines of stat-card markup, supporting signals (`durationLabel`, `completedSets`, `totalSets`, `totalVolume`, `prs`), and methods (`handleSession`, `loadPrsAndStats`). The screen now only renders celebration + mood picker + notes textarea + Finalizar. Stat-card restoration is a documented carryover for a future `GET /sessions/{id}/summary` endpoint.
+- Tests green at branch tip (post-fixes):
+  - .NET: **54 specs** (36 unit + 8 arch + 10 integration). Up from 38 pre-phase (+16 unit specs: 3 UpdateSetNote + 3 UpsertExerciseFeedback + 2 CompleteSession + 4 UpdateSetData + 1+1 GetRecentFeedback (happy + unauth) + 2 MarkFeedbackRead (happy + unauth)).
+  - Angular Karma: **10 specs** (7 youtube + 3 toast — unchanged; this phase added components but no new specs since plans skip Karma per project memory).
+- New surfaces shipped:
+  - **Student logging screen**: per-set 💬 note toggle, exercise feedback modal (RPE + notes) on last set, inline 🏆 PR toast from the `sets/update` response.
+  - **Workout-complete screen**: mood picker (4 emojis) + notes textarea + explicit "Finalizar" button (replaces auto-complete-on-init).
+  - **Trainer student drawer**: 4-tab split (Resumen / Programa / Progreso / Notas) with badge count on Progreso when feedback is unread, banner CTA on Resumen, full session timeline with mood / RPE chips / set chips / PRs / per-exercise notes / session notes, and a complete trainer-private-notes CRUD panel. New backend endpoint `GET /api/v1/students/{id}/sessions` powering the timeline.
+- Backend additive migration `20260426234130_AddSessionAndSetFeedbackFields` lands: `set_logs.notes`, `workout_sessions.{mood,feedback_reviewed_at}`, partial index, new `exercise_feedback` table. **Not yet applied to prod** — `dotnet ef database update` against prod must run as part of the next deploy. No backfill required.
+- Carryover items to address opportunistically:
+  - Rename `src/Kondix.Application/Common/Interfaces/ICelvoGymDbContext.cs` → `IKondixDbContext.cs` (legacy filename; interface inside is already correct).
+  - Extend `<kx-segmented-control>` to natively accept `{value, label}[]` and drop the `LABEL_TO_*` reverse-maps in `student-detail.ts` and `student-detail-progress.ts` (Phase 4/5 visual-polish task).
+  - Restore stat cards on the workout-complete screen (Duración / Sets / Volumen / PRs) by either (a) re-extending `WorkoutSessionDto` with stats or (b) adding a `GET /sessions/{id}/summary` endpoint.
+  - Extend `NewPrDto` server-side with `Reps: string?` if the PR toast should display reps too — TS interface and `toast.showPR(name, weight, reps)` are already wired for it.
+  - `<kx-video-demo-overlay>` + `<kx-confirm-dialog>` Esc-key close + focus management (Phase 2 carryover, still pending).
+- The Phase 4 (Recovery system) plan starts at line 4078 of `2026-04-26-kondix-v2-implementation.md` and is the next session's target.
 

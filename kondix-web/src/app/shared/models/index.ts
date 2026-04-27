@@ -146,6 +146,7 @@ export interface SetLogDto {
   actualWeight: string | null;
   actualReps: string | null;
   actualRpe: number | null;
+  notes?: string | null;
 }
 
 export interface ProgressSummaryDto {
@@ -177,6 +178,29 @@ export interface StudentDayDto {
   blocks: ExerciseBlockDto[];
   setLogs: SetLogDto[];
   progress: ProgressSummaryDto;
+}
+
+// Trainer Session (used by trainer drawer timeline — 3.B.5)
+export interface TrainerSessionExerciseDto {
+  exerciseId: string;
+  name: string;
+  muscleGroup: string | null;
+  imageUrl: string | null;
+  actualRpe: number | null;
+  notes: string | null;
+  sets: { weight: string; reps: number; isPR: boolean; note: string | null; setType: string }[];
+}
+
+export interface TrainerSessionDto {
+  sessionId: string;
+  routineName: string;
+  dayName: string;
+  startedAt: string;
+  completedAt: string | null;
+  mood: 'Great' | 'Good' | 'Ok' | 'Tough' | null;
+  notes: string | null;
+  status: 'completed' | 'partial' | 'missed';
+  exercises: TrainerSessionExerciseDto[];
 }
 
 // Sessions
@@ -325,6 +349,11 @@ export interface NewPrDto {
   previousWeight: string | null;
 }
 
+export interface UpdateSetDataResponse {
+  setLog: SetLogDto;
+  newPr: NewPrDto | null;
+}
+
 // Body Metrics
 export interface BodyMetricDto {
   id: string;
@@ -381,4 +410,18 @@ export interface CommentDto {
   authorName: string;
   text: string;
   createdAt: string;
+}
+
+// Recent Feedback (trainer view of student session feedback)
+export interface RecentFeedbackSessionDto {
+  sessionId: string;
+  routineName: string;
+  completedAt: string;
+  mood: string | null;
+  hasNotes: boolean;
+}
+
+export interface RecentFeedbackDto {
+  unreadCount: number;
+  sessions: RecentFeedbackSessionDto[];
 }

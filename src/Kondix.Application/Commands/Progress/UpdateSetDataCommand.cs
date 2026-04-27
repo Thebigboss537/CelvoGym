@@ -1,3 +1,4 @@
+using Kondix.Application.Commands.PersonalRecords;
 using Kondix.Application.Common.Interfaces;
 using Kondix.Application.DTOs;
 using Kondix.Domain.Entities;
@@ -13,12 +14,12 @@ public sealed record UpdateSetDataCommand(
     Guid RoutineId,
     string? Weight,
     string? Reps,
-    int? Rpe) : IRequest<SetLogDto>;
+    int? Rpe) : IRequest<UpdateSetDataResponse>;
 
-public sealed class UpdateSetDataHandler(IKondixDbContext db)
-    : IRequestHandler<UpdateSetDataCommand, SetLogDto>
+public sealed class UpdateSetDataHandler(IKondixDbContext db, IMediator mediator)
+    : IRequestHandler<UpdateSetDataCommand, UpdateSetDataResponse>
 {
-    public async Task<SetLogDto> Handle(UpdateSetDataCommand request, CancellationToken cancellationToken)
+    public async Task<UpdateSetDataResponse> Handle(UpdateSetDataCommand request, CancellationToken cancellationToken)
     {
         var session = await db.WorkoutSessions
             .FirstOrDefaultAsync(ws => ws.Id == request.SessionId
@@ -76,7 +77,22 @@ public sealed class UpdateSetDataHandler(IKondixDbContext db)
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        return new SetLogDto(log.Id, log.SetId, log.Completed,
+        var dto = new SetLogDto(log.Id, log.SetId, log.Completed,
             log.CompletedAt, log.ActualWeight, log.ActualReps, log.ActualRpe);
+
+        NewPrDto? pr = null;
+        try
+        {
+            var prs = await mediator.Send(new DetectNewPRsCommand(request.StudentId, request.SessionId), cancellationToken);
+            pr = prs.FirstOrDefault(p => p.ExerciseName == log.SnapshotExerciseName);
+        }
+        catch
+        {
+            // PR detection failure must not block the set update — toast missed
+            // is recoverable, write durability is not.
+            pr = null;
+        }
+
+        return new UpdateSetDataResponse(dto, pr);
     }
 }

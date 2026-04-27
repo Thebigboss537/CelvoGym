@@ -1,4 +1,5 @@
 using Kondix.Domain.Common;
+using Kondix.Domain.Enums;
 
 namespace Kondix.Domain.Entities;
 
@@ -11,6 +12,8 @@ public class WorkoutSession : BaseEntity
     public DateTimeOffset StartedAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
     public string? Notes { get; set; }
+    public MoodType? Mood { get; set; }
+    public DateTimeOffset? FeedbackReviewedAt { get; set; }
 
     public Student Student { get; set; } = null!;
     public ProgramAssignment? ProgramAssignment { get; set; }

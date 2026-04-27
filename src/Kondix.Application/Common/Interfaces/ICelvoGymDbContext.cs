@@ -28,6 +28,7 @@ public interface IKondixDbContext
     DbSet<BodyMeasurement> BodyMeasurements { get; }
     DbSet<ProgressPhoto> ProgressPhotos { get; }
     DbSet<Comment> Comments { get; }
+    DbSet<ExerciseFeedback> ExerciseFeedback { get; }
 
     DatabaseFacade Database { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

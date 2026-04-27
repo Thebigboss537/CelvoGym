@@ -1,5 +1,7 @@
 namespace Kondix.Application.DTOs;
 
+public sealed record UpdateSetDataResponse(SetLogDto SetLog, NewPrDto? NewPr);
+
 public sealed record WorkoutSessionDto(
     Guid Id,
     Guid RoutineId,

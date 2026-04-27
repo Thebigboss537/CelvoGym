@@ -14,10 +14,13 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
         builder.Property(ws => ws.Id).HasDefaultValueSql("gen_random_uuid()");
         builder.Property(ws => ws.StartedAt).HasDefaultValueSql("NOW()");
         builder.Property(ws => ws.Notes).HasMaxLength(2000);
+        builder.Property(ws => ws.Mood).HasConversion<string>().HasMaxLength(20);
+        builder.Property(ws => ws.FeedbackReviewedAt);
         builder.Property(ws => ws.CreatedAt).HasDefaultValueSql("NOW()");
 
         builder.HasIndex(ws => new { ws.StudentId, ws.RoutineId, ws.DayId });
         builder.HasIndex(ws => new { ws.StudentId, ws.ProgramAssignmentId });
+        builder.HasIndex(ws => new { ws.StudentId, ws.CompletedAt }).HasFilter("\"feedback_reviewed_at\" IS NULL");
 
         builder.HasOne(ws => ws.Student)
             .WithMany(s => s.WorkoutSessions)

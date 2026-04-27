@@ -1,11 +1,14 @@
 using Kondix.Api.Extensions;
 using Kondix.Application.Commands.Notes;
+using Kondix.Application.Commands.Sessions;
 using Kondix.Application.Commands.Students;
 using Kondix.Application.Queries.Notes;
+using Kondix.Application.Queries.Sessions;
 using Kondix.Application.Queries.Students;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using QRCoder;
+using Analytics = Kondix.Application.Queries.Analytics;
 
 namespace Kondix.Api.Controllers;
 
@@ -92,6 +95,31 @@ public class StudentsController(IMediator mediator) : ControllerBase
         var pngBytes = qrCode.GetGraphic(10);
 
         return File(pngBytes, "image/png", "invite-qr.png");
+    }
+
+    [HttpGet("{id:guid}/sessions")]
+    public async Task<IActionResult> GetSessions(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission("kondix:students:read");
+        var result = await mediator.Send(
+            new GetStudentSessionsForTrainerQuery(HttpContext.GetTrainerId(), id), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("{id:guid}/recent-feedback")]
+    public async Task<IActionResult> RecentFeedback(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission("kondix:students:read");
+        var result = await mediator.Send(new Analytics.GetRecentFeedbackQuery(HttpContext.GetTrainerId(), id), ct);
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/feedback/mark-read")]
+    public async Task<IActionResult> MarkFeedbackRead(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission("kondix:students:read");
+        await mediator.Send(new MarkFeedbackReadCommand(HttpContext.GetTrainerId(), id), ct);
+        return NoContent();
     }
 }
 
