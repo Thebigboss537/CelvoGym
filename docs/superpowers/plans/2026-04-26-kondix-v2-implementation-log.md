@@ -168,3 +168,47 @@ _Started:_ 2026-04-26
   - **Carry-over from Phase 3 still pending**: rename `ICelvoGymDbContext.cs` → `IKondixDbContext.cs`; extend `<kx-segmented-control>` to accept `{value, label}[]`; restore stat cards on workout-complete via `GET /sessions/{id}/summary`; extend server `NewPrDto` with `Reps`; `<kx-video-demo-overlay>` Esc-key close.
 - The Phase 5 (Programs editor refresh — CDK D&D + week overrides) plan starts at line 4547 of `2026-04-26-kondix-v2-implementation.md` and is the next session's target.
 
+---
+
+## ▶ Next up: Phase 5 — Programs editor refresh
+
+_Plan reference:_ `docs/superpowers/plans/2026-04-26-kondix-v2-implementation.md` Phase 5 (lines 4547–5002, 6 tasks).
+
+_Spec reference:_ `docs/superpowers/specs/2026-04-26-kondix-v2-feedback-loop-recovery-and-visual-refresh-design.md` — programs section.
+
+**Resume playbook (for a fresh Claude session):**
+
+1. Confirm starting state: `git status` shows clean on `main`; `git log -1 --oneline` shows `8674e049 Merge branch 'feat/v2-phase-4' into main` (or later). Working tree synced with `origin/main`.
+2. Create the phase branch: `git checkout -b feat/v2-phase-5`.
+3. Invoke `Skill: superpowers:subagent-driven-development` (the same flow used for phases 1, 1.5, 2, 3, 4). Per-task: implementer subagent → verify (inline for trivial / spec+quality reviewers for non-trivial) → next task. Final phase-wide review before merge.
+4. Phase 5 task order (per plan):
+   - **Task 5.1** (line 4549): Add `@angular/cdk` dependency to `kondix-web/package.json`. Single-line `npm install --save @angular/cdk@<matching Angular 21 version>`. Commit.
+   - **Task 5.2** (line 4575): `ProgramWeekOverride` entity (`ProgramAssignmentId`, `WeekNumber`, `RoutineId`, optional override fields) + `IEntityTypeConfiguration` + register on `KondixDbContext` + add to `IKondixDbContext`. Migration is task 5.3. Commit.
+   - **Task 5.3** (line 4648): EF migration `AddProgramWeekOverrides` (additive — new table). Commit (this is migration #3 in the v2 series).
+   - **Task 5.4** (line 4676): `UpsertProgramWeekOverrideCommand` + `GetProgramWeekOverridesQuery` with TDD (similar pattern to Phase 3's UpsertExerciseFeedback / GetRecentFeedback). Commit.
+   - **Task 5.5** (line 4819): Wire endpoints in `ProgramsController` — `PUT /api/v1/programs/{id}/week-overrides`, `GET /api/v1/programs/{id}/week-overrides`. Trainer permission `kondix:programs:write` (or whatever the existing programs convention is — verify). Commit.
+   - **Task 5.6** (line 4859): Refactor `program-form.ts` to use Angular CDK Drag&Drop for routine reordering + a weekly grid for per-week overrides. Largest task in this phase — could spawn its own sub-tasks. Commit.
+5. Per-phase closeout same as 1/1.5/2/3/4: log deviations + closeout summary block; build verde (.NET + Angular + Karma); final phase-wide code review; merge `--no-ff` to main; push; delete local branch.
+
+**Pre-Phase-5 verification (sanity, not blocking):**
+- `dotnet test Kondix.slnx` should show **69 backend specs** (51 unit + 8 arch + 10 integration) all passing.
+- `cd kondix-web && npx ng test --watch=false --browsers=ChromeHeadless` should show **10 Karma specs** all passing.
+- `cd kondix-web && npx ng build` clean.
+- No uncommitted changes.
+
+**Plan defects to watch for in Phase 5** (based on phases 3 + 4 patterns):
+- **Field-name drift** between plan and entities — verify each entity field reference in the plan against the actual `*.cs` before writing tests. Phase 3 hit this twice; Phase 4 hit it once (`DurationWeeks` doesn't exist on `ProgramAssignment`).
+- **Plan-vs-actual file path drift** — `ICelvoGymDbContext.cs` (legacy filename) appears as `IKondixDbContext.cs` in the plan. `UpdateSetDataCommand` lives in `Commands/Progress/`, not `Commands/Sessions/`. Use Grep tool to find the actual file before editing.
+- **Tailwind opacity-modifier classes inside Angular `[class.X/Y]` bindings DO NOT compile** — Angular's class-binding key parser rejects forward slashes (e.g., `bg-primary/10`) and square brackets (e.g., `shadow-[0_0_16px_...]`). Use `[ngClass]` array form OR `[style.*]` bindings. Phase 3 hit this 18+ times. Static `class="bg-primary/10"` strings are fine (Tailwind scans them).
+- **`KxSegmentedControl` API**: takes `string[]`, NOT `{value, label}[]`. If Phase 5 templates show the latter shape, adapt with a `LABEL_TO_*` reverse-map.
+- **Phase 4 specifically deferred**: `RecoversPlannedDate: DateOnly?` field on `WorkoutSession` (would enable painting the missed planned day as `'recovered'` in the calendar). Don't try to fold this into Phase 5 unless the user asks — keep phases tight.
+
+**Carryovers to apply opportunistically while in those areas (rolling list from Phases 2-4):**
+- Rename `src/Kondix.Application/Common/Interfaces/ICelvoGymDbContext.cs` → `IKondixDbContext.cs` (interface name is correct; just the file).
+- Extend `<kx-segmented-control>` to natively accept `{value, label}[]` and drop the reverse-map workarounds in `student-detail.ts` + `student-detail-progress.ts`.
+- Restore stat cards (Duración / Sets / Volumen / PRs) on workout-complete screen via either (a) re-extending `WorkoutSessionDto` with stats or (b) a new `GET /sessions/{id}/summary` endpoint.
+- Extend server-side `NewPrDto` with `Reps: string?` — TS interface and `toast.showPR(name, weight, reps)` already wired for it.
+- `<kx-video-demo-overlay>` + `<kx-confirm-dialog>` Esc-key close + focus management (Phase 2 carryover).
+- Phase 4: paint missed planned day as `'recovered'` (needs `RecoversPlannedDate: DateOnly?` field + migration #4); fix `<kx-recovery-banner>.deadlineLabel()` timezone fragility via `parseLocalDate()`; rotation-mode mislabel for 2-days-ago.
+- **Two pending migrations not yet applied to prod**: `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) + `20260427011850_AddSessionRecoveryFields` (Phase 4). Combine on the next `dotnet ef database update`. After Phase 5 lands, migration #3 (`AddProgramWeekOverrides`) joins them — three migrations to apply at once.
+
