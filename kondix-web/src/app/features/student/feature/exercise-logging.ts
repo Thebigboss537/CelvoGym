@@ -14,6 +14,7 @@ import {
   ExerciseSetDto,
   SetLogDto,
   StudentRoutineDetailDto,
+  UpdateSetDataResponse,
 } from '../../../shared/models';
 import { KxSetRow } from '../../../shared/ui/set-row';
 import { KxRestTimer } from '../../../shared/ui/rest-timer';
@@ -382,7 +383,7 @@ export class ExerciseLogging implements OnInit {
 
   private updateSetValue(setId: string, overrides: { weight?: string; reps?: string; rpe?: number }): void {
     const current = this.setLogMap().get(setId);
-    this.api.post<SetLogDto>('/public/my/sets/update', {
+    this.api.post<UpdateSetDataResponse>('/public/my/sets/update', {
       sessionId: this.sessionId,
       setId,
       routineId: this.routineId,
@@ -390,7 +391,12 @@ export class ExerciseLogging implements OnInit {
       reps: overrides.reps ?? current?.actualReps ?? null,
       rpe: overrides.rpe ?? current?.actualRpe ?? null,
     }).subscribe({
-      next: (log) => this.updateLog(log),
+      next: (res) => {
+        this.updateLog(res.setLog);
+        if (res.newPr) {
+          this.toast.showPR(res.newPr.exerciseName, res.newPr.weight, null);
+        }
+      },
     });
   }
 
