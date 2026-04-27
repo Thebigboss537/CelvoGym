@@ -326,6 +326,13 @@ export interface ProgramRoutineDto {
   sortOrder: number;
 }
 
+// Per-week notes overrides for a program (Phase 5)
+// Backend record: ProgramWeekOverrideDto(int WeekIndex, string Notes) — camelCase JSON.
+export interface ProgramWeekOverrideDto {
+  weekIndex: number;
+  notes: string;
+}
+
 // Trainer Notes
 export interface TrainerNoteDto {
   id: string;

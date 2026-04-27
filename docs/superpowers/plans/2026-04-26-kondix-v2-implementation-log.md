@@ -168,47 +168,89 @@ _Started:_ 2026-04-26
   - **Carry-over from Phase 3 still pending**: rename `ICelvoGymDbContext.cs` → `IKondixDbContext.cs`; extend `<kx-segmented-control>` to accept `{value, label}[]`; restore stat cards on workout-complete via `GET /sessions/{id}/summary`; extend server `NewPrDto` with `Reps`; `<kx-video-demo-overlay>` Esc-key close.
 - The Phase 5 (Programs editor refresh — CDK D&D + week overrides) plan starts at line 4547 of `2026-04-26-kondix-v2-implementation.md` and is the next session's target.
 
+## Phase 5 — Programs editor refresh (CDK D&D + week overrides)
+
+_Branch:_ `feat/v2-phase-5`
+_Started:_ 2026-04-26
+
+| Tarea | Tipo | Descripción | Resolución |
+|---|---|---|---|
+| Task 5.1 | note | `npm install @angular/cdk@21` resolved to `^21.2.8` (matches `@angular/core ^21.2.6`). Build clean before any code-using-CDK landed. | Resolved (commit `c6bf7bbb`). |
+| Task 5.2 | deviation | Plan EF config used `b`; existing codebase uses `builder` (same as Phase 4 Task 4.1). Kept `builder`. Added `gen_random_uuid()` and `NOW()` defaults to mirror `ProgramConfiguration` (plan omitted them). Did NOT add `ToTable(...)` — snake-case + `HasDefaultSchema("kondix")` already produces `kondix.program_week_overrides`. | Resolved (commit `3c322624`). |
+| Task 5.2 | decision | Applied the long-standing Phase 3 carryover in the same commit: renamed `src/Kondix.Application/Common/Interfaces/ICelvoGymDbContext.cs` → `IKondixDbContext.cs` via `git mv` (95% similarity rename detected). The interface name was already correct; only the file was stale. Confirmed no remaining string references to `ICelvoGymDbContext` in `**/*.cs` or `**/*.ts`. | Resolved (commit `3c322624`). |
+| Task 5.3 | note | Migration name `20260427024952_AddProgramWeekOverrides`. Single `CreateTable` + cascade FK to `programs` + UNIQUE index on `(program_id, week_index)`. Additive only, prod-safe, no backfill. **Migration #3** of the v2 series. | Resolved (commit `d9d94b2d`). |
+| Task 5.4 | deviation | Plan listed 2 unit tests; implementer wrote **5** to cover all 5 distinct branches (insert / update / delete-on-empty-with-existing / delete-on-whitespace / no-op-on-empty-with-no-existing). TDD discipline: tests written first (RED with CS0246 missing types), then handler+query implemented (GREEN). | Resolved (commit `9344c7c0`). |
+| Task 5.5 | deviation | Plan said `RequirePermission("kondix:programs:read")` / `("kondix:programs:write")` — those constants don't exist in `Permissions` and aren't registered in CelvoGuard. Used `Permissions.GymManage` (`"kondix:manage"`) for both endpoints, matching every other endpoint in `ProgramsController`. Logged inline in commit message. | Resolved (commit `83abed3f`). |
+| Task 5.6 | decision (CRITICAL design choice) | Plan was ambiguous on whether the new D&D weekly grid REPLACES the existing rotation-slots editor (Option B) or SUPPLEMENTS it (Option A). Chose Option A: the existing slots editor remains the source of truth for `ProgramRoutine[]` persistence; the grid is a planning visualization; per-week notes ARE persisted via the new endpoint. Rationale: Option B would silently destroy the trainer's grid arrangement on every save/reload (the cell layout isn't part of the persistence shape), and the plan/spec literally say "the grid is purely a UI layer; persisted state stays as the existing program-routine ordered list". Documented in code, in the Spanish "Planificación semanal" section header copy, and in `program-form.ts` inline comments. | Resolved (commit `cb87ccc9`). |
+| Task 5.6 | deviation | `durationWeeks` kept as a plain field (not a signal) because `[(ngModel)]` doesn't bind to signals cleanly. Used an explicit `resizeGrid()` method called from `ngOnInit`, `onDurationChange`, and `loadProgram` instead of an `effect()`. Sidebar one-way: `[cdkDropListSortingDisabled]="true"` and cells' `connectedTo` excludes the sidebar id (drag from cell back to sidebar is a no-op). Added a `clearCell` ✕ button as the necessary remove-from-cell affordance Option A's design implies. Added a "Planificación semanal" section header explaining the dual-model (slots = persisted, grid = planning aid). | Resolved (commit `cb87ccc9`). |
+| Task 5.6 | incident (per-task review) | Per-task code-quality reviewer (after spec ✅) found 1 important bug + 3 polish: (a) **same-week swap broken** — when both source and target cell were in the same week, the two-branch `weeklyGrid.update(grid.map(...))` caused only one assignment to survive, so dragging from cell (5,1)=A to cell (5,4)=B left cell (5,1) overwritten and cell (5,4) unchanged. Fix: special-case `srcWeek === weekIndex` with a single-pass `days[]` rebuild before the cross-week branch. (b) Three CDK helpers (`moveItemInArray`, `transferArrayItem`, `copyArrayItem`) imported but only `void`-referenced — dead imports defeating tree-shaking. Removed both the imports and the void stubs. (c) `onOverrideBlur` race: out-of-order success/error responses could corrupt local state or show misleading toasts. Added per-week sequence (`overrideSeq: Map<number, number>`); both `next` and `error` early-return with `overrideSeq.get(weekIndex) !== seq` guards. (d) `loadOverrides` had no error handler — added a toast on GET failure. | Resolved (commit `b4076540`). |
+| Phase-wide | incident (CRITICAL plan defect — final review) | Final phase-wide code-quality reviewer caught **the same class of regression Phase 3 caught on `GetRecentFeedback`/`MarkFeedbackRead`**: both new program-week-override endpoints (`UpsertProgramWeekOverrideCommand`, `GetProgramWeekOverridesQuery`) lacked trainer-ownership scoping. Trainer A could read or overwrite trainer B's per-week notes by guessing a program GUID — same impact tier as the Phase 3 leak. Fix mirrors the Phase 3 pattern exactly: `TrainerId` added to both records, `db.Programs.AnyAsync(p.Id && p.TrainerId)` ownership check at the top of each handler (throws `"Program not found"`), `ProgramsController` passes `HttpContext.GetTrainerId()`. 5 existing Upsert tests updated to seed `TrainerId` + pass it; 1 new Upsert ownership test; 1 new `GetProgramWeekOverridesQueryHandlerTests.cs` file with 2 tests (happy-path ordering + ownership). | Resolved (commit `301db71d`). **Plan-defect category to elevate for Phase 6:** every new MediatR handler that takes a resource ID belonging to a trainer/student must accept the corresponding `TrainerId`/`StudentId` and verify ownership before any other DB op. Two phases in a row missed this — make it a hard pre-merge checklist item. |
+
 ---
 
-## ▶ Next up: Phase 5 — Programs editor refresh
+**Phase 5 closeout (2026-04-27):**
+- 6 tasks complete in 6 task commits + 2 post-review fix commits = **8 commits across `feat/v2-phase-5`**. Sub-phase split: dependency (1 commit 5.1), backend (4 commits 5.2-5.5), UI (1 commit 5.6), per-task review fixes (1 commit), final phase-wide review fix (1 commit). No separate closeout-doc commit — the closeout addendum is folded into this log update.
+- 8 deviations + 1 decision + 1 per-task incident + 1 phase-wide CRITICAL incident logged above (all approved by per-task and final phase-wide reviews after fixes).
+- Tests green at branch tip (post-fixes):
+  - .NET: **77 specs** (59 unit + 8 arch + 10 integration). Up from 69 post-Phase-4 (+8 unit specs: 5 from Task 5.4 covering all 5 handler branches + 1 Upsert ownership test from the security fix + 2 in the new `GetProgramWeekOverridesQueryHandlerTests.cs`).
+  - Angular Karma: **10 specs** (unchanged; this phase added behavioral FE code but no specs — consistent with Phases 3/4 posture per project memory `skip_playwright_e2e_for_now.md`).
+  - Build: 0 warnings, 0 errors. `program-form` lazy chunk grew from 11.39 kB → 81.08 kB raw / 3.39 kB → 20.08 kB transfer (+16.7 kB transfer for `@angular/cdk/drag-drop` — within the spec's ~30 kB budget).
+- New surfaces shipped:
+  - **Backend API**: `GET /api/v1/programs/{id}/week-overrides` (returns ordered list of `ProgramWeekOverrideDto`); `PUT /api/v1/programs/{id}/week-overrides/{weekIndex}` (body `{ notes }`; empty/whitespace deletes the row server-side). Both gated by `Permissions.GymManage` + trainer-ownership check on the program.
+  - **Programs editor (`program-form.ts`)**: kept the existing rotation-slots editor as `ProgramRoutine[]` source of truth; ADDED a CDK Drag&Drop weekly grid (sidebar of trainer routines + 7-col × N-week grid where N = `durationWeeks`) for visual planning, plus a per-week notes input that PUTs to `/week-overrides/{weekIndex}` on blur with per-week sequence guards against out-of-order responses.
+  - **File rename**: `ICelvoGymDbContext.cs` → `IKondixDbContext.cs` (Phase 3 carryover landed).
+- Backend additive migration `20260427024952_AddProgramWeekOverrides` lands: `kondix.program_week_overrides` table with `id` (uuid + `gen_random_uuid()` default), `program_id` (uuid + cascade FK to `programs`), `week_index` (int), `notes` (varchar 2000 not null), `created_at` (timestamptz + `NOW()` default), and UNIQUE index on `(program_id, week_index)`. **Not yet applied to prod** — this is **migration #3** of the v2 series; combined with #1 `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) and #2 `20260427011850_AddSessionRecoveryFields` (Phase 4), all three should be applied together on the next `dotnet ef database update`. No backfill required for any of them.
+- **Plan-defect categories that recurred** (forward-looking — log for Phase 6 reviewer attention):
+  - **Resource-ownership scoping is the most-frequently-missed Application-layer gate.** Phase 3 caught it on feedback handlers; Phase 5 caught it again on week-override handlers. Make it a pre-implementer-dispatch checklist: for every new MediatR command/query that takes a `Guid` resource id, the implementer prompt must explicitly call out the ownership predicate and require a unit test asserting "foreign caller throws".
+  - **Plan code stubs reference handlers/types/files by aspirational names**: `IKondixDbContext.cs` (was `ICelvoGymDbContext.cs`), `kondix:programs:read/write` (don't exist; only `Permissions.GymManage` does), the bare `RequirePermission(...)` form (actual is the `HttpContext`-extension method). Implementer prompts continue to need the "verify file paths and constants by `Grep` before quoting plan code verbatim" reminder.
+  - **TDD coverage > plan minimum**: Plan keeps listing 1-2 unit tests per handler; implementers consistently extend to 4-5 to cover all branches. This is good (Phase 3, 4, 5 all did it) — leave it implicit but don't trim.
+- Carryover items to address opportunistically (rolling list updated):
+  - **Accessibility on the weekly grid**: no keyboard alternative to D&D (mouse-only); drop zones lack `role`/`aria-label`; `<th>` lacks `scope="col"`/`scope="row"`; disabled notes inputs in create mode could use a `title` tooltip ("Disponible después de guardar"). Bundle for the visual-polish phase.
+  - **Perf nit**: `allListsExcept(week, day)` is called per-cell per-render and filters `cellLists()` (`computed<string[]>`). At the 52-week ceiling = ~130k string ops per render = ~3 ms in Chrome. Not perceptible today; if it ever feels sluggish, precompute a `Map<string, string[]>` once per `weeklyGrid` change.
+  - **Stale-success path doesn't clear `savingNotes` directly** (the LATEST request will clear it when it settles, so no user-visible bug). Asymmetric with the stale-error branch. Tidy on next pass through this file.
+  - **`<kx-program-week-grid>` extraction**: don't split `program-form.ts` (now 629 lines) yet. Extract only when (a) cell layout becomes persistent OR (b) a second consumer needs the grid (e.g., read-only on the program detail page).
+  - **Carryovers still pending from earlier phases**: extend `<kx-segmented-control>` to natively accept `{value, label}[]` and drop the `LABEL_TO_*` reverse-maps in `student-detail.ts` + `student-detail-progress.ts`; restore stat cards on workout-complete via `GET /sessions/{id}/summary`; extend server `NewPrDto` with `Reps: string?`; `<kx-video-demo-overlay>` + `<kx-confirm-dialog>` Esc-key close + focus management; paint missed planned day as `'recovered'` on the calendar (needs `RecoversPlannedDate: DateOnly?` field on `WorkoutSession` + a 4th migration); fix `<kx-recovery-banner>.deadlineLabel()` timezone fragility via `parseLocalDate()`; rotation-mode mislabel for 2-days-ago.
+  - **Three pending migrations not yet applied to prod**: `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) + `20260427011850_AddSessionRecoveryFields` (Phase 4) + `20260427024952_AddProgramWeekOverrides` (Phase 5). Apply together on the next `dotnet ef database update`. No backfill required for any.
+- The Phase 6 (Library polish + docs) plan starts at line 5003 of `2026-04-26-kondix-v2-implementation.md` and is the next session's target.
 
-_Plan reference:_ `docs/superpowers/plans/2026-04-26-kondix-v2-implementation.md` Phase 5 (lines 4547–5002, 6 tasks).
+---
 
-_Spec reference:_ `docs/superpowers/specs/2026-04-26-kondix-v2-feedback-loop-recovery-and-visual-refresh-design.md` — programs section.
+## ▶ Next up: Phase 6 — Library polish + docs
+
+_Plan reference:_ `docs/superpowers/plans/2026-04-26-kondix-v2-implementation.md` Phase 6 (lines 5003–5109, 4 tasks — small docs-and-polish phase).
+
+_Spec reference:_ `docs/superpowers/specs/2026-04-26-kondix-v2-feedback-loop-recovery-and-visual-refresh-design.md` — closing sections.
 
 **Resume playbook (for a fresh Claude session):**
 
-1. Confirm starting state: `git status` shows clean on `main`; `git log -1 --oneline` shows `8674e049 Merge branch 'feat/v2-phase-4' into main` (or later). Working tree synced with `origin/main`.
-2. Create the phase branch: `git checkout -b feat/v2-phase-5`.
-3. Invoke `Skill: superpowers:subagent-driven-development` (the same flow used for phases 1, 1.5, 2, 3, 4). Per-task: implementer subagent → verify (inline for trivial / spec+quality reviewers for non-trivial) → next task. Final phase-wide review before merge.
-4. Phase 5 task order (per plan):
-   - **Task 5.1** (line 4549): Add `@angular/cdk` dependency to `kondix-web/package.json`. Single-line `npm install --save @angular/cdk@<matching Angular 21 version>`. Commit.
-   - **Task 5.2** (line 4575): `ProgramWeekOverride` entity (`ProgramAssignmentId`, `WeekNumber`, `RoutineId`, optional override fields) + `IEntityTypeConfiguration` + register on `KondixDbContext` + add to `IKondixDbContext`. Migration is task 5.3. Commit.
-   - **Task 5.3** (line 4648): EF migration `AddProgramWeekOverrides` (additive — new table). Commit (this is migration #3 in the v2 series).
-   - **Task 5.4** (line 4676): `UpsertProgramWeekOverrideCommand` + `GetProgramWeekOverridesQuery` with TDD (similar pattern to Phase 3's UpsertExerciseFeedback / GetRecentFeedback). Commit.
-   - **Task 5.5** (line 4819): Wire endpoints in `ProgramsController` — `PUT /api/v1/programs/{id}/week-overrides`, `GET /api/v1/programs/{id}/week-overrides`. Trainer permission `kondix:programs:write` (or whatever the existing programs convention is — verify). Commit.
-   - **Task 5.6** (line 4859): Refactor `program-form.ts` to use Angular CDK Drag&Drop for routine reordering + a weekly grid for per-week overrides. Largest task in this phase — could spawn its own sub-tasks. Commit.
-5. Per-phase closeout same as 1/1.5/2/3/4: log deviations + closeout summary block; build verde (.NET + Angular + Karma); final phase-wide code review; merge `--no-ff` to main; push; delete local branch.
+1. Confirm starting state: `git status` shows clean on `main`; `git log -1 --oneline` shows the Phase 5 merge commit (or later). Working tree synced with `origin/main`.
+2. Create the phase branch: `git checkout -b feat/v2-phase-6`.
+3. Invoke `Skill: superpowers:subagent-driven-development`. Phase 6 is mostly docs — most tasks fit "trivial = inline" per the playbook convention. Only Task 6.1 (catalog visual check) might warrant a real implementer if visual tweaks are needed.
+4. Phase 6 task order (per plan):
+   - **Task 6.1** (line 5005): Verify catalog editor visual match against `design_handoff_kondix_v2/prototypes/trainer/view-library.jsx`. Likely a no-op commit. Run dev server, eyeball, tweak if needed.
+   - **Task 6.2** (line 5022): Update root `CLAUDE.md` with v2 components added in Phases 1-5 (the 8 new `<kx-*>` components) and 4 new gotchas. Inline.
+   - **Task 6.3** (line 5060): Update `kondix-web/.impeccable.md` with the same component list + brief design notes. Inline.
+   - **Task 6.4** (line 5078): Update `setup/03-deploy-checklist.md` with the three v2 migrations + `@angular/cdk@21` dep + env-var checklist. Inline.
+5. Per-phase closeout: log any deviations; build verde (.NET 77 + Karma 10); final review (light — docs phase); merge `--no-ff` to main; push; delete local branch.
 
-**Pre-Phase-5 verification (sanity, not blocking):**
-- `dotnet test Kondix.slnx` should show **69 backend specs** (51 unit + 8 arch + 10 integration) all passing.
+**Pre-Phase-6 verification (sanity, not blocking):**
+- `dotnet test Kondix.slnx` should show **77 backend specs** (59 unit + 8 arch + 10 integration) all passing.
 - `cd kondix-web && npx ng test --watch=false --browsers=ChromeHeadless` should show **10 Karma specs** all passing.
 - `cd kondix-web && npx ng build` clean.
 - No uncommitted changes.
 
-**Plan defects to watch for in Phase 5** (based on phases 3 + 4 patterns):
-- **Field-name drift** between plan and entities — verify each entity field reference in the plan against the actual `*.cs` before writing tests. Phase 3 hit this twice; Phase 4 hit it once (`DurationWeeks` doesn't exist on `ProgramAssignment`).
-- **Plan-vs-actual file path drift** — `ICelvoGymDbContext.cs` (legacy filename) appears as `IKondixDbContext.cs` in the plan. `UpdateSetDataCommand` lives in `Commands/Progress/`, not `Commands/Sessions/`. Use Grep tool to find the actual file before editing.
-- **Tailwind opacity-modifier classes inside Angular `[class.X/Y]` bindings DO NOT compile** — Angular's class-binding key parser rejects forward slashes (e.g., `bg-primary/10`) and square brackets (e.g., `shadow-[0_0_16px_...]`). Use `[ngClass]` array form OR `[style.*]` bindings. Phase 3 hit this 18+ times. Static `class="bg-primary/10"` strings are fine (Tailwind scans them).
-- **`KxSegmentedControl` API**: takes `string[]`, NOT `{value, label}[]`. If Phase 5 templates show the latter shape, adapt with a `LABEL_TO_*` reverse-map.
-- **Phase 4 specifically deferred**: `RecoversPlannedDate: DateOnly?` field on `WorkoutSession` (would enable painting the missed planned day as `'recovered'` in the calendar). Don't try to fold this into Phase 5 unless the user asks — keep phases tight.
+**Plan defects to watch for in Phase 6** (based on phases 3 + 4 + 5 patterns):
+- **Catalog editor reality check**: Task 6.1 says "compare against handoff and tweak" — actually open the dev server and verify visually before committing. Don't trust the plan's "likely no major change needed" — phases 3-5 frequently found drift between plan and code.
+- **CLAUDE.md merge conflict watch**: the file is also edited by other workflows. After dispatching the docs implementer, re-read the file before commit to confirm no other changes mid-session.
+- **Carryover triage**: this is the LAST phase of v2 — the rolling carryover list (see "Carryovers" below) is the place to triage what gets folded in opportunistically vs. punted to a "v2.1 polish" follow-up. The four CLAUDE.md gotchas listed in Task 6.2 are not the full carryover list; you'll need to extend them.
 
-**Carryovers to apply opportunistically while in those areas (rolling list from Phases 2-4):**
-- Rename `src/Kondix.Application/Common/Interfaces/ICelvoGymDbContext.cs` → `IKondixDbContext.cs` (interface name is correct; just the file).
+**Carryovers to apply opportunistically while in those areas (rolling list from Phases 2-5):**
 - Extend `<kx-segmented-control>` to natively accept `{value, label}[]` and drop the reverse-map workarounds in `student-detail.ts` + `student-detail-progress.ts`.
 - Restore stat cards (Duración / Sets / Volumen / PRs) on workout-complete screen via either (a) re-extending `WorkoutSessionDto` with stats or (b) a new `GET /sessions/{id}/summary` endpoint.
 - Extend server-side `NewPrDto` with `Reps: string?` — TS interface and `toast.showPR(name, weight, reps)` already wired for it.
-- `<kx-video-demo-overlay>` + `<kx-confirm-dialog>` Esc-key close + focus management (Phase 2 carryover).
-- Phase 4: paint missed planned day as `'recovered'` (needs `RecoversPlannedDate: DateOnly?` field + migration #4); fix `<kx-recovery-banner>.deadlineLabel()` timezone fragility via `parseLocalDate()`; rotation-mode mislabel for 2-days-ago.
-- **Two pending migrations not yet applied to prod**: `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) + `20260427011850_AddSessionRecoveryFields` (Phase 4). Combine on the next `dotnet ef database update`. After Phase 5 lands, migration #3 (`AddProgramWeekOverrides`) joins them — three migrations to apply at once.
+- `<kx-video-demo-overlay>` + `<kx-confirm-dialog>` Esc-key close + focus management (Phase 2 carryover, still pending).
+- Phase 4: paint missed planned day as `'recovered'` on the calendar (needs `RecoversPlannedDate: DateOnly?` field on `WorkoutSession` + a 4th migration); fix `<kx-recovery-banner>.deadlineLabel()` timezone fragility via `parseLocalDate()`; rotation-mode mislabel for 2-days-ago.
+- Phase 5: weekly-grid accessibility (keyboard alternative to D&D; `role`/`aria-label` on drop zones; `scope="col"`/`scope="row"` on table headers; tooltip on disabled notes inputs in create mode); precompute `cellListsExceptMap` if perf ever feels sluggish at >40 weeks; clear `savingNotes` symmetrically in the stale-success branch of `onOverrideBlur`; extract `<kx-program-week-grid>` once cell layout becomes persistent or a second consumer needs the grid.
+- **Three pending migrations not yet applied to prod**: `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) + `20260427011850_AddSessionRecoveryFields` (Phase 4) + `20260427024952_AddProgramWeekOverrides` (Phase 5). Apply together on the next `dotnet ef database update`. No backfill required for any.
+- **Process improvement (forward-looking)**: every new MediatR command/query that takes a `Guid` resource id MUST accept the corresponding `TrainerId` / `StudentId` and verify ownership before any other DB op. Phase 3 caught a leak; Phase 5 caught the same class of leak again. Make this a hard pre-implementer-dispatch checklist item from Phase 6 onward.
 

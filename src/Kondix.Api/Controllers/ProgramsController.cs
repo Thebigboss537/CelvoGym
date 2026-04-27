@@ -54,6 +54,26 @@ public class ProgramsController(IMediator mediator) : ControllerBase
         await mediator.Send(new DeleteProgramCommand(id, HttpContext.GetTrainerId()), ct);
         return NoContent();
     }
+
+    [HttpGet("{id:guid}/week-overrides")]
+    public async Task<IActionResult> GetWeekOverrides(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var result = await mediator.Send(new GetProgramWeekOverridesQuery(id, HttpContext.GetTrainerId()), ct);
+        return Ok(result);
+    }
+
+    [HttpPut("{id:guid}/week-overrides/{weekIndex:int}")]
+    public async Task<IActionResult> UpsertWeekOverride(
+        Guid id,
+        int weekIndex,
+        [FromBody] UpsertWeekOverrideRequest request,
+        CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new UpsertProgramWeekOverrideCommand(id, HttpContext.GetTrainerId(), weekIndex, request.Notes), ct);
+        return NoContent();
+    }
 }
 
 public sealed record CreateProgramRequest(
@@ -65,3 +85,5 @@ public sealed record CreateProgramRequest(
 public sealed record ProgramRoutineRequest(
     Guid RoutineId,
     string? Label);
+
+public sealed record UpsertWeekOverrideRequest(string Notes);
