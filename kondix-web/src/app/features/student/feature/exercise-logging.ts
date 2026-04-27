@@ -19,6 +19,7 @@ import { KxSetRow } from '../../../shared/ui/set-row';
 import { KxRestTimer } from '../../../shared/ui/rest-timer';
 import { KxSpinner } from '../../../shared/ui/spinner';
 import { KxVideoDemoOverlay } from '../../../shared/ui/video-demo-overlay';
+import { KxExerciseFeedbackModal, ExerciseFeedbackPayload } from '../../../shared/ui/exercise-feedback-modal';
 
 interface FlatExercise {
   exercise: ExerciseDto;
@@ -33,7 +34,7 @@ interface FlatExercise {
 
 @Component({
   selector: 'app-exercise-logging',
-  imports: [KxSetRow, KxRestTimer, KxSpinner, KxVideoDemoOverlay],
+  imports: [KxSetRow, KxRestTimer, KxSpinner, KxVideoDemoOverlay, KxExerciseFeedbackModal],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-bg flex flex-col">
@@ -178,6 +179,14 @@ interface FlatExercise {
           [open]="showVideo()"
           (close)="showVideo.set(false)"
         />
+
+        <!-- Exercise feedback modal -->
+        <kx-exercise-feedback-modal
+          [exerciseName]="exercise()?.name ?? ''"
+          [open]="showFeedbackModal()"
+          (submit)="onFeedbackSubmit($event)"
+          (skip)="onFeedbackSkip()"
+        />
       }
     </div>
   `,
@@ -201,6 +210,7 @@ export class ExerciseLogging implements OnInit {
   // the template binding stays reactive (see OnPush-signals gotcha note).
   lastCompletedSet = signal<ExerciseSetDto | null>(null);
   showVideo = signal(false);
+  showFeedbackModal = signal(false);
 
   routineId = '';
   sessionId = '';
@@ -397,7 +407,7 @@ export class ExerciseLogging implements OnInit {
           // kx-rest-timer binding reads reactively.
           this.lastCompletedSet.set(set);
           this.showRestTimer.set(true);
-          this.checkAllSetsCompleted();
+          this.maybeOpenFeedback();
         }
       },
     });
@@ -412,10 +422,31 @@ export class ExerciseLogging implements OnInit {
     });
   }
 
-  private checkAllSetsCompleted(): void {
-    const allDone = this.sets().every(s => this.setLogMap().get(s.id)?.completed);
-    if (!allDone) return;
+  private maybeOpenFeedback(): void {
+    const allDone = this.sets().every(s => this.setLogMap().get(s.id)?.completed === true);
+    if (allDone) this.showFeedbackModal.set(true);
+  }
 
+  onFeedbackSubmit(payload: ExerciseFeedbackPayload): void {
+    const ex = this.exercise();
+    if (!ex) return;
+    this.api.post(`/public/my/sessions/${this.sessionId}/exercise-feedback`, {
+      exerciseId: ex.id, actualRpe: payload.rpe, notes: payload.notes,
+    }).subscribe({
+      next: () => {
+        this.showFeedbackModal.set(false);
+        this.advanceToNextExercise();
+      },
+      error: (err) => this.toast.show(err.error?.error ?? 'No se pudo enviar', 'error'),
+    });
+  }
+
+  onFeedbackSkip(): void {
+    this.showFeedbackModal.set(false);
+    this.advanceToNextExercise();
+  }
+
+  private advanceToNextExercise(): void {
     const nextIndex = this.exerciseIndex() + 1;
     const total = this.totalExercises();
 
