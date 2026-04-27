@@ -14,6 +14,9 @@ public class WorkoutSession : BaseEntity
     public string? Notes { get; set; }
     public MoodType? Mood { get; set; }
     public DateTimeOffset? FeedbackReviewedAt { get; set; }
+    public bool IsRecovery { get; set; } = false;
+    public Guid? RecoversSessionId { get; set; }
+    public WorkoutSession? RecoversSession { get; set; }
 
     public Student Student { get; set; } = null!;
     public ProgramAssignment? ProgramAssignment { get; set; }
