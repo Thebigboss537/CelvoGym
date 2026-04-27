@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
+import { ToastService } from '../../../shared/ui/toast';
 import {
   ExerciseDto,
   ExerciseSetDto,
@@ -145,10 +146,13 @@ interface FlatExercise {
                   [kg]="row.kg"
                   [reps]="row.reps"
                   [rpe]="row.rpe"
+                  [note]="setNoteFor(row.set.id)"
+                  [showNoteToggle]="true"
                   (kgChange)="onKgChange(row.set.id, $event)"
                   (repsChange)="onRepsChange(row.set.id, $event)"
                   (rpeChange)="onRpeChange(row.set.id, $event)"
                   (complete)="onSetComplete(row.set)"
+                  (noteChange)="onSetNoteChange(row.set.id, $event)"
                 />
               }
             </div>
@@ -182,6 +186,7 @@ export class ExerciseLogging implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);
+  private toast = inject(ToastService);
 
   loading = signal(true);
   error = signal('');
@@ -344,6 +349,25 @@ export class ExerciseLogging implements OnInit {
 
   onRpeChange(setId: string, rpe: number): void {
     this.updateSetValue(setId, { rpe });
+  }
+
+  setNoteFor(setId: string): string | null {
+    const log = this.setLogMap().get(setId);
+    return log?.notes ?? null;
+  }
+
+  onSetNoteChange(setId: string, note: string): void {
+    const log = this.setLogMap().get(setId);
+    if (!log) return;
+    this.api.patch(`/public/my/sets/${log.id}/note`, { note: note || null })
+      .subscribe({
+        next: () => {
+          const map = new Map(this.setLogMap());
+          map.set(setId, { ...log, notes: note || null });
+          this.setLogMap.set(map);
+        },
+        error: (err) => this.toast.show(err.error?.error ?? 'No se pudo guardar la nota', 'error'),
+      });
   }
 
   private updateSetValue(setId: string, overrides: { weight?: string; reps?: string; rpe?: number }): void {

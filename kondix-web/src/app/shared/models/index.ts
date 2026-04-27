@@ -146,6 +146,7 @@ export interface SetLogDto {
   actualWeight: string | null;
   actualReps: string | null;
   actualRpe: number | null;
+  notes?: string | null;
 }
 
 export interface ProgressSummaryDto {
@@ -346,6 +347,11 @@ export interface NewPrDto {
   exerciseName: string;
   weight: string;
   previousWeight: string | null;
+}
+
+export interface UpdateSetDataResponse {
+  setLog: SetLogDto;
+  newPr: NewPrDto | null;
 }
 
 // Body Metrics
