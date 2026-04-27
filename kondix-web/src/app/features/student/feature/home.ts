@@ -41,7 +41,7 @@ function relativeDate(iso: string): string {
         }
       </div>
 
-      @if (missed(); as m) {
+      @if (!loading() && missed(); as m) {
         <kx-recovery-banner
           [missedSession]="m"
           (recover)="onRecover()"
@@ -195,7 +195,9 @@ export class Home implements OnInit {
       dayId: m.dayId,
       recoversPlannedDate: m.plannedDate,
     }).subscribe({
-      next: (res) => this.router.navigate(['/student/workout/exercise', res.id, 0]),
+      next: (res) => this.router.navigate(['/workout/session/overview'], {
+        queryParams: { sessionId: res.id, routineId: m.routineId, dayId: m.dayId },
+      }),
       error: (err) => this.toast.show(err.error?.error ?? 'No se pudo iniciar', 'error'),
     });
   }

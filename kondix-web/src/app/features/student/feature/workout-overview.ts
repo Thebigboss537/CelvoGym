@@ -7,7 +7,7 @@ import {
   OnInit,
   signal,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import {
   ExerciseDto,
@@ -179,6 +179,7 @@ interface ExerciseWithState {
 export class WorkoutOverview implements OnInit, OnDestroy {
   private api = inject(ApiService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   loading = signal(true);
   error = signal('');
@@ -292,6 +293,21 @@ export class WorkoutOverview implements OnInit, OnDestroy {
   }
 
   private loadData() {
+    const params = this.route.snapshot.queryParamMap;
+    const presetSessionId = params.get('sessionId');
+    const presetRoutineId = params.get('routineId');
+    const presetDayId = params.get('dayId');
+
+    if (presetSessionId && presetRoutineId && presetDayId) {
+      // Recovery flow: session already created by the caller. Skip next-workout fetch,
+      // load the routine directly by id and use the preset session.
+      this.loadRoutineAndUseSession(presetRoutineId, presetDayId, presetSessionId);
+    } else {
+      this.loadFromNextWorkout();
+    }
+  }
+
+  private loadFromNextWorkout() {
     this.api.get<NextWorkoutDto>('/public/my/next-workout').subscribe({
       next: (nw) => {
         this.nextWorkout.set(nw);
@@ -315,6 +331,39 @@ export class WorkoutOverview implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.error.set(err.error?.error || 'No hay entrenamiento disponible.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private loadRoutineAndUseSession(routineId: string, dayId: string, sessionId: string) {
+    this.api.get<StudentRoutineDetailDto>(`/public/my/routines/${routineId}`).subscribe({
+      next: (r) => {
+        // Build a minimal NextWorkoutDto so the template renders correctly.
+        this.nextWorkout.set({
+          routineId,
+          routineName: r.name,
+          dayId,
+          dayName: r.days.find(d => d.id === dayId)?.name ?? '',
+          programName: '',
+          currentWeek: 0,
+          totalWeeks: 0,
+        });
+        this.routine.set(r);
+        // Build setLogMap from the target day
+        const day = r.days.find(d => d.id === dayId);
+        const map = new Map<string, SetLogDto>();
+        if (day) {
+          day.setLogs.forEach(sl => map.set(sl.setId, sl));
+        }
+        this.setLogMap.set(map);
+        // Session already created — wire it directly and start the timer.
+        this.sessionId.set(sessionId);
+        this.startTimer();
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.error || 'No pudimos cargar la rutina.');
         this.loading.set(false);
       },
     });
