@@ -4,13 +4,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kondix.Application.Commands.Sessions;
 
-public sealed record MarkFeedbackReadCommand(Guid StudentId) : IRequest;
+public sealed record MarkFeedbackReadCommand(Guid TrainerId, Guid StudentId) : IRequest;
 
 public sealed class MarkFeedbackReadCommandHandler(IKondixDbContext db)
     : IRequestHandler<MarkFeedbackReadCommand>
 {
     public async Task Handle(MarkFeedbackReadCommand request, CancellationToken cancellationToken)
     {
+        // Verify trainer-student relationship
+        var hasAccess = await db.TrainerStudents
+            .AnyAsync(ts => ts.TrainerId == request.TrainerId
+                && ts.StudentId == request.StudentId
+                && ts.IsActive, cancellationToken);
+
+        if (!hasAccess)
+            throw new InvalidOperationException("Student not found");
+
         var now = DateTimeOffset.UtcNow;
         var sessions = await db.WorkoutSessions
             .Where(s => s.StudentId == request.StudentId

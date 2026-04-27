@@ -110,7 +110,7 @@ public class StudentsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> RecentFeedback(Guid id, CancellationToken ct)
     {
         HttpContext.RequirePermission("kondix:students:read");
-        var result = await mediator.Send(new Analytics.GetRecentFeedbackQuery(id), ct);
+        var result = await mediator.Send(new Analytics.GetRecentFeedbackQuery(HttpContext.GetTrainerId(), id), ct);
         return Ok(result);
     }
 
@@ -118,7 +118,7 @@ public class StudentsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> MarkFeedbackRead(Guid id, CancellationToken ct)
     {
         HttpContext.RequirePermission("kondix:students:read");
-        await mediator.Send(new MarkFeedbackReadCommand(id), ct);
+        await mediator.Send(new MarkFeedbackReadCommand(HttpContext.GetTrainerId(), id), ct);
         return NoContent();
     }
 }

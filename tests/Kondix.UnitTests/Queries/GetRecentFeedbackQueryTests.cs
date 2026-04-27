@@ -20,9 +20,12 @@ public sealed class GetRecentFeedbackQueryTests
     public async Task Counts_Only_Unread_With_Feedback()
     {
         await using var db = NewDb();
+        var trainerId = Guid.NewGuid();
         var studentId = Guid.NewGuid();
         var routine = new Routine { Id = Guid.NewGuid(), Name = "R" };
         db.Routines.Add(routine);
+        // Seed trainer-student link
+        db.TrainerStudents.Add(new TrainerStudent { TrainerId = trainerId, StudentId = studentId, IsActive = true });
         // Unread + has mood → counted
         db.WorkoutSessions.Add(new WorkoutSession
         {
@@ -53,9 +56,24 @@ public sealed class GetRecentFeedbackQueryTests
         await db.SaveChangesAsync();
 
         var handler = new GetRecentFeedbackQueryHandler(db);
-        var result = await handler.Handle(new GetRecentFeedbackQuery(studentId), default);
+        var result = await handler.Handle(new GetRecentFeedbackQuery(trainerId, studentId), default);
 
         result.UnreadCount.Should().Be(1);
         result.Sessions.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task Throws_When_Trainer_Not_Linked_To_Student()
+    {
+        await using var db = NewDb();
+        var unlinkedTrainerId = Guid.NewGuid();
+        var studentId = Guid.NewGuid();
+        // No TrainerStudent link seeded
+
+        var handler = new GetRecentFeedbackQueryHandler(db);
+        var act = () => handler.Handle(new GetRecentFeedbackQuery(unlinkedTrainerId, studentId), default);
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Student not found");
     }
 }

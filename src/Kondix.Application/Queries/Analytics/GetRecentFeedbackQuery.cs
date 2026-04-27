@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kondix.Application.Queries.Analytics;
 
-public sealed record GetRecentFeedbackQuery(Guid StudentId) : IRequest<RecentFeedbackDto>;
+public sealed record GetRecentFeedbackQuery(Guid TrainerId, Guid StudentId) : IRequest<RecentFeedbackDto>;
 
 public sealed record RecentFeedbackSessionDto(
     Guid SessionId,
@@ -20,6 +20,15 @@ public sealed class GetRecentFeedbackQueryHandler(IKondixDbContext db)
 {
     public async Task<RecentFeedbackDto> Handle(GetRecentFeedbackQuery request, CancellationToken cancellationToken)
     {
+        // Verify trainer-student relationship
+        var hasAccess = await db.TrainerStudents
+            .AnyAsync(ts => ts.TrainerId == request.TrainerId
+                && ts.StudentId == request.StudentId
+                && ts.IsActive, cancellationToken);
+
+        if (!hasAccess)
+            throw new InvalidOperationException("Student not found");
+
         var unread = db.WorkoutSessions
             .AsNoTracking()
             .Where(s => s.StudentId == request.StudentId
