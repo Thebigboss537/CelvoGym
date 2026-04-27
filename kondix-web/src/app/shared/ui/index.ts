@@ -21,3 +21,4 @@ export { KxWizardStepper } from './wizard-stepper';
 export { KxIconButton } from './icon-button';
 export * from './exercise-thumb';
 export * from './video-demo-overlay';
+export * from './rpe-stepper';
