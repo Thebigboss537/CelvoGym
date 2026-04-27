@@ -15,6 +15,11 @@ public class WorkoutSession : BaseEntity
     public MoodType? Mood { get; set; }
     public DateTimeOffset? FeedbackReviewedAt { get; set; }
     public bool IsRecovery { get; set; } = false;
+    /// <summary>
+    /// Reserved for future "redo a completed session" flows.
+    /// In the current MVP recovery flow this is always null because
+    /// missed days never had a real WorkoutSession row.
+    /// </summary>
     public Guid? RecoversSessionId { get; set; }
     public WorkoutSession? RecoversSession { get; set; }
 

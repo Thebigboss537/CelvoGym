@@ -65,6 +65,7 @@ public sealed class GetMissedSessionQueryHandler(IKondixDbContext db)
         var sessions = await db.WorkoutSessions
             .AsNoTracking()
             .Where(s => s.StudentId == request.StudentId
+                && s.ProgramAssignmentId == assignment.Id
                 && s.StartedAt >= windowStart)
             .Select(s => new
             {

@@ -178,13 +178,17 @@ public sealed class GetMissedSessionQueryTests
         var (programId, routineId, dayId) = SeedProgramChain(db, trainerId);
 
         var yesterdayDow = (int)DateTime.UtcNow.AddDays(-1).DayOfWeek;
-        db.ProgramAssignments.Add(MakeAssignment(studentId, programId, [yesterdayDow]));
+        var assignment = MakeAssignment(studentId, programId, [yesterdayDow]);
+        db.ProgramAssignments.Add(assignment);
 
         // Seed a recovery session started today for the missed yesterday session.
+        // ProgramAssignmentId must match so the updated predicate (consistent with
+        // StartSessionCommand) correctly recognises the session as already recovered.
         db.WorkoutSessions.Add(new WorkoutSession
         {
             Id = Guid.NewGuid(),
             StudentId = studentId,
+            ProgramAssignmentId = assignment.Id,
             RoutineId = routineId,
             DayId = dayId,
             StartedAt = DateTimeOffset.UtcNow,
