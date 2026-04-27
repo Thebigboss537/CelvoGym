@@ -5,16 +5,19 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { WorkoutSessionDto, NewPrDto, StudentRoutineDetailDto, SetLogDto } from '../../../shared/models';
+import { ToastService } from '../../../shared/ui/toast';
+import { WorkoutSessionDto, NewPrDto, StudentRoutineDetailDto } from '../../../shared/models';
 import { KxStatCard } from '../../../shared/ui/stat-card';
 import { KxBadge } from '../../../shared/ui/badge';
 import { KxSpinner } from '../../../shared/ui/spinner';
+import { KxMoodPicker, MoodValue } from '../../../shared/ui/mood-picker';
 
 @Component({
   selector: 'app-workout-complete',
-  imports: [KxStatCard, KxBadge, KxSpinner],
+  imports: [FormsModule, KxStatCard, KxBadge, KxSpinner, KxMoodPicker],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-bg min-h-screen flex flex-col items-center px-5 py-10">
@@ -97,14 +100,34 @@ import { KxSpinner } from '../../../shared/ui/spinner';
             </div>
           }
 
-          <!-- CTA -->
-          <button
-            type="button"
-            (click)="goHome()"
-            class="bg-primary hover:bg-primary-hover text-white rounded-xl py-3.5 font-bold w-full text-base mt-8 press transition"
-          >
-            Volver al inicio
-          </button>
+          <!-- Mood + notes form -->
+          <div class="space-y-5 max-w-md mx-auto px-4 mt-6 w-full">
+            <div class="space-y-2">
+              <p class="text-overline text-text-muted">¿Cómo te sentiste?</p>
+              <kx-mood-picker
+                [value]="mood()"
+                (valueChange)="mood.set($event)"
+              />
+            </div>
+            <div class="space-y-2">
+              <p class="text-overline text-text-muted">Nota para tu coach (opcional)</p>
+              <textarea
+                class="w-full bg-bg-raised border border-border rounded-lg p-3 text-sm text-text placeholder:text-text-muted focus:outline-none focus:border-primary resize-none"
+                rows="4"
+                maxlength="2000"
+                placeholder="Lo que quieras compartir…"
+                [(ngModel)]="notes"
+              ></textarea>
+            </div>
+            <button
+              type="button"
+              class="w-full py-3 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary-hover transition press disabled:opacity-50"
+              [disabled]="saving()"
+              (click)="onFinish()"
+            >
+              @if (saving()) { Guardando... } @else { Finalizar }
+            </button>
+          </div>
 
         </div>
       }
@@ -116,6 +139,7 @@ export class WorkoutComplete implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(ApiService);
+  private toast = inject(ToastService);
 
   loading = signal(true);
   session = signal<WorkoutSessionDto | null>(null);
@@ -126,18 +150,35 @@ export class WorkoutComplete implements OnInit {
   totalSets = signal(0);
   totalVolume = signal(0);
 
+  mood = signal<MoodValue | null>(null);
+  notes = '';
+  saving = signal(false);
+
+  private sessionId = '';
+
   ngOnInit() {
     const sessionId = this.route.snapshot.queryParamMap.get('sessionId');
     if (!sessionId) {
       this.loading.set(false);
       return;
     }
+    this.sessionId = sessionId;
+    this.loading.set(false);
+  }
 
-    this.api.post<WorkoutSessionDto>(`/public/my/sessions/${sessionId}/complete`, {}).subscribe({
-      next: (s) => this.handleSession(s, sessionId),
-      error: () => {
-        // Session may already be completed — still load data
-        this.loadPrsAndStats(sessionId);
+  onFinish(): void {
+    this.saving.set(true);
+    this.api.post<WorkoutSessionDto>(`/public/my/sessions/${this.sessionId}/complete`, {
+      notes: this.notes.trim() || null,
+      mood: this.mood(),
+    }).subscribe({
+      next: (s) => {
+        this.handleSession(s, this.sessionId);
+        this.router.navigate(['/student/home']);
+      },
+      error: (err) => {
+        this.saving.set(false);
+        this.toast.show(err.error?.error ?? 'No se pudo finalizar', 'error');
       },
     });
   }
@@ -178,15 +219,7 @@ export class WorkoutComplete implements OnInit {
 
   private loadPrsAndStats(sessionId: string): void {
     this.api.get<NewPrDto[]>(`/public/my/records/detect?sessionId=${sessionId}`).subscribe({
-      next: (newPrs) => {
-        this.prs.set(newPrs);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
+      next: (newPrs) => this.prs.set(newPrs),
     });
-  }
-
-  goHome() {
-    this.router.navigate(['/workout/home']);
   }
 }
