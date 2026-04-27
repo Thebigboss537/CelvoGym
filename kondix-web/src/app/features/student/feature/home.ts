@@ -3,12 +3,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ApiService } from '../../../core/services/api.service';
-import { MyProgramDto, NextWorkoutDto, PersonalRecordDto } from '../../../shared/models';
+import { MyProgramDto, NextWorkoutDto, PersonalRecordDto, RecoverableSessionDto } from '../../../shared/models';
 import { KxAvatar } from '../../../shared/ui/avatar';
 import { KxEmptyState } from '../../../shared/ui/empty-state';
 import { KxHeroCard } from '../../../shared/ui/hero-card';
+import { KxRecoveryBanner } from '../../../shared/ui/recovery-banner';
 import { KxSpinner } from '../../../shared/ui/spinner';
 import { KxStatCard } from '../../../shared/ui/stat-card';
+import { ToastService } from '../../../shared/ui/toast';
 import { relativeDate as relativeDateBase } from '../../../shared/utils/format-date';
 
 function capitalize(s: string): string {
@@ -21,7 +23,7 @@ function relativeDate(iso: string): string {
 
 @Component({
   selector: 'app-student-home',
-  imports: [KxHeroCard, KxStatCard, KxAvatar, KxEmptyState, KxSpinner],
+  imports: [KxHeroCard, KxStatCard, KxAvatar, KxEmptyState, KxSpinner, KxRecoveryBanner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="animate-fade-up space-y-6">
@@ -38,6 +40,13 @@ function relativeDate(iso: string): string {
           <kx-avatar [name]="firstName()" size="md" />
         }
       </div>
+
+      @if (!loading() && missed(); as m) {
+        <kx-recovery-banner
+          [missedSession]="m"
+          (recover)="onRecover()"
+          (dismiss)="missed.set(null)" />
+      }
 
       @if (loading()) {
         <kx-spinner />
@@ -119,6 +128,7 @@ export class Home implements OnInit {
   private router = inject(Router);
   private authStore = inject(AuthStore);
   private destroyRef = inject(DestroyRef);
+  private toast = inject(ToastService);
 
   relativeDate = relativeDate;
 
@@ -132,6 +142,7 @@ export class Home implements OnInit {
   workout = signal<NextWorkoutDto | null>(null);
   program = signal<MyProgramDto | null>(null);
   records = signal<PersonalRecordDto[]>([]);
+  missed = signal<RecoverableSessionDto | null>(null);
 
   private pending = signal(3);
 
@@ -164,10 +175,31 @@ export class Home implements OnInit {
       next: (data) => { this.records.set(data); this.done(); },
       error: () => this.done(),
     });
+
+    // Recovery banner — 204 resolves to null which is the desired "no banner" state
+    this.api.get<RecoverableSessionDto>('/public/my/missed-sessions').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => this.missed.set(data ?? null),
+      error: () => this.missed.set(null),
+    });
   }
 
   onStartWorkout() {
     this.router.navigate(['/workout/session/overview']);
+  }
+
+  onRecover(): void {
+    const m = this.missed();
+    if (!m) return;
+    this.api.post<{ id: string }>('/public/my/sessions/start', {
+      routineId: m.routineId,
+      dayId: m.dayId,
+      recoversPlannedDate: m.plannedDate,
+    }).subscribe({
+      next: (res) => this.router.navigate(['/workout/session/overview'], {
+        queryParams: { sessionId: res.id, routineId: m.routineId, dayId: m.dayId },
+      }),
+      error: (err) => this.toast.show(err.error?.error ?? 'No se pudo iniciar', 'error'),
+    });
   }
 
   private done() {

@@ -100,6 +100,10 @@ interface DayGridCell {
             Completado
           </span>
           <span class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+            Recuperado
+          </span>
+          <span class="flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
             Hoy
           </span>
@@ -154,8 +158,9 @@ export class Calendar {
     let startWeekday = firstDay.getDay() - 1;
     if (startWeekday < 0) startWeekday = 6;
 
-    const sessionMap = new Map<string, 'completed' | 'in_progress'>();
-    (data?.sessions ?? []).forEach(s => sessionMap.set(s.date, s.status));
+    interface SessionInfo { status: 'completed' | 'in_progress'; isRecovery: boolean; }
+    const sessionMap = new Map<string, SessionInfo>();
+    (data?.sessions ?? []).forEach(s => sessionMap.set(s.date, { status: s.status, isRecovery: s.isRecovery }));
 
     const suggestedSet = new Set(data?.suggestedDays ?? []);
 
@@ -177,7 +182,9 @@ export class Calendar {
       const isSuggested = suggestedSet.has(dow);
 
       let state: DayCellState;
-      if (sessionStatus === 'completed') {
+      if (sessionStatus?.status === 'completed' && sessionStatus.isRecovery) {
+        state = 'recovered';
+      } else if (sessionStatus?.status === 'completed') {
         state = 'completed';
       } else if (isToday) {
         state = 'today';

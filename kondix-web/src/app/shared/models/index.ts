@@ -238,6 +238,7 @@ export interface CalendarDayDto {
   completedSets: number;
   totalSets: number;
   durationMinutes: number | null;
+  isRecovery: boolean;
 }
 
 export interface ActiveProgramDto {
@@ -410,6 +411,16 @@ export interface CommentDto {
   authorName: string;
   text: string;
   createdAt: string;
+}
+
+// Recovery
+export interface RecoverableSessionDto {
+  plannedDate: string;
+  routineId: string;
+  routineName: string;
+  dayId: string;
+  dayName: string;
+  deadlineDate: string;
 }
 
 // Recent Feedback (trainer view of student session feedback)

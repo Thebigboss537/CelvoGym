@@ -42,5 +42,11 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
             .WithMany()
             .HasForeignKey(ws => ws.DayId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(ws => ws.IsRecovery).HasDefaultValue(false);
+        builder.HasOne(ws => ws.RecoversSession)
+            .WithMany()
+            .HasForeignKey(ws => ws.RecoversSessionId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
