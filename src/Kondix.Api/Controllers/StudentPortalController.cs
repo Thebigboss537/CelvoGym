@@ -44,7 +44,7 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
     public async Task<IActionResult> StartSession([FromBody] StartSessionRequest request, CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
-        var result = await mediator.Send(new StartSessionCommand(studentId, request.RoutineId, request.DayId), ct);
+        var result = await mediator.Send(new StartSessionCommand(studentId, request.RoutineId, request.DayId, request.RecoversPlannedDate), ct);
         return Ok(result);
     }
 
@@ -213,7 +213,7 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
     }
 }
 
-public sealed record StartSessionRequest(Guid RoutineId, Guid DayId);
+public sealed record StartSessionRequest(Guid RoutineId, Guid DayId, DateOnly? RecoversPlannedDate = null);
 public sealed record CompleteSessionRequest(string? Notes, MoodType? Mood);
 public sealed record ToggleSetRequest(Guid SessionId, Guid SetId, Guid RoutineId);
 public sealed record UpdateSetDataRequest(Guid SessionId, Guid SetId, Guid RoutineId, string? Weight, string? Reps, int? Rpe);
