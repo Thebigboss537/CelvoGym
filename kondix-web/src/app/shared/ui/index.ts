@@ -24,3 +24,4 @@ export * from './video-demo-overlay';
 export * from './rpe-stepper';
 export * from './mood-picker';
 export * from './set-chip';
+export * from './exercise-feedback-modal';
