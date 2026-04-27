@@ -166,6 +166,14 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
         return result is not null ? Ok(result) : NoContent();
     }
 
+    [HttpGet("missed-sessions")]
+    public async Task<IActionResult> GetMissedSession(CancellationToken ct)
+    {
+        var studentId = HttpContext.GetStudentId();
+        var result = await mediator.Send(new GetMissedSessionQuery(studentId), ct);
+        return result is null ? NoContent() : Ok(result);
+    }
+
     [HttpGet("comments")]
     public async Task<IActionResult> GetComments(
         [FromQuery] Guid routineId,
