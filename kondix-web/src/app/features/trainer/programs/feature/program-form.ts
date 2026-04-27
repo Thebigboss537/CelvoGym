@@ -2,13 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, OnIni
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  CdkDragDrop,
-  DragDropModule,
-  copyArrayItem,
-  moveItemInArray,
-  transferArrayItem,
-} from '@angular/cdk/drag-drop';
+import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
 import { ApiService } from '../../../../core/services/api.service';
 import {
   ProgramAssignmentDto,
@@ -305,6 +299,11 @@ export class ProgramForm implements OnInit {
 
   private programId = '';
 
+  // Per-week sequence number for note PUTs. If the user blurs twice in
+  // quick succession, only the LATEST request's success/error result is
+  // applied — earlier (out-of-order) responses are dropped.
+  private overrideSeq = new Map<number, number>();
+
   // Keep the grid sized to durationWeeks (preserve any cells still in range,
   // grow with empty rows, shrink by trimming overflow). Called explicitly from
   // ngOnInit, onDurationChange, and loadProgram — `durationWeeks` is a plain
@@ -430,6 +429,22 @@ export class ProgramForm implements OnInit {
       const srcDay = Number(m[2]);
       const targetCell = targetWeek.days[dayIndex];
 
+      // Same-week swap: a single map step with two assignments would either
+      // overwrite each other or skip one of the cells. Rebuild that one
+      // week's days[] in a single pass with both positions changed.
+      if (srcWeek === weekIndex) {
+        this.weeklyGrid.update((grid) =>
+          grid.map((w) => {
+            if (w.weekIndex !== weekIndex) return w;
+            const days = [...w.days];
+            days[srcDay] = targetCell;
+            days[dayIndex] = dragged;
+            return { ...w, days };
+          }),
+        );
+        return;
+      }
+
       this.weeklyGrid.update((grid) =>
         grid.map((w) => {
           if (w.weekIndex === srcWeek) {
@@ -449,12 +464,6 @@ export class ProgramForm implements OnInit {
       );
       return;
     }
-
-    // Same container drop — single-cell, nothing to reorder. Suppress the
-    // unused-import lint by referencing the helpers (tree-shaken otherwise).
-    void moveItemInArray;
-    void transferArrayItem;
-    void copyArrayItem;
   }
 
   clearCell(weekIndex: number, dayIndex: number) {
@@ -474,6 +483,9 @@ export class ProgramForm implements OnInit {
     if (value === previous) return; // nothing changed
 
     const trimmed = value.trim();
+    const seq = (this.overrideSeq.get(weekIndex) ?? 0) + 1;
+    this.overrideSeq.set(weekIndex, seq);
+
     this.savingNotes.update((s) => new Set(s).add(weekIndex));
 
     this.api
@@ -481,6 +493,10 @@ export class ProgramForm implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
+          if (this.overrideSeq.get(weekIndex) !== seq) {
+            // A newer request superseded us; ignore this stale success.
+            return;
+          }
           this.overrides.update((m) => {
             const map = new Map(m);
             if (trimmed) map.set(weekIndex, trimmed);
@@ -494,6 +510,16 @@ export class ProgramForm implements OnInit {
           });
         },
         error: (err) => {
+          if (this.overrideSeq.get(weekIndex) !== seq) {
+            // Newer request in flight or completed; suppress stale error
+            // so we don't show a misleading toast for old failed write.
+            this.savingNotes.update((s) => {
+              const next = new Set(s);
+              next.delete(weekIndex);
+              return next;
+            });
+            return;
+          }
           this.savingNotes.update((s) => {
             const next = new Set(s);
             next.delete(weekIndex);
@@ -592,6 +618,8 @@ export class ProgramForm implements OnInit {
           for (const o of list) map.set(o.weekIndex, o.notes);
           this.overrides.set(map);
         },
+        error: (err) =>
+          this.toast.show(err.error?.error ?? 'No pudimos cargar las notas semanales', 'error'),
       });
   }
 
