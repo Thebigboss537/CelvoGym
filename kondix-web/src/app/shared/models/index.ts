@@ -412,6 +412,16 @@ export interface CommentDto {
   createdAt: string;
 }
 
+// Recovery
+export interface RecoverableSessionDto {
+  plannedDate: string;
+  routineId: string;
+  routineName: string;
+  dayId: string;
+  dayName: string;
+  deadlineDate: string;
+}
+
 // Recent Feedback (trainer view of student session feedback)
 export interface RecentFeedbackSessionDto {
   sessionId: string;

@@ -26,3 +26,4 @@ export * from './mood-picker';
 export * from './set-chip';
 export * from './exercise-feedback-modal';
 export * from './session-row';
+export * from './recovery-banner';
