@@ -8,9 +8,9 @@ export const TRAINER_ROUTES: Routes = [
     children: [
       { path: '', loadComponent: () => import('./feature/dashboard').then(m => m.Dashboard) },
       { path: 'routines', loadComponent: () => import('./routines/feature/routine-list').then(m => m.RoutineList) },
-      { path: 'routines/new', loadComponent: () => import('./routines/feature/routine-wizard').then(m => m.RoutineWizard) },
+      { path: 'routines/new', loadComponent: () => import('./routines/feature/routine-editor').then(m => m.RoutineEditor) },
       { path: 'routines/:id', loadComponent: () => import('./routines/feature/routine-detail').then(m => m.RoutineDetail) },
-      { path: 'routines/:id/edit', loadComponent: () => import('./routines/feature/routine-wizard').then(m => m.RoutineWizard) },
+      { path: 'routines/:id/edit', loadComponent: () => import('./routines/feature/routine-editor').then(m => m.RoutineEditor) },
       { path: 'programs', loadComponent: () => import('./programs/feature/program-list').then(m => m.ProgramList) },
       { path: 'programs/new', loadComponent: () => import('./programs/feature/program-form').then(m => m.ProgramForm) },
       { path: 'programs/:id', loadComponent: () => import('./programs/feature/program-detail').then(m => m.ProgramDetail) },
