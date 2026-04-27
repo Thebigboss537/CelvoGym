@@ -17,7 +17,6 @@ export { KxRestTimer } from './rest-timer';
 export { KxSegmentedControl } from './segmented-control';
 export { KxStudentCard } from './student-card';
 export { KxTimeline, type TimelineItem } from './timeline';
-export { KxWizardStepper } from './wizard-stepper';
 export { KxIconButton } from './icon-button';
 export * from './exercise-thumb';
 export * from './video-demo-overlay';
