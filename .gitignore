@@ -37,3 +37,4 @@ out/
 
 # Git worktrees for parallel branch work
 .worktrees/
+.superpowers/
