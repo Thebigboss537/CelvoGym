@@ -19,6 +19,7 @@ public class KondixDbContext(DbContextOptions<KondixDbContext> options)
     public DbSet<Program> Programs => Set<Program>();
     public DbSet<ProgramRoutine> ProgramRoutines => Set<ProgramRoutine>();
     public DbSet<ProgramAssignment> ProgramAssignments => Set<ProgramAssignment>();
+    public DbSet<ProgramWeekOverride> ProgramWeekOverrides => Set<ProgramWeekOverride>();
     public DbSet<WorkoutSession> WorkoutSessions => Set<WorkoutSession>();
     public DbSet<SetLog> SetLogs => Set<SetLog>();
     public DbSet<TrainerNote> TrainerNotes => Set<TrainerNote>();
