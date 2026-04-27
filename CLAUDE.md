@@ -88,12 +88,20 @@ docker compose up -d
 - `<kx-sidebar>` — Collapsible sidebar for trainer (inputs: items, userName, userInitials; outputs: create)
 - `<kx-segmented-control>` — Pill-style tab switcher (inputs: options, selected; outputs: selectedChange)
 - `<kx-hero-card>` — Today's workout hero card (inputs: routineName, dayName, programName, week, totalWeeks, streak)
-- `<kx-set-row>` — Set logging row with inputs (inputs: setNumber, setType, state, kg, reps, rpe)
+- `<kx-set-row>` — Set logging row (inputs: setNumber, setType, state, kg, reps, rpe, note?, showNoteToggle?; outputs: noteChange) — note toggle 💬 added in v2 Phase 3
 - `<kx-rest-timer>` — Countdown rest timer (inputs: durationSeconds, active; outputs: skip, finished)
-- `<kx-day-cell>` — Calendar day cell with states (inputs: day, state; outputs: select)
+- `<kx-day-cell>` — Calendar day cell with states (inputs: day, state ∈ {idle, today, completed, missed, recovered, future, restDay}; outputs: select) — `recovered` added in v2 Phase 4
 - `<kx-wizard-stepper>` — Wizard step indicator (inputs: currentStep, totalSteps)
 - `<kx-student-card>` — Student card with avatar and status (inputs: name, initials, status, statusText)
 - `<kx-timeline>` — Vertical timeline with colored dots (inputs: items[]{color, title, subtitle})
+- `<kx-exercise-thumb>` — Square thumbnail (xs/sm/md/lg/fill) with photoUrl + muscle-tinted gradient fallback + optional video pill (v2 Phase 1)
+- `<kx-video-demo-overlay>` — Full-screen YouTube demo player with backdrop click-to-close (v2 Phase 2)
+- `<kx-mood-picker>` — 4-option mood selector (Great|Good|Ok|Tough) (v2 Phase 3)
+- `<kx-rpe-stepper>` — 1–10 RPE selector with green→amber→red color scale (v2 Phase 3)
+- `<kx-set-chip>` — Compact historical set chip (weight × reps, PR badge, note tooltip) (v2 Phase 3)
+- `<kx-session-row>` — Expandable trainer-timeline row with mood + RPE chips + set chips + notes (v2 Phase 3)
+- `<kx-exercise-feedback-modal>` — RPE + notes capture after the last set of an exercise (v2 Phase 3)
+- `<kx-recovery-banner>` — Amber home banner for recoverable missed sessions (v2 Phase 4)
 
 Full design context: `kondix-web/.impeccable.md`
 
@@ -128,3 +136,14 @@ Full design context: `kondix-web/.impeccable.md`
 - **DateTimeOffset UTC in queries**: PostgreSQL requires offset 0 for timestamptz comparisons. Use `new DateTimeOffset(date, TimeSpan.Zero)`, not `DateTimeOffset.UtcNow.AddDays()`.
 - **TrainerContextMiddleware + onboarding**: Unapproved trainers can access `/api/v1/onboarding/*` endpoints — middleware allows this via `isOnboarding` check.
 - **Trainer onboarding flow**: Register → /onboarding/setup (public name + bio) → /onboarding/pending (await approval) → /trainer (after admin approves).
+- **PR detection inline**: `POST /api/v1/public/my/sets/update` returns `{ setLog, newPr? }` — `DetectNewPRsCommand` is dispatched from `UpdateSetDataCommand` via `IMediator`. Detection failure is intentionally swallowed (toast missing > write loss). Only fires for `Completed=true` set logs.
+- **CompleteSession is idempotent**: re-calls update mood/notes without re-advancing rotation. Mitigates the "Session already completed" middleware spam noted in Known Bugs above.
+- **Recovery sessions advance the rotation index** the same as normal sessions. `WorkoutSession.IsRecovery` (Phase 4) only affects how the calendar paints them and how the home-screen recovery banner appears. The stale `RecoversSessionId` column is intentionally vestigial — XML-doc'd, not used in MVP.
+- **Recovery model uses `RecoversPlannedDate: DateOnly?`** on `StartSessionCommand`, not `RecoversSessionId: Guid?` — there's no `WorkoutSession` row for a missed-but-never-started day. The "Recuperar" button navigates to `/workout/session/overview?sessionId=...&routineId=...&dayId=...` which short-circuits the `GET /next-workout` call.
+- **Trainer ownership scoping is the most-frequently-missed Application-layer gate.** Every new MediatR command/query that takes a `Guid` resource id (programId, studentId, sessionId, etc.) MUST accept `TrainerId` and verify ownership at the top of the handler (`db.<Resource>.AnyAsync(r => r.Id == id && r.TrainerId == trainerId)` → throw `"<Resource> not found"`). Phase 3 leak (recent-feedback / mark-read) and Phase 5 leak (program week-overrides) were the same class of bug.
+- **`kondix-videos` MinIO bucket still not provisioned in prod** (verified 2026-04-27) — YouTube embeds remain the only video source. `<kx-video-demo-overlay>` only handles YouTube; the "Ver demo" pill in the student logger is gated on `videoSource === 'YouTube' && videoUrl` for that reason.
+- **`@angular/cdk` (Phase 5)** lives in the lazy `program-form` chunk only (~16.7 kB transfer). Don't import `DragDropModule` in eagerly-loaded shells.
+- **Three v2 migrations pending on prod (as of 2026-04-27)**: `20260426234130_AddSessionAndSetFeedbackFields`, `20260427011850_AddSessionRecoveryFields`, `20260427024952_AddProgramWeekOverrides`. All additive, no backfill — apply together on next `dotnet ef database update`.
+- **Per-week notes (Phase 5)**: `GET/PUT /api/v1/programs/{id}/week-overrides[/{weekIndex}]`. Empty/whitespace `notes` deletes the row server-side. Frontend `program-form.ts` PUTs on blur with a per-week sequence (`overrideSeq`) to suppress out-of-order responses. The CDK weekly grid is a planning visualization only — `ProgramRoutine[]` persistence stays in the existing rotation-slots editor.
+- **`Permissions.GymManage = "kondix:manage"`** is the only trainer permission constant; `Permissions.GymWorkout = "kondix:workout"` is the only end-user one. There is NO `kondix:programs:read|write` etc. — gate every new trainer endpoint on `GymManage` and rely on inline ownership scoping for resource-level isolation.
+- **`ICelvoGymDbContext.cs` was renamed to `IKondixDbContext.cs` in v2 Phase 5** (interface name was always correct; just the file). Old historical migrations still reference `gym` schema in their snapshots — those are frozen, do not touch.

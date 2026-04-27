@@ -215,42 +215,65 @@ _Started:_ 2026-04-26
 
 ---
 
-## ▶ Next up: Phase 6 — Library polish + docs
+## Phase 6 — Library polish + docs
 
-_Plan reference:_ `docs/superpowers/plans/2026-04-26-kondix-v2-implementation.md` Phase 6 (lines 5003–5109, 4 tasks — small docs-and-polish phase).
+_Branch:_ `feat/v2-phase-6`
+_Started:_ 2026-04-27
 
-_Spec reference:_ `docs/superpowers/specs/2026-04-26-kondix-v2-feedback-loop-recovery-and-visual-refresh-design.md` — closing sections.
+| Tarea | Tipo | Descripción | Resolución |
+|---|---|---|---|
+| Task 6.1 | decision | Plan said "compare catalog editor against `design_handoff_kondix_v2/prototypes/trainer/view-library.jsx` and tweak if needed". Static comparison: handoff prototype assumes a richer `CatalogExercise` model (`equipment`, `category`, `level`, `secondaryMuscles`, `timesUsed`) that the current backend doesn't carry — and the handoff's `MUSCLE_GROUPS` select differs from the current free-text `muscleGroup` input. Adding those fields is a backend-schema change clearly out of scope for a docs-and-polish phase. Within the actual model, `catalog-list.ts` already aligns with v2 patterns (uses `<kx-exercise-thumb>` with muscle-tinted fallback, has YouTube/Upload video toggle, hover-to-delete affordance). | **No-op commit** per plan's "skip if no changes" rule. Field-richer editor is documented as a future v2.1 candidate. |
+| Task 6.2 | deviation | Plan listed 4 gotchas (PR detection inline, idempotent CompleteSession, recovery sessions advance rotation, kondix-videos bucket missing). Implementer added 8 more — drawn from the v2 phase logs — covering: the recovery model semantic (`RecoversPlannedDate` not `RecoversSessionId`), the recurring trainer-ownership-scoping pattern (Phase 3 + Phase 5 leak class), the three pending prod migrations, the `Permissions.GymManage` reality (only constant), the per-week notes endpoint + grid-as-planning-visualization design, the `@angular/cdk` lazy-only constraint, and the `ICelvoGymDbContext.cs → IKondixDbContext.cs` rename. Also marked the `<kx-set-row>` note-toggle and `<kx-day-cell>` `'recovered'` modifications inline rather than appending separate "modified" bullets. | Resolved (commit `3e0709ea`). |
+| Task 6.3 | deviation | Plan said "append the same component list plus implementation notes (sizes, signal patterns, OnPush behavior). Brief — design reference, not docs." Implementer added a structured table per component (sizes / signal API / animations) plus separate sub-sections for v2-modified components, v2 tokens, v2 utility surfaces, and "not components" notes. Slightly more than "brief" but the table format reads cleanly and surfaces the per-component shape in one glance. | Resolved (commit `ba26b36e`). |
+| Task 6.4 | note | Plan referenced `setup/03-deploy-checklist.md`; actual file is `setup/04-deploy-checklist.md` (slot 03 is `minio-bucket.sh`). Same discrepancy noted in Phase 1.5 log. Implementer used the right file and added 3 sanity-check curls (recent feedback / week-overrides / missed-sessions) on top of the migration + dep section the plan asked for. | Resolved (commit `5cc72a69`). |
 
-**Resume playbook (for a fresh Claude session):**
+---
 
-1. Confirm starting state: `git status` shows clean on `main`; `git log -1 --oneline` shows the Phase 5 merge commit (or later). Working tree synced with `origin/main`.
-2. Create the phase branch: `git checkout -b feat/v2-phase-6`.
-3. Invoke `Skill: superpowers:subagent-driven-development`. Phase 6 is mostly docs — most tasks fit "trivial = inline" per the playbook convention. Only Task 6.1 (catalog visual check) might warrant a real implementer if visual tweaks are needed.
-4. Phase 6 task order (per plan):
-   - **Task 6.1** (line 5005): Verify catalog editor visual match against `design_handoff_kondix_v2/prototypes/trainer/view-library.jsx`. Likely a no-op commit. Run dev server, eyeball, tweak if needed.
-   - **Task 6.2** (line 5022): Update root `CLAUDE.md` with v2 components added in Phases 1-5 (the 8 new `<kx-*>` components) and 4 new gotchas. Inline.
-   - **Task 6.3** (line 5060): Update `kondix-web/.impeccable.md` with the same component list + brief design notes. Inline.
-   - **Task 6.4** (line 5078): Update `setup/03-deploy-checklist.md` with the three v2 migrations + `@angular/cdk@21` dep + env-var checklist. Inline.
-5. Per-phase closeout: log any deviations; build verde (.NET 77 + Karma 10); final review (light — docs phase); merge `--no-ff` to main; push; delete local branch.
+**Phase 6 closeout (2026-04-27):**
+- 4 tasks complete in **3 commits across `feat/v2-phase-6`** (Task 6.1 was a no-op per plan; 6.2 / 6.3 / 6.4 each one commit). No code changes — pure documentation phase.
+- 4 deviations logged above (all approved inline; no per-task or phase-wide reviewer dispatched — docs phase, all changes verifiable by reading the diff).
+- Tests green at branch tip (sanity check; no test changes possible since no code touched):
+  - .NET: **77 specs** (59 unit + 8 arch + 10 integration). Unchanged from Phase 5.
+  - Angular Karma: **10 specs**. Unchanged.
+  - Build: 0 warnings, 0 errors.
+- New surfaces shipped: none (docs only).
+  - Root `CLAUDE.md` now lists the 8 new v2 components, the 2 modified v2 components, and 12 v2-relevant gotchas.
+  - `kondix-web/.impeccable.md` now has a "v2 Component Inventory" section with per-component sizes / signal API / animations table + v2 token + utility notes.
+  - `setup/04-deploy-checklist.md` now has a "v2 deploy" section with the three pending migrations, the `@angular/cdk` dep impact, and three sanity-check curls.
+- **No backend migrations in this phase.** The three pending prod migrations from Phases 3/4/5 still need `dotnet ef database update` on the next deploy.
+- This was the **LAST phase of the v2 plan**. After merge, the v2 implementation effort is complete.
 
-**Pre-Phase-6 verification (sanity, not blocking):**
-- `dotnet test Kondix.slnx` should show **77 backend specs** (59 unit + 8 arch + 10 integration) all passing.
-- `cd kondix-web && npx ng test --watch=false --browsers=ChromeHeadless` should show **10 Karma specs** all passing.
-- `cd kondix-web && npx ng build` clean.
-- No uncommitted changes.
+---
 
-**Plan defects to watch for in Phase 6** (based on phases 3 + 4 + 5 patterns):
-- **Catalog editor reality check**: Task 6.1 says "compare against handoff and tweak" — actually open the dev server and verify visually before committing. Don't trust the plan's "likely no major change needed" — phases 3-5 frequently found drift between plan and code.
-- **CLAUDE.md merge conflict watch**: the file is also edited by other workflows. After dispatching the docs implementer, re-read the file before commit to confirm no other changes mid-session.
-- **Carryover triage**: this is the LAST phase of v2 — the rolling carryover list (see "Carryovers" below) is the place to triage what gets folded in opportunistically vs. punted to a "v2.1 polish" follow-up. The four CLAUDE.md gotchas listed in Task 6.2 are not the full carryover list; you'll need to extend them.
+## ▶ KONDIX v2 — DONE (2026-04-27)
 
-**Carryovers to apply opportunistically while in those areas (rolling list from Phases 2-5):**
-- Extend `<kx-segmented-control>` to natively accept `{value, label}[]` and drop the reverse-map workarounds in `student-detail.ts` + `student-detail-progress.ts`.
-- Restore stat cards (Duración / Sets / Volumen / PRs) on workout-complete screen via either (a) re-extending `WorkoutSessionDto` with stats or (b) a new `GET /sessions/{id}/summary` endpoint.
-- Extend server-side `NewPrDto` with `Reps: string?` — TS interface and `toast.showPR(name, weight, reps)` already wired for it.
-- `<kx-video-demo-overlay>` + `<kx-confirm-dialog>` Esc-key close + focus management (Phase 2 carryover, still pending).
-- Phase 4: paint missed planned day as `'recovered'` on the calendar (needs `RecoversPlannedDate: DateOnly?` field on `WorkoutSession` + a 4th migration); fix `<kx-recovery-banner>.deadlineLabel()` timezone fragility via `parseLocalDate()`; rotation-mode mislabel for 2-days-ago.
-- Phase 5: weekly-grid accessibility (keyboard alternative to D&D; `role`/`aria-label` on drop zones; `scope="col"`/`scope="row"` on table headers; tooltip on disabled notes inputs in create mode); precompute `cellListsExceptMap` if perf ever feels sluggish at >40 weeks; clear `savingNotes` symmetrically in the stale-success branch of `onOverrideBlur`; extract `<kx-program-week-grid>` once cell layout becomes persistent or a second consumer needs the grid.
-- **Three pending migrations not yet applied to prod**: `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) + `20260427011850_AddSessionRecoveryFields` (Phase 4) + `20260427024952_AddProgramWeekOverrides` (Phase 5). Apply together on the next `dotnet ef database update`. No backfill required for any.
-- **Process improvement (forward-looking)**: every new MediatR command/query that takes a `Guid` resource id MUST accept the corresponding `TrainerId` / `StudentId` and verify ownership before any other DB op. Phase 3 caught a leak; Phase 5 caught the same class of leak again. Make this a hard pre-implementer-dispatch checklist item from Phase 6 onward.
+_Plan:_ `docs/superpowers/plans/2026-04-26-kondix-v2-implementation.md` (6 phases + Phase 1.5 = 7 phase branches across 2026-04-26/27).
+
+**Final state:**
+- **8 phase branches** merged to `main` via `--no-ff`: `feat/v2-phase-1`, `feat/v2-phase-1-5`, `feat/v2-phase-2`, `feat/v2-phase-3`, `feat/v2-phase-4`, `feat/v2-phase-5`, `feat/v2-phase-6`. All pushed to `origin/main`.
+- **Backend tests at v2 tip:** 77 (59 unit + 8 arch + 10 integration). Up from baseline.
+- **Frontend Karma specs:** 10 (unchanged across v2 — see "skip Karma per project memory" stance).
+- **Three additive prod migrations pending**: `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) + `20260427011850_AddSessionRecoveryFields` (Phase 4) + `20260427024952_AddProgramWeekOverrides` (Phase 5). Apply together on next `dotnet ef database update`. No backfill.
+- **One frontend dep added**: `@angular/cdk@^21.2.8` (lazy-loaded in `program-form` chunk only).
+- **No new env vars** since Phase 1.5's `Internal__ApiKey`.
+- **`kondix-videos` MinIO bucket** still NOT provisioned in prod — YouTube embeds remain the only video source.
+
+**v2 product surfaces shipped (high-level):**
+- Bidirectional feedback loop (Phase 3): per-set notes, per-exercise RPE+notes modal, mood picker on workout-complete, trainer drawer with 4-tab split (Resumen/Programa/Progreso/Notas), session timeline with mood/RPE chips/set chips/PRs/notes, "unread" badge + CTA banner, full trainer-private-notes CRUD panel, inline 🏆 PR toast on `sets/update`.
+- Recovery system (Phase 4): student-side amber banner for missed sessions in a 2-day window, `'recovered'` calendar state, `POST /sessions/start` extended with `RecoversPlannedDate`.
+- Programs editor refresh (Phase 5): CDK D&D weekly planning grid + per-week notes editor (`PUT /programs/{id}/week-overrides/{weekIndex}`).
+- Foundation (Phase 1) + Trainer approval & auto-seed (Phase 1.5) + Video demo overlay (Phase 2).
+
+**Carryovers / known-deferred items** (the rolling list, frozen here as the v2 closeout snapshot — pick up as v2.1 polish or fold into specific feature work):
+- **Accessibility on Phase 5's weekly grid**: no keyboard alternative to D&D; drop zones lack `role`/`aria-label`; `<th>` lacks `scope="col"`/`scope="row"`; tooltip on disabled notes inputs in create mode.
+- **`<kx-segmented-control>`** doesn't natively accept `{value, label}[]` — Phase 3 adds reverse-map workarounds in `student-detail.ts` + `student-detail-progress.ts`.
+- **Workout-complete stat cards** (Duración / Sets / Volumen / PRs) — currently show `—`; restore via `GET /sessions/{id}/summary` or by re-extending `WorkoutSessionDto`.
+- **`NewPrDto.Reps`** missing server-side — TS interface and `toast.showPR(name, weight, reps)` are already wired for it.
+- **`<kx-video-demo-overlay>` + `<kx-confirm-dialog>` Esc-key close + focus management** (Phase 2 carryover, never landed).
+- **Phase 4 leftovers**: paint missed planned day as `'recovered'` (needs `RecoversPlannedDate: DateOnly?` on `WorkoutSession` + a 4th migration); `<kx-recovery-banner>.deadlineLabel()` timezone fragility (`parseLocalDate()` fix); rotation-mode mislabel for 2-days-ago.
+- **Phase 5 leftovers**: precompute `cellListsExceptMap` if perf ever feels sluggish at >40 weeks; clear `savingNotes` symmetrically in the stale-success branch of `onOverrideBlur`; extract `<kx-program-week-grid>` once cell layout becomes persistent or a second consumer needs the grid.
+- **Catalog editor field-richness gap**: handoff prototype assumes `equipment`, `category`, `level`, `secondaryMuscles`, `timesUsed`. Not in current model. Future v2.1 candidate.
+- **Process improvement (sticky)**: every new MediatR command/query that takes a `Guid` resource id MUST accept the corresponding `TrainerId` / `StudentId` and verify ownership before any other DB op. Encoded in CLAUDE.md gotchas.
+
+**Next session(s)** should default to applying the three pending prod migrations + deploying, then triaging the carryover list above by user-impact rather than by phase order.
 

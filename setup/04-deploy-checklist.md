@@ -144,3 +144,36 @@ Add to `deploy/.env`:
 Confirm CelvoAdmin's deploy gets the same secret as `Kondix__InternalApiKey`
 when the CelvoAdmin-side work ships (separate plan).
 
+## v2 deploy (2026-04-27 — feedback loop, recovery, programs editor refresh)
+
+EF migrations applied automatically on app startup, in order:
+
+1. `20260426234130_AddSessionAndSetFeedbackFields` (Phase 3) — adds `set_logs.notes`, `workout_sessions.{mood, feedback_reviewed_at}` + partial index, new `exercise_feedback` table.
+2. `20260427011850_AddSessionRecoveryFields` (Phase 4) — adds `workout_sessions.{is_recovery, recovers_session_id}` + self-FK + index.
+3. `20260427024952_AddProgramWeekOverrides` (Phase 5) — creates `program_week_overrides` table with `UNIQUE(program_id, week_index)` + cascade FK to `programs`.
+
+All three are **additive only — no backfill, no app downtime**.
+
+Frontend dependency added: `@angular/cdk@^21.2.8` — used only in the lazy `program-form` chunk for the trainer's weekly D&D planning grid. Bundle impact: +~16.7 kB transfer on that chunk only (well within the spec's ~30 kB budget).
+
+No new env vars introduced in v2. No new MinIO buckets (`kondix-videos` is still planned but not provisioned — YouTube embeds remain the only video source). No new CelvoGuard registrations.
+
+After deploy, sanity-check the new endpoints:
+
+```bash
+# Feedback (trainer-only, requires trainer cookie)
+curl -sf -b "cg-access-kondix=<jwt>; cg-csrf-kondix=<csrf>" \
+  -H "X-CSRF-Token: <csrf>" \
+  https://kondix.celvo.dev/api/v1/students/<id>/feedback/recent
+
+# Per-week notes (trainer-only)
+curl -sf -b "cg-access-kondix=<jwt>; cg-csrf-kondix=<csrf>" \
+  -H "X-CSRF-Token: <csrf>" \
+  https://kondix.celvo.dev/api/v1/programs/<id>/week-overrides
+
+# Recovery (student-only, requires student cookie)
+curl -sf -b "cg-access-kondix=<jwt>; cg-csrf-kondix=<csrf>" \
+  https://kondix.celvo.dev/api/v1/public/my/missed-sessions
+# Expected: 204 No Content if nothing recoverable, 200 + RecoverableSessionDto otherwise.
+```
+
