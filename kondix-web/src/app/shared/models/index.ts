@@ -411,3 +411,17 @@ export interface CommentDto {
   text: string;
   createdAt: string;
 }
+
+// Recent Feedback (trainer view of student session feedback)
+export interface RecentFeedbackSessionDto {
+  sessionId: string;
+  routineName: string;
+  completedAt: string;
+  mood: string | null;
+  hasNotes: boolean;
+}
+
+export interface RecentFeedbackDto {
+  unreadCount: number;
+  sessions: RecentFeedbackSessionDto[];
+}
