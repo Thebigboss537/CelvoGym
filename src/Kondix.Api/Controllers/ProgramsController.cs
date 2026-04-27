@@ -59,7 +59,7 @@ public class ProgramsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> GetWeekOverrides(Guid id, CancellationToken ct)
     {
         HttpContext.RequirePermission(Permissions.GymManage);
-        var result = await mediator.Send(new GetProgramWeekOverridesQuery(id), ct);
+        var result = await mediator.Send(new GetProgramWeekOverridesQuery(id, HttpContext.GetTrainerId()), ct);
         return Ok(result);
     }
 
@@ -71,7 +71,7 @@ public class ProgramsController(IMediator mediator) : ControllerBase
         CancellationToken ct)
     {
         HttpContext.RequirePermission(Permissions.GymManage);
-        await mediator.Send(new UpsertProgramWeekOverrideCommand(id, weekIndex, request.Notes), ct);
+        await mediator.Send(new UpsertProgramWeekOverrideCommand(id, HttpContext.GetTrainerId(), weekIndex, request.Notes), ct);
         return NoContent();
     }
 }
