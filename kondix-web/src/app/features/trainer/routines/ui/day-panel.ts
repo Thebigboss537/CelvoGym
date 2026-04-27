@@ -4,7 +4,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import {
   CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup,
-  moveItemInArray, transferArrayItem,
+  moveItemInArray,
 } from '@angular/cdk/drag-drop';
 import { LucideAngularModule, LUCIDE_ICONS, LucideIconProvider } from 'lucide-angular';
 import { Trash2, Plus, Link2, Unlink2, Timer } from 'lucide-angular';
@@ -26,8 +26,6 @@ const CLUSTER_LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
 const newSet = (): WizardSet => ({ setType: 'Effective', targetReps: '', targetWeight: '', targetRpe: null, restSeconds: null });
 const newExercise = (): WizardExercise => ({ name: '', notes: '', tempo: '', catalogExerciseId: null, catalogImageUrl: null, catalogVideoUrl: null, sets: [newSet()] });
-const newBlock = (): WizardBlock => ({ blockType: null, restSeconds: 90, exercises: [newExercise()] });
-const newSuperset = (): WizardBlock => ({ blockType: 'Superset', restSeconds: 60, exercises: [newExercise(), newExercise()] });
 
 @Component({
   selector: 'kx-day-panel',
@@ -225,11 +223,14 @@ export class KxDayPanel {
       // Remove the whole block.
       blocks = day.blocks.filter((_, i) => i !== bi);
     } else {
+      const isDemoting = remaining.length === 1 && block.blockType !== null;
       const updated: WizardBlock = {
         ...block,
         exercises: remaining,
-        // Demote to Single if cluster shrinks to 1.
-        blockType: remaining.length === 1 ? null : block.blockType,
+        // Demote to Single if cluster shrinks to 1; reset rest to Single default
+        // so the survivor matches a freshly-created block (90s, not 60s cluster cadence).
+        blockType: isDemoting ? null : block.blockType,
+        restSeconds: isDemoting ? 90 : block.restSeconds,
       };
       blocks = day.blocks.map((b, i) => i === bi ? updated : b);
     }
@@ -305,7 +306,8 @@ export class KxDayPanel {
     if (remaining.length === 0) {
       blocks = [...day.blocks.slice(0, bi), newSingle, ...day.blocks.slice(bi + 1)];
     } else if (remaining.length === 1) {
-      const demoted: WizardBlock = { ...block, exercises: remaining, blockType: null };
+      // Demote to Single + reset rest to Single default (90s, not 60s cluster cadence).
+      const demoted: WizardBlock = { ...block, exercises: remaining, blockType: null, restSeconds: 90 };
       blocks = [...day.blocks.slice(0, bi), demoted, newSingle, ...day.blocks.slice(bi + 1)];
     } else {
       const trimmed: WizardBlock = { ...block, exercises: remaining };
@@ -332,10 +334,13 @@ export class KxDayPanel {
     const moved = blocks[fromBi].exercises.splice(event.previousIndex, 1)[0];
     blocks[targetBi].exercises.splice(event.currentIndex, 0, moved);
 
-    // Cleanup: empty source → remove; cluster of 1 → demote to Single.
+    // Cleanup: empty source → remove; cluster of 1 → demote to Single + reset rest
+    // to the Single default (90s) so the survivor matches a freshly-created block.
     const cleaned = blocks
       .filter(b => b.exercises.length > 0)
-      .map(b => b.exercises.length === 1 && b.blockType !== null ? { ...b, blockType: null } : b);
+      .map(b => b.exercises.length === 1 && b.blockType !== null
+        ? { ...b, blockType: null, restSeconds: 90 }
+        : b);
 
     this.dayChange.emit({ ...day, blocks: cleaned });
   }

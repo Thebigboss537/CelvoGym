@@ -126,7 +126,28 @@ export class KxExercisePicker {
 
   onBlur() {
     // Slight delay so mousedown on a suggestion can fire before close.
-    setTimeout(() => this.open.set(false), 180);
+    setTimeout(() => {
+      this.open.set(false);
+      // Commit free-text if the trainer typed something but didn't pick / press Enter.
+      // This mirrors the wizard's [(ngModel)] behavior — typing propagates without
+      // requiring an explicit commit gesture. Idempotent vs Enter/click commits:
+      // commitMatch sets this.query = m.name, so on a matched commit the trimmed
+      // value equals what the parent already received; commitCreate emits the
+      // exact trimmed query, so re-emitting with the same payload is a no-op
+      // (parent's onPickerSelected just resets exercise.name to the same value).
+      const trimmed = this.query.trim();
+      const seeded = (this.value() ?? '').trim();
+      if (trimmed && trimmed !== seeded) {
+        this.selected.emit({
+          name: trimmed,
+          catalogExerciseId: null,
+          muscleGroup: null,
+          videoUrl: null,
+          imageUrl: null,
+          notes: null,
+        });
+      }
+    }, 180);
   }
 
   onKeyDown(e: KeyboardEvent) {
