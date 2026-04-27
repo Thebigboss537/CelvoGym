@@ -105,10 +105,13 @@ _Started:_ 2026-04-26
 ---
 
 **Phase 3 closeout (2026-04-26):**
-- 26 tasks complete in 26 commits across `feat/v2-phase-3`. Sub-phase split: 3.A backend (10 commits), 3.B UI (6 commits), 3.C student-side (4 commits), 3.D trainer drawer (6 commits).
-- 18 deviations logged above (all approved by per-task reviews; no plan defects required spec changes).
-- Tests green at branch tip:
-  - .NET: **51 specs** (33 unit + 8 arch + 10 integration). Up from 38 pre-phase (+13 unit specs: 3 UpdateSetNote + 3 UpsertExerciseFeedback + 2 CompleteSession + 4 UpdateSetData + 1 GetRecentFeedback).
+- 26 tasks complete in 26 commits + 1 closeout-doc commit + 2 post-review fix commits = **29 commits across `feat/v2-phase-3`**. Sub-phase split: 3.A backend (10 commits), 3.B UI (6 commits), 3.C student-side (4 commits), 3.D trainer drawer (6 commits), closeout (1 doc), post-review fixes (2 commits).
+- 18 deviations + 2 post-review fixes logged above and below (all approved by per-task and final phase-wide reviews).
+- Final phase-wide review (final code-reviewer subagent) flagged 1 critical (missing trainer-student ownership check on `GetRecentFeedbackQuery` + `MarkFeedbackReadCommand`) and 1 important (dead stat-loading code in `workout-complete.ts onFinish()` that the user never saw populate). Both fixed pre-merge:
+  - `dd1ee433 fix(security): trainer ownership checks on recent-feedback + mark-read` — added `TrainerId` to both records, ownership guard via `TrainerStudents.AnyAsync(...)` at the top of each `Handle()`, mirroring the existing pattern in `GetStudentSessionsForTrainerQuery`. Updates `StudentsController` to pass `HttpContext.GetTrainerId()`. Added 3 unit tests (1 fact updated to seed link + pass trainer; 2 new — happy-path mark-read + unauthorized throws).
+  - `68370981 fix(student): drop dead stat-loading code on workout-complete` — removed 145 lines of stat-card markup, supporting signals (`durationLabel`, `completedSets`, `totalSets`, `totalVolume`, `prs`), and methods (`handleSession`, `loadPrsAndStats`). The screen now only renders celebration + mood picker + notes textarea + Finalizar. Stat-card restoration is a documented carryover for a future `GET /sessions/{id}/summary` endpoint.
+- Tests green at branch tip (post-fixes):
+  - .NET: **54 specs** (36 unit + 8 arch + 10 integration). Up from 38 pre-phase (+16 unit specs: 3 UpdateSetNote + 3 UpsertExerciseFeedback + 2 CompleteSession + 4 UpdateSetData + 1+1 GetRecentFeedback (happy + unauth) + 2 MarkFeedbackRead (happy + unauth)).
   - Angular Karma: **10 specs** (7 youtube + 3 toast — unchanged; this phase added components but no new specs since plans skip Karma per project memory).
 - New surfaces shipped:
   - **Student logging screen**: per-set 💬 note toggle, exercise feedback modal (RPE + notes) on last set, inline 🏆 PR toast from the `sets/update` response.
