@@ -22,8 +22,17 @@ public sealed class GetNextWorkoutQueryHandlerTests
         // Wednesday (idx 2) gets a routineDay slot.
         var wed = w.Slots.First(s => s.DayIndex == 2);
         wed.Kind = ProgramSlotKind.RoutineDay;
-        wed.RoutineId = Guid.NewGuid();
-        wed.DayId = Guid.NewGuid();
+
+        // Create a Routine to associate with the Day
+        var routine = new Routine { Id = Guid.NewGuid(), TrainerId = trainerId, Name = "Routine A" };
+        db.Routines.Add(routine);
+
+        // Create a Day and associate it with the Routine
+        var day = new Day { Id = Guid.NewGuid(), RoutineId = routine.Id, Name = "Día A", SortOrder = 0 };
+        db.Days.Add(day);
+
+        wed.RoutineId = routine.Id;
+        wed.DayId = day.Id;
         wed.BlockId = Guid.NewGuid();
         p.Weeks.Add(w);
 
@@ -53,6 +62,9 @@ public sealed class GetNextWorkoutQueryHandlerTests
         result.Kind.Should().Be("Routine");
         result.WeekIndex.Should().Be(0);
         result.SlotIndex.Should().Be(2);
+        result.DayName.Should().Be("Día A");
+        result.RoutineId.Should().NotBeNull();
+        result.DayId.Should().NotBeNull();
     }
 
     [Fact]

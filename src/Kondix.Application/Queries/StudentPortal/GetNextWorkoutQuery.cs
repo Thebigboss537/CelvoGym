@@ -26,7 +26,9 @@ public sealed class GetNextWorkoutHandler(IKondixDbContext db) : IRequestHandler
     {
         var assignment = await db.ProgramAssignments
             .Include(a => a.Program).ThenInclude(p => p.Weeks).ThenInclude(w => w.Slots)
-            .ThenInclude(s => s.Routine)
+                .ThenInclude(s => s.Routine)
+            .Include(a => a.Program).ThenInclude(p => p.Weeks).ThenInclude(w => w.Slots)
+                .ThenInclude(s => s.Day)
             .Where(a => a.StudentId == request.StudentId && a.Status == ProgramAssignmentStatus.Active)
             .OrderByDescending(a => a.StartDate)
             .FirstOrDefaultAsync(ct);
@@ -95,6 +97,7 @@ public sealed class GetNextWorkoutHandler(IKondixDbContext db) : IRequestHandler
                     RoutineId: slot.RoutineId,
                     RoutineName: slot.Routine?.Name,
                     DayId: slot.DayId,
+                    DayName: slot.Day?.Name,
                     WeekIndex: currentWeekIdx,
                     SlotIndex: todayDow),
                 _ => new NextWorkoutDto("Empty", AssignmentId: assignment.Id),
