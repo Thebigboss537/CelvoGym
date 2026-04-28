@@ -274,14 +274,36 @@ export interface FixedScheduleEntry {
   days: number[];
 }
 
+export type NextWorkoutKind = 'Routine' | 'Rest' | 'Empty' | 'Numbered' | 'Done';
+
 export interface NextWorkoutDto {
+  kind: NextWorkoutKind;
+  assignmentId?: string | null;
+  routineId?: string | null;
+  routineName?: string | null;
+  dayId?: string | null;
+  dayName?: string | null;
+  weekIndex?: number | null;
+  slotIndex?: number | null;
+  pendingCount?: number | null;
+  completedCount?: number | null;
+  total?: number | null;
+}
+
+export interface ThisWeekPendingSlot {
+  slotIndex: number;
   routineId: string;
   routineName: string;
   dayId: string;
   dayName: string;
-  programName: string;
-  currentWeek: number;
-  totalWeeks: number;
+}
+
+export interface ThisWeekDto {
+  assignmentId: string;
+  weekIndex: number;
+  total: number;
+  completedCount: number;
+  pending: ThisWeekPendingSlot[];
 }
 
 export interface MyProgramDto {

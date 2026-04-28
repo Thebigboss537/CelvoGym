@@ -66,7 +66,7 @@ interface ExerciseWithState {
               {{ nextWorkout()?.routineName ?? '' }}
             </p>
             @if (nextWorkout()) {
-              <p class="text-text-muted text-xs">Semana {{ nextWorkout()!.currentWeek }}</p>
+              <p class="text-text-muted text-xs">Semana {{ nextWorkout()!.weekIndex ?? '' }}</p>
             }
           </div>
 
@@ -311,17 +311,17 @@ export class WorkoutOverview implements OnInit, OnDestroy {
     this.api.get<NextWorkoutDto>('/public/my/next-workout').subscribe({
       next: (nw) => {
         this.nextWorkout.set(nw);
-        this.api.get<StudentRoutineDetailDto>(`/public/my/routines/${nw.routineId}`).subscribe({
+        this.api.get<StudentRoutineDetailDto>(`/public/my/routines/${nw.routineId!}`).subscribe({
           next: (r) => {
             this.routine.set(r);
             // Build setLogMap from the current day only
-            const day = r.days.find(d => d.id === nw.dayId);
+            const day = r.days.find(d => d.id === nw.dayId!);
             const map = new Map<string, SetLogDto>();
             if (day) {
               day.setLogs.forEach(sl => map.set(sl.setId, sl));
             }
             this.setLogMap.set(map);
-            this.checkOrStartSession(nw.routineId, nw.dayId);
+            this.checkOrStartSession(nw.routineId!, nw.dayId!);
           },
           error: (err) => {
             this.error.set(err.error?.error || 'No pudimos cargar la rutina.');
@@ -341,13 +341,13 @@ export class WorkoutOverview implements OnInit, OnDestroy {
       next: (r) => {
         // Build a minimal NextWorkoutDto so the template renders correctly.
         this.nextWorkout.set({
+          kind: 'Routine',
           routineId,
           routineName: r.name,
           dayId,
           dayName: r.days.find(d => d.id === dayId)?.name ?? '',
-          programName: '',
-          currentWeek: 0,
-          totalWeeks: 0,
+          weekIndex: null,
+          slotIndex: null,
         });
         this.routine.set(r);
         // Build setLogMap from the target day
