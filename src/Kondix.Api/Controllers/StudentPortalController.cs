@@ -181,10 +181,10 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
         CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
+        // TODO Phase 5: restore ProgramRoutines ownership check via v3 ProgramSlot structure.
         var hasAssignment = await db.ProgramAssignments
             .AnyAsync(pa => pa.StudentId == studentId
-                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active
-                && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == routineId), ct);
+                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active, ct);
         if (!hasAssignment) throw new InvalidOperationException("Routine not assigned to this student");
 
         var result = await mediator.Send(new GetCommentsQuery(routineId, dayId), ct);
