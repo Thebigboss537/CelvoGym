@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, LUCIDE_ICONS, LucideIconProvider, MoreVertical, Copy, Trash } from 'lucide-angular';
 import { ProgramDayCell } from './program-day-cell';
-import { ProgramWeek } from '../../../../shared/models';
+import { ProgramSlot, ProgramWeek } from '../../../../shared/models';
 
 @Component({
   selector: 'kx-program-week-row',
@@ -79,5 +79,5 @@ export class ProgramWeekRow {
     return `90px repeat(${cells}, minmax(82px, 1fr)) 40px`;
   });
 
-  categoryFor(_slot: any): string | null { return this.programObjective(); }
+  categoryFor(_slot: ProgramSlot): string | null { return this.programObjective(); }
 }
