@@ -64,6 +64,82 @@ public class ProgramsController(IMediator mediator) : ControllerBase
         await mediator.Send(new DeleteProgramCommand(id, HttpContext.GetTrainerId()), ct);
         return NoContent();
     }
+
+    [HttpPost("{id:guid}/publish")]
+    public async Task<IActionResult> Publish(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new PublishProgramCommand(id, HttpContext.GetTrainerId()), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/duplicate")]
+    public async Task<IActionResult> Duplicate(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var newId = await mediator.Send(new DuplicateProgramCommand(id, HttpContext.GetTrainerId()), ct);
+        return Created($"/api/v1/programs/{newId}", new { id = newId });
+    }
+
+    [HttpPost("{id:guid}/weeks")]
+    public async Task<IActionResult> AddWeek(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new AddWeekCommand(id, HttpContext.GetTrainerId()), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/weeks/{weekIndex:int}/duplicate")]
+    public async Task<IActionResult> DuplicateWeek(Guid id, int weekIndex, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new DuplicateWeekCommand(id, HttpContext.GetTrainerId(), weekIndex), ct);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}/weeks/{weekIndex:int}")]
+    public async Task<IActionResult> DeleteWeek(Guid id, int weekIndex, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new DeleteWeekCommand(id, HttpContext.GetTrainerId(), weekIndex), ct);
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/weeks/{weekIndex:int}/slots/{dayIndex:int}")]
+    public async Task<IActionResult> SetSlot(Guid id, int weekIndex, int dayIndex,
+        [FromBody] SetSlotRequest request, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new SetSlotCommand(id, HttpContext.GetTrainerId(), weekIndex, dayIndex, request.Kind), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/assign-routine")]
+    public async Task<IActionResult> AssignRoutine(Guid id,
+        [FromBody] AssignRoutineRequest request, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        var blockId = await mediator.Send(new AssignRoutineToProgramCommand(
+            id, HttpContext.GetTrainerId(),
+            request.RoutineId, request.Weeks, request.Mapping, request.DayIds), ct);
+        return Ok(new { blockId });
+    }
+
+    [HttpDelete("{id:guid}/blocks/{blockId:guid}")]
+    public async Task<IActionResult> RemoveBlock(Guid id, Guid blockId, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new RemoveBlockCommand(id, HttpContext.GetTrainerId(), blockId), ct);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/fill-rest")]
+    public async Task<IActionResult> FillRest(Guid id, CancellationToken ct)
+    {
+        HttpContext.RequirePermission(Permissions.GymManage);
+        await mediator.Send(new FillRestCommand(id, HttpContext.GetTrainerId()), ct);
+        return NoContent();
+    }
 }
 
 public sealed record CreateProgramRequest(
@@ -83,3 +159,11 @@ public sealed record UpdateProgramRequest(
     ProgramObjective Objective,
     ProgramLevel Level,
     ProgramMode Mode);
+
+public sealed record SetSlotRequest(ProgramSlotKind Kind);
+
+public sealed record AssignRoutineRequest(
+    Guid RoutineId,
+    IReadOnlyList<int> Weeks,
+    IReadOnlyDictionary<Guid, int>? Mapping,
+    IReadOnlyList<Guid>? DayIds);
