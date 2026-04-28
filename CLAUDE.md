@@ -40,20 +40,35 @@ docker compose up -d
 - **Student onboarding**: Trainer invites via email or QR code
 - **Trainer-Student**: M:N junction table, 1:1 enforced in business logic for MVP
 - **Routine structure**: Routine → Day → ExerciseGroup → Exercise → ExerciseSet
-- **Program structure**: Program → ProgramRoutine (ordered) → Routine
-- **Assignment model**: Programs are the assignment unit (not individual routines)
-- **Assignment modes**: Rotation (routines cycle A→B→C→A) or Fixed (routine mapped to specific weekdays)
-- **Program lifecycle**: Active → Completed/Cancelled, with duration in weeks and training day schedule
-- **RotationIndex**: Tracks which routine is next in rotation mode, incremented on session complete
+- **Program structure (v3)**: Program → ProgramWeek → ProgramSlot (kind: Empty | Rest | RoutineDay)
+- **Program modes (v3)**: `Mode: Fixed | Loop` — Fixed has N weeks, Loop has 1 week template that repeats forever
+- **Schedule type (v3)**: `ScheduleType: Week | Numbered` (immutable after create) — Week has 7 cells/week (Mon..Sun); Numbered has N cells/week (`DaysPerWeek`), no rest/empty slots, week-bucket scheduling on the student side
+- **Assignment model (v3)**: `(StudentId, ProgramId, StartDate, Status)` — schedule lives on the program, not the assignment. Loop assignments are indefinite; Fixed assignments end after `Program.Weeks.Count × 7` days. 1:1 active assignment per student is enforced server-side by cancelling prior active rows on insert.
+- **Publish flow (v3)**: programs created as `IsPublished=false`; one-way transition to `IsPublished=true`. Assignment requires a published program.
+- **Per-slot overrides** are out of scope for v3.
 - **Set types**: Warmup, Effective, DropSet, RestPause, AMRAP
 - **Exercise grouping**: Single, Superset, Triset, Circuit
 - **Videos**: YouTube embed or trainer upload (MinIO bucket `kondix-videos`)
 - **Routine updates**: Full replace (delete old days/exercises, recreate)
 
+## Programs v3 trainer editor (Phase 4) — quick reference
+
+3-column shell at `/trainer/programs/:id`. State lives in `ProgramEditorStore` (NgRx SignalStore, locally provided). After every mutation the store reloads the full `ProgramDetail` (no optimistic merging).
+
+Family of components in `kondix-web/src/app/features/trainer/programs/ui/`:
+- `<kx-program-meta-panel>` — left column (name/description/objective/level/mode/notes; debounced on blur)
+- `<kx-program-week-row>` — one week (label + cells + duplicate/delete menu, hidden in Loop mode)
+- `<kx-program-day-cell>` — single calendar cell (3 visual states with objective accent)
+- `<kx-cell-inspector>` — right inspector (Empty / Rest / RoutineDay branches)
+- `<kx-create-program-modal>` — creation modal (objective/level/mode/scheduleType/duration)
+- `<kx-assign-routine-modal>` — 2-step wizard, Week branch maps days to weekdays via `suggestWeekdayMapping([0,2,4,1,3,5,6])`, Numbered branch picks ordered days
+- `<kx-program-card>` — list card (Phase 6)
+- `<kx-assign-program-modal>` — minimal student + start date (Phase 6)
+
 ## API Routes
 
-- Trainer (operator): `/api/v1/routines`, `/api/v1/students`, `/api/v1/programs`, `/api/v1/program-assignments`
-- Student (end-user): `/api/v1/public/my/program`, `/api/v1/public/my/next-workout`, `/api/v1/public/my/routines/{id}`, `/api/v1/public/my/sets/*`
+- Trainer (operator): `/api/v1/routines`, `/api/v1/students`, `/api/v1/programs` (+ `/{id}/publish`, `/duplicate`, `/weeks`, `/weeks/{w}/duplicate`, `/weeks/{w}`, `/weeks/{w}/slots/{d}`, `/assign-routine`, `/blocks/{blockId}`, `/fill-rest`), `/api/v1/program-assignments` (POST simplified to `{StudentId, ProgramId, StartDate}` in v3)
+- Student (end-user): `/api/v1/public/my/program`, `/api/v1/public/my/next-workout` (v3 discriminated `Kind: Routine|Rest|Empty|Numbered|Done`), `/api/v1/public/my/this-week` (numbered only), `/api/v1/public/my/routines/{id}`, `/api/v1/public/my/sets/*`, `/api/v1/public/my/sessions/start` (accepts optional `WeekIndex`/`SlotIndex`)
 - Public: `/api/v1/health`, `/api/v1/public/invite/{token}`
 
 ## Design Context
@@ -102,6 +117,14 @@ docker compose up -d
 - `<kx-session-row>` — Expandable trainer-timeline row with mood + RPE chips + set chips + notes (v2 Phase 3)
 - `<kx-exercise-feedback-modal>` — RPE + notes capture after the last set of an exercise (v2 Phase 3)
 - `<kx-recovery-banner>` — Amber home banner for recoverable missed sessions (v2 Phase 4)
+- `<kx-program-day-cell>` — Program editor calendar cell, 3 visual states (v3 Phase 4)
+- `<kx-program-week-row>` — Program editor week row (v3 Phase 4)
+- `<kx-program-meta-panel>` — Program editor left column (v3 Phase 4)
+- `<kx-cell-inspector>` — Program editor right inspector (v3 Phase 4)
+- `<kx-create-program-modal>` — Program creation modal (v3 Phase 3)
+- `<kx-assign-routine-modal>` — 2-step wizard, picker + mapping (v3 Phase 4)
+- `<kx-program-card>` — Program list card with timeline preview + badges + menu (v3 Phase 6)
+- `<kx-assign-program-modal>` — Minimal assign-to-student modal (v3 Phase 6)
 
 Full design context: `kondix-web/.impeccable.md`
 
@@ -137,13 +160,15 @@ Full design context: `kondix-web/.impeccable.md`
 - **TrainerContextMiddleware + onboarding**: Unapproved trainers can access `/api/v1/onboarding/*` endpoints — middleware allows this via `isOnboarding` check.
 - **Trainer onboarding flow**: Register → /onboarding/setup (public name + bio) → /onboarding/pending (await approval) → /trainer (after admin approves).
 - **PR detection inline**: `POST /api/v1/public/my/sets/update` returns `{ setLog, newPr? }` — `DetectNewPRsCommand` is dispatched from `UpdateSetDataCommand` via `IMediator`. Detection failure is intentionally swallowed (toast missing > write loss). Only fires for `Completed=true` set logs.
-- **CompleteSession is idempotent**: re-calls update mood/notes without re-advancing rotation. Mitigates the "Session already completed" middleware spam noted in Known Bugs above.
-- **Recovery sessions advance the rotation index** the same as normal sessions. `WorkoutSession.IsRecovery` (Phase 4) only affects how the calendar paints them and how the home-screen recovery banner appears. The stale `RecoversSessionId` column is intentionally vestigial — XML-doc'd, not used in MVP.
+- **CompleteSession is idempotent**: re-calls update mood/notes. (Mitigates the "Session already completed" middleware spam noted in Known Bugs above; v3 dropped the rotation-index advance since rotation logic is gone.)
+- **Recovery is gated to Week-mode programs only (v3 Phase 5).** Numbered programs have no specific missed-day to recover — the home/calendar hide the recovery banner and grid for Numbered students. `WorkoutSession.IsRecovery` only affects how the calendar paints them and how the home-screen banner appears. The stale `RecoversSessionId` column is intentionally vestigial — XML-doc'd, not used in MVP.
 - **Recovery model uses `RecoversPlannedDate: DateOnly?`** on `StartSessionCommand`, not `RecoversSessionId: Guid?` — there's no `WorkoutSession` row for a missed-but-never-started day. The "Recuperar" button navigates to `/workout/session/overview?sessionId=...&routineId=...&dayId=...` which short-circuits the `GET /next-workout` call.
 - **Trainer ownership scoping is the most-frequently-missed Application-layer gate.** Every new MediatR command/query that takes a `Guid` resource id (programId, studentId, sessionId, etc.) MUST accept `TrainerId` and verify ownership at the top of the handler (`db.<Resource>.AnyAsync(r => r.Id == id && r.TrainerId == trainerId)` → throw `"<Resource> not found"`). Phase 3 leak (recent-feedback / mark-read) and Phase 5 leak (program week-overrides) were the same class of bug.
 - **`kondix-videos` MinIO bucket still not provisioned in prod** (verified 2026-04-27) — YouTube embeds remain the only video source. `<kx-video-demo-overlay>` only handles YouTube; the "Ver demo" pill in the student logger is gated on `videoSource === 'YouTube' && videoUrl` for that reason.
-- **`@angular/cdk` (Phase 5)** lives in the lazy `program-form` chunk only (~16.7 kB transfer). Don't import `DragDropModule` in eagerly-loaded shells.
-- **Three v2 migrations pending on prod (as of 2026-04-27)**: `20260426234130_AddSessionAndSetFeedbackFields`, `20260427011850_AddSessionRecoveryFields`, `20260427024952_AddProgramWeekOverrides`. All additive, no backfill — apply together on next `dotnet ef database update`.
-- **Per-week notes (Phase 5)**: `GET/PUT /api/v1/programs/{id}/week-overrides[/{weekIndex}]`. Empty/whitespace `notes` deletes the row server-side. Frontend `program-form.ts` PUTs on blur with a per-week sequence (`overrideSeq`) to suppress out-of-order responses. The CDK weekly grid is a planning visualization only — `ProgramRoutine[]` persistence stays in the existing rotation-slots editor.
+- **Programs v3 destructive migration (`20260428201329_ProgramsV3Refactor`)** wipes `programs/program_routines/program_assignments/program_week_overrides/workout_sessions/set_logs/personal_records` on the next `dotnet ef database update`. Trainers + students + routines are preserved. Notify any test users before pulling the trigger; old programs are gone.
+- **Programs v3 routes**: trainer creates via `<kx-create-program-modal>` from the program list (no `/programs/new` route — removed in Phase 4). The editor at `/trainer/programs/:id` (and `:id/edit` alias) loads `ProgramEditorPage`. Legacy `program-detail.ts` is on disk but unreachable.
+- **Programs v3 invariants enforced server-side**: `Mode=Loop` ⇒ exactly 1 ProgramWeek; `ScheduleType` is immutable after create; `Publish` is one-way; assigning requires `IsPublished=true`.
+- **Tailwind classes that DON'T exist** in `kondix-web/src/styles.css`: `btn-primary`/`btn-outline`/`btn-ghost`/`btn-sm`, `class="input"`, `bg-primary-subtle`, `scroll-thin`, `bg-bg-deep`. Inline the equivalent utility classes (matching `assign-routine-modal.ts` / `assign-program-modal.ts` patterns). The token `--color-primary-light: #2A0F14` IS defined and is the subtle variant.
+- **CSS `var(--color-X)55` hex-alpha is invalid** — use `color-mix(in srgb, var(--color-X) 33%, transparent)` instead. Browser support fine for evergreen targets.
 - **`Permissions.GymManage = "kondix:manage"`** is the only trainer permission constant; `Permissions.GymWorkout = "kondix:workout"` is the only end-user one. There is NO `kondix:programs:read|write` etc. — gate every new trainer endpoint on `GymManage` and rely on inline ownership scoping for resource-level isolation.
 - **`ICelvoGymDbContext.cs` was renamed to `IKondixDbContext.cs` in v2 Phase 5** (interface name was always correct; just the file). Old historical migrations still reference `gym` schema in their snapshots — those are frozen, do not touch.
