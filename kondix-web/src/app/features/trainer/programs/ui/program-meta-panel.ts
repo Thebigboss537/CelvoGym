@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProgramDetail, ProgramLevel, ProgramMode, ProgramObjective } from '../../../../shared/models';
@@ -24,11 +24,11 @@ const LEVELS: ProgramLevel[] = ['Principiante', 'Intermedio', 'Avanzado', 'Todos
     <aside class="border-r border-border-light bg-bg p-5 overflow-auto">
       <div class="text-overline mb-2">Programa</div>
       <input class="w-full bg-transparent border-none outline-none font-display text-2xl font-bold tracking-tight text-text mb-1.5"
-             [ngModel]="program().name" (ngModelChange)="patch.emit({ name: $event })" />
+             [(ngModel)]="nameDraft" (blur)="commitName()" />
       <textarea class="w-full bg-transparent border-none outline-none resize-none text-text-secondary text-sm leading-relaxed font-sans min-h-[48px]"
                 placeholder="Describe el objetivo del programa…"
-                [ngModel]="program().description ?? ''"
-                (ngModelChange)="patch.emit({ description: $event || null })"></textarea>
+                [(ngModel)]="descriptionDraft"
+                (blur)="commitDescription()"></textarea>
 
       <div class="h-px bg-border-light my-4"></div>
 
@@ -81,8 +81,8 @@ const LEVELS: ProgramLevel[] = ['Principiante', 'Intermedio', 'Avanzado', 'Todos
       <div class="text-overline mb-2">Notas internas</div>
       <textarea class="w-full bg-bg-raised border border-border rounded-md outline-none p-2.5 text-text text-xs font-sans resize-y min-h-[72px] leading-relaxed"
                 placeholder="Notas privadas para ti, no visibles al estudiante."
-                [ngModel]="program().notes ?? ''"
-                (ngModelChange)="patch.emit({ notes: $event || null })"></textarea>
+                [(ngModel)]="notesDraft"
+                (blur)="commitNotes()"></textarea>
 
       <div class="h-px bg-border-light my-4"></div>
       <div class="text-[11px] text-text-muted font-mono leading-relaxed">
@@ -100,8 +100,39 @@ export class ProgramMetaPanel {
   protected readonly objectives = OBJECTIVES;
   protected readonly levels = LEVELS;
 
+  protected nameDraft = '';
+  protected descriptionDraft = '';
+  protected notesDraft = '';
+
+  private readonly programWatcher = effect(() => {
+    const p = this.program();
+    if (!p) return;
+    this.nameDraft = p.name;
+    this.descriptionDraft = p.description ?? '';
+    this.notesDraft = p.notes ?? '';
+  });
+
   protected readonly totalSessions = computed(() =>
     this.program().weeks.reduce((a, w) => a + w.slots.filter(s => s.kind === 'RoutineDay').length, 0));
+
+  protected commitName() {
+    const v = (this.nameDraft ?? '').trim();
+    const cur = this.program().name;
+    if (v && v !== cur) this.patch.emit({ name: v });
+    else if (!v) this.nameDraft = cur;  // bounce back if empty
+  }
+
+  protected commitDescription() {
+    const v = this.descriptionDraft;
+    const cur = this.program().description ?? '';
+    if (v !== cur) this.patch.emit({ description: v.length ? v : null });
+  }
+
+  protected commitNotes() {
+    const v = this.notesDraft;
+    const cur = this.program().notes ?? '';
+    if (v !== cur) this.patch.emit({ notes: v.length ? v : null });
+  }
 
   onModeChange(mode: ProgramMode) {
     if (this.program().mode === mode) return;

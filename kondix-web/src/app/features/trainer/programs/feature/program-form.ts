@@ -341,7 +341,7 @@ export class ProgramEditorPage implements OnInit {
 
   goAssign() {
     const p = this.store.program(); if (!p) return;
-    // Phase 6 will wire this. For now, navigate to the assign sub-route placeholder.
-    this.router.navigate(['/trainer/programs', p.id, 'assign']);
+    // TODO(Phase 6): wire the bulk-assign-to-students flow. For now, fall back to the programs list.
+    this.router.navigate(['/trainer/programs']);
   }
 }
