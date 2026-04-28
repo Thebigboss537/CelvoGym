@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { ApiService } from '../../../../core/services/api.service';
 import { ProgramListDto } from '../../../../shared/models';
 import { KxBadge } from '../../../../shared/ui/badge';
@@ -8,20 +8,21 @@ import { KxEmptyState } from '../../../../shared/ui/empty-state';
 import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
 import { ToastService } from '../../../../shared/ui/toast';
 import { relativeDate } from '../../../../shared/utils/format-date';
+import { CreateProgramModal } from '../ui/create-program-modal';
 
 @Component({
   selector: 'app-program-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, KxBadge, KxSpinner, KxEmptyState, KxConfirmDialog],
+  imports: [KxBadge, KxSpinner, KxEmptyState, KxConfirmDialog, CreateProgramModal],
   template: `
     <div class="animate-fade-up px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="font-display text-2xl font-extrabold">Programas</h1>
-        <a
-          routerLink="new"
+        <button
+          (click)="showCreate.set(true)"
           class="bg-primary hover:bg-primary-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition press"
-        >+ Nuevo programa</a>
+        >+ Nuevo programa</button>
       </div>
 
       @if (loading()) {
@@ -35,10 +36,10 @@ import { relativeDate } from '../../../../shared/utils/format-date';
         <kx-empty-state
           title="Sin programas"
           subtitle="Crea un programa para agrupar rutinas con duración y asignarlo a tus alumnos">
-          <a routerLink="new"
+          <button (click)="showCreate.set(true)"
             class="inline-block mt-4 bg-primary hover:bg-primary-hover text-white text-sm font-medium px-5 py-2 rounded-lg transition press">
             + Nuevo programa
-          </a>
+          </button>
         </kx-empty-state>
       } @else {
         <!-- Program grid -->
@@ -106,6 +107,12 @@ import { relativeDate } from '../../../../shared/utils/format-date';
       variant="danger"
       (confirmed)="confirmDelete()"
       (cancelled)="showDeleteDialog.set(false)" />
+
+    @if (showCreate()) {
+      <kx-create-program-modal
+        (close)="showCreate.set(false)"
+        (created)="onProgramCreated($event)" />
+    }
   `,
 })
 export class ProgramList implements OnInit {
@@ -119,6 +126,7 @@ export class ProgramList implements OnInit {
   error = signal('');
   openMenuId = signal<string | null>(null);
   showDeleteDialog = signal(false);
+  showCreate = signal(false);
   private deleteTargetId = signal<string | null>(null);
 
   ngOnInit() {
@@ -157,6 +165,10 @@ export class ProgramList implements OnInit {
         this.toast.show(err.error?.error || 'No pudimos eliminar el programa', 'error');
       },
     });
+  }
+
+  onProgramCreated(_id: string) {
+    // The modal handles navigation. Nothing else to do here.
   }
 
   private loadData() {
