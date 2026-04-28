@@ -6,7 +6,8 @@ namespace Kondix.Domain.Entities;
 public class WorkoutSession : BaseEntity, IAuditableEntity
 {
     public Guid StudentId { get; set; }
-    public Guid? ProgramAssignmentId { get; set; }
+    public Guid AssignmentId { get; set; }
+    public Guid ProgramId { get; set; }
     public Guid RoutineId { get; set; }
     public Guid DayId { get; set; }
     public int WeekIndex { get; set; }
@@ -27,7 +28,8 @@ public class WorkoutSession : BaseEntity, IAuditableEntity
     public WorkoutSession? RecoversSession { get; set; }
 
     public Student Student { get; set; } = null!;
-    public ProgramAssignment? ProgramAssignment { get; set; }
+    public ProgramAssignment Assignment { get; set; } = null!;
+    public Program Program { get; set; } = null!;
     public Routine Routine { get; set; } = null!;
     public Day Day { get; set; } = null!;
     public ICollection<SetLog> SetLogs { get; set; } = [];
