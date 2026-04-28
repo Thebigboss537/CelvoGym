@@ -25,8 +25,8 @@ public sealed class GetProgramsHandler(IKondixDbContext db)
         if (request.IsPublished.HasValue) q = q.Where(p => p.IsPublished == request.IsPublished.Value);
         if (!string.IsNullOrWhiteSpace(request.Query))
         {
-            var like = $"%{request.Query.Trim()}%";
-            q = q.Where(p => EF.Functions.ILike(p.Name, like));
+            var term = request.Query.Trim().ToLower();
+            q = q.Where(p => p.Name.ToLower().Contains(term));
         }
 
         return await q

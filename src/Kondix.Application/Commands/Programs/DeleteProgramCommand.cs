@@ -16,11 +16,10 @@ public sealed class DeleteProgramHandler(IKondixDbContext db)
     {
         var program = await db.Programs
             .FirstOrDefaultAsync(p => p.Id == request.ProgramId
-                && p.TrainerId == request.TrainerId
-                && p.IsActive, cancellationToken)
+                && p.TrainerId == request.TrainerId, cancellationToken)
             ?? throw new InvalidOperationException("Program not found");
 
-        // Cancel all active assignments before soft-deleting
+        // Cancel all active assignments before deleting
         var activeAssignments = await db.ProgramAssignments
             .Where(pa => pa.ProgramId == request.ProgramId
                 && pa.Status == ProgramAssignmentStatus.Active)
@@ -29,12 +28,10 @@ public sealed class DeleteProgramHandler(IKondixDbContext db)
         foreach (var pa in activeAssignments)
         {
             pa.Status = ProgramAssignmentStatus.Cancelled;
-            pa.CompletedAt = DateTimeOffset.UtcNow;
+            pa.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
-        program.IsActive = false;
-        program.UpdatedAt = DateTimeOffset.UtcNow;
-
+        db.Programs.Remove(program);
         await db.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }

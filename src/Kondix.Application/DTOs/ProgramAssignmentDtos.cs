@@ -1,5 +1,20 @@
+using Kondix.Domain.Enums;
+
 namespace Kondix.Application.DTOs;
 
+// Phase 6 will rewrite assignment DTOs for v3 shape
+public sealed record ProgramAssignmentSummaryDto(
+    Guid Id,
+    Guid StudentId,
+    string StudentName,
+    Guid ProgramId,
+    string ProgramName,
+    DateTimeOffset StartDate,
+    ProgramAssignmentStatus Status,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt);
+
+// Kept for backward compat with handlers not yet stubbed (Phase 5/6 will replace)
 public sealed record ProgramAssignmentDto(
     Guid Id,
     Guid ProgramId,
@@ -13,21 +28,6 @@ public sealed record ProgramAssignmentDto(
     string EndDate,
     int CurrentWeek,
     int TotalWeeks,
-    DateTimeOffset CreatedAt);
-
-public sealed record ProgramAssignmentDetailDto(
-    Guid Id,
-    Guid ProgramId,
-    string ProgramName,
-    string Mode,
-    string Status,
-    List<int> TrainingDays,
-    List<FixedScheduleEntryDto>? FixedSchedule,
-    string StartDate,
-    string EndDate,
-    int CurrentWeek,
-    int TotalWeeks,
-    List<ProgramRoutineDto> Routines,
     DateTimeOffset CreatedAt);
 
 public sealed record FixedScheduleEntryDto(

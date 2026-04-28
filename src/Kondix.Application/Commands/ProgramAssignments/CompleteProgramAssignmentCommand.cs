@@ -22,7 +22,7 @@ public sealed class CompleteProgramAssignmentHandler(IKondixDbContext db)
             ?? throw new InvalidOperationException("Assignment not found");
 
         assignment.Status = ProgramAssignmentStatus.Completed;
-        assignment.CompletedAt = DateTimeOffset.UtcNow;
+        assignment.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);
     }

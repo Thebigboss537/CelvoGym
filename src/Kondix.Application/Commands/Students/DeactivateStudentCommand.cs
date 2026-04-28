@@ -31,7 +31,7 @@ public sealed class DeactivateStudentHandler(IKondixDbContext db)
         foreach (var pa in programAssignments)
         {
             pa.Status = Domain.Enums.ProgramAssignmentStatus.Cancelled;
-            pa.CompletedAt = DateTimeOffset.UtcNow;
+            pa.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
         // Clear active trainer if this was their only trainer
