@@ -19,7 +19,7 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
         builder.Property(ws => ws.CreatedAt).HasDefaultValueSql("NOW()");
 
         builder.HasIndex(ws => new { ws.StudentId, ws.RoutineId, ws.DayId });
-        builder.HasIndex(ws => new { ws.StudentId, ws.ProgramAssignmentId });
+        builder.HasIndex(ws => new { ws.AssignmentId, ws.WeekIndex, ws.SlotIndex, ws.Status });
         builder.HasIndex(ws => new { ws.StudentId, ws.CompletedAt }).HasFilter("\"feedback_reviewed_at\" IS NULL");
 
         builder.HasOne(ws => ws.Student)
@@ -42,6 +42,10 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
             .WithMany()
             .HasForeignKey(ws => ws.DayId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(ws => ws.WeekIndex).IsRequired();
+        builder.Property(ws => ws.SlotIndex).IsRequired();
+        builder.Property(ws => ws.UpdatedAt).IsRequired();
 
         builder.Property(ws => ws.IsRecovery).HasDefaultValue(false);
         builder.HasOne(ws => ws.RecoversSession)
