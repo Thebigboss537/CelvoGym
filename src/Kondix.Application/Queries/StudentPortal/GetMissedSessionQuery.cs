@@ -17,5 +17,5 @@ public sealed class GetMissedSessionQueryHandler : IRequestHandler<GetMissedSess
     public Task<RecoverableSessionDto?> Handle(
         GetMissedSessionQuery request,
         CancellationToken ct) =>
-        throw new NotImplementedException("Wired in Phase 5 of Programs v3");
+        throw new NotImplementedException("Wired in Phase 6 of Programs v3");
 }

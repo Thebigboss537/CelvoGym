@@ -297,11 +297,18 @@ export class WorkoutOverview implements OnInit, OnDestroy {
     const presetSessionId = params.get('sessionId');
     const presetRoutineId = params.get('routineId');
     const presetDayId = params.get('dayId');
+    const presetWeekIndex = params.get('weekIndex');
+    const presetSlotIndex = params.get('slotIndex');
 
     if (presetSessionId && presetRoutineId && presetDayId) {
       // Recovery flow: session already created by the caller. Skip next-workout fetch,
       // load the routine directly by id and use the preset session.
       this.loadRoutineAndUseSession(presetRoutineId, presetDayId, presetSessionId);
+    } else if (presetRoutineId && presetDayId) {
+      // Direct start (Week or Numbered home click): no sessionId yet.
+      const wIdx = presetWeekIndex !== null ? Number(presetWeekIndex) : null;
+      const sIdx = presetSlotIndex !== null ? Number(presetSlotIndex) : null;
+      this.loadRoutineAndStartSession(presetRoutineId, presetDayId, wIdx, sIdx);
     } else {
       this.loadFromNextWorkout();
     }
@@ -361,6 +368,77 @@ export class WorkoutOverview implements OnInit, OnDestroy {
         this.sessionId.set(sessionId);
         this.startTimer();
         this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.error || 'No pudimos cargar la rutina.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private loadRoutineAndStartSession(routineId: string, dayId: string, weekIndex: number | null, slotIndex: number | null) {
+    this.api.get<StudentRoutineDetailDto>(`/public/my/routines/${routineId}`).subscribe({
+      next: (r) => {
+        this.nextWorkout.set({
+          kind: 'Routine',
+          routineId,
+          routineName: r.name,
+          dayId,
+          dayName: r.days.find(d => d.id === dayId)?.name ?? '',
+          weekIndex,
+          slotIndex,
+        });
+        this.routine.set(r);
+        const day = r.days.find(d => d.id === dayId);
+        const map = new Map<string, SetLogDto>();
+        if (day) {
+          day.setLogs.forEach(sl => map.set(sl.setId, sl));
+        }
+        this.setLogMap.set(map);
+
+        const startBody: { routineId: string; dayId: string; weekIndex?: number; slotIndex?: number; } = { routineId, dayId };
+        if (weekIndex !== null) startBody.weekIndex = weekIndex;
+        if (slotIndex !== null) startBody.slotIndex = slotIndex;
+
+        // Check for an existing in-progress session, else start one.
+        this.api.get<WorkoutSessionDto | null>('/public/my/sessions/active').subscribe({
+          next: (active) => {
+            if (active) {
+              this.sessionId.set(active.id);
+              const start = new Date(active.startedAt).getTime();
+              const initialElapsed = Math.floor((Date.now() - start) / 1000);
+              this.elapsedSeconds.set(initialElapsed > 0 ? initialElapsed : 0);
+              this.startTimer();
+              this.loading.set(false);
+            } else {
+              this.api.post<WorkoutSessionDto>('/public/my/sessions/start', startBody).subscribe({
+                next: (session) => {
+                  this.sessionId.set(session.id);
+                  this.startTimer();
+                  this.loading.set(false);
+                },
+                error: (err) => {
+                  this.error.set(err.error?.error || 'No se pudo iniciar la sesión.');
+                  this.loading.set(false);
+                },
+              });
+            }
+          },
+          error: () => {
+            // Can't check active session — try to start one anyway.
+            this.api.post<WorkoutSessionDto>('/public/my/sessions/start', startBody).subscribe({
+              next: (session) => {
+                this.sessionId.set(session.id);
+                this.startTimer();
+                this.loading.set(false);
+              },
+              error: (err) => {
+                this.error.set(err.error?.error || 'No se pudo iniciar la sesión.');
+                this.loading.set(false);
+              },
+            });
+          },
+        });
       },
       error: (err) => {
         this.error.set(err.error?.error || 'No pudimos cargar la rutina.');

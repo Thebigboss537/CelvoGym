@@ -8,5 +8,5 @@ public sealed record GetRoutineUsageQuery(Guid RoutineId, Guid TrainerId) : IReq
 public sealed class GetRoutineUsageHandler : IRequestHandler<GetRoutineUsageQuery, RoutineUsageDto>
 {
     public Task<RoutineUsageDto> Handle(GetRoutineUsageQuery request, CancellationToken ct) =>
-        throw new NotImplementedException("Wired in Phase 5 of Programs v3");
+        throw new NotImplementedException("Wired in Phase 6 of Programs v3");
 }
