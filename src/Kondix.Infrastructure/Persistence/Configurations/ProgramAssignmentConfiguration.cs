@@ -16,7 +16,7 @@ public class ProgramAssignmentConfiguration : IEntityTypeConfiguration<ProgramAs
         b.Property(a => a.UpdatedAt).IsRequired();
 
         b.HasOne(a => a.Trainer).WithMany().HasForeignKey(a => a.TrainerId).OnDelete(DeleteBehavior.Restrict);
-        b.HasOne(a => a.Student).WithMany().HasForeignKey(a => a.StudentId).OnDelete(DeleteBehavior.Restrict);
+        b.HasOne(a => a.Student).WithMany(s => s.ProgramAssignments).HasForeignKey(a => a.StudentId).OnDelete(DeleteBehavior.Restrict);
         b.HasOne(a => a.Program).WithMany(p => p.Assignments).HasForeignKey(a => a.ProgramId).OnDelete(DeleteBehavior.Cascade);
 
         b.HasIndex(a => new { a.StudentId, a.Status });

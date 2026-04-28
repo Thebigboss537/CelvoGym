@@ -1,4 +1,3 @@
-using Kondix.Application.Common.Interfaces;
 using Kondix.Domain.Enums;
 using MediatR;
 
@@ -14,7 +13,7 @@ public sealed record UpdateProgramCommand(
     ProgramLevel Level,
     ProgramMode Mode) : IRequest;
 
-public sealed class UpdateProgramHandler(IKondixDbContext db) : IRequestHandler<UpdateProgramCommand>
+public sealed class UpdateProgramHandler : IRequestHandler<UpdateProgramCommand>
 {
     public Task Handle(UpdateProgramCommand request, CancellationToken ct) =>
         throw new NotImplementedException("Wired in Phase 2");

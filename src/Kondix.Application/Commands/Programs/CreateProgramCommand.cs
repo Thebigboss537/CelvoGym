@@ -1,4 +1,3 @@
-using Kondix.Application.Common.Interfaces;
 using Kondix.Domain.Enums;
 using MediatR;
 
@@ -15,7 +14,7 @@ public sealed record CreateProgramCommand(
     int? DaysPerWeek,
     int DurationWeeks) : IRequest<Guid>;
 
-public sealed class CreateProgramHandler(IKondixDbContext db) : IRequestHandler<CreateProgramCommand, Guid>
+public sealed class CreateProgramHandler : IRequestHandler<CreateProgramCommand, Guid>
 {
     public Task<Guid> Handle(CreateProgramCommand request, CancellationToken ct) =>
         throw new NotImplementedException("Wired in Phase 2");
