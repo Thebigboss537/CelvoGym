@@ -4,7 +4,9 @@ import { environment } from '../../../../../environments/environment';
 import {
   ProgramDetail,
   ProgramLevel,
+  ProgramMode,
   ProgramObjective,
+  ProgramScheduleType,
   ProgramSummary,
 } from '../../../../shared/models';
 
@@ -29,5 +31,18 @@ export class ProgramsService {
 
   getById(id: string) {
     return this.http.get<ProgramDetail>(`${this.base}/programs/${id}`, { withCredentials: true });
+  }
+
+  create(payload: {
+    name: string;
+    description: string | null;
+    objective: ProgramObjective;
+    level: ProgramLevel;
+    mode: ProgramMode;
+    scheduleType: ProgramScheduleType;
+    daysPerWeek: number | null;
+    durationWeeks: number;
+  }) {
+    return this.http.post<{ id: string }>(`${this.base}/programs`, payload, { withCredentials: true });
   }
 }
