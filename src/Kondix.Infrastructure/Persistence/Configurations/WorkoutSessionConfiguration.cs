@@ -27,11 +27,17 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
             .HasForeignKey(ws => ws.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(ws => ws.ProgramAssignment)
-            .WithMany(pa => pa.WorkoutSessions)
-            .HasForeignKey(ws => ws.ProgramAssignmentId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
+        builder.Property(ws => ws.Status).HasConversion<string>().HasMaxLength(16).IsRequired();
+
+        builder.HasOne(ws => ws.Assignment)
+            .WithMany()
+            .HasForeignKey(ws => ws.AssignmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(ws => ws.Program)
+            .WithMany()
+            .HasForeignKey(ws => ws.ProgramId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(ws => ws.Routine)
             .WithMany()

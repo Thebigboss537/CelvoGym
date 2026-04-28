@@ -14,11 +14,14 @@ public class WorkoutSession : BaseEntity, IAuditableEntity
     public int SlotIndex { get; set; }
     public DateTimeOffset StartedAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
+    public WorkoutSessionStatus Status { get; set; } = WorkoutSessionStatus.InProgress;
+    public int? Rpe { get; set; }
     public string? Notes { get; set; }
     public MoodType? Mood { get; set; }
     public DateTimeOffset? FeedbackReviewedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public bool IsRecovery { get; set; } = false;
+    public DateOnly? RecoversPlannedDate { get; set; }
     /// <summary>
     /// Reserved for future "redo a completed session" flows.
     /// In the current MVP recovery flow this is always null because
