@@ -162,8 +162,9 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
     public async Task<IActionResult> GetNextWorkout(CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
-        var result = await mediator.Send(new GetNextWorkoutQuery(studentId), ct);
-        return result is not null ? Ok(result) : NoContent();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = await mediator.Send(new GetNextWorkoutQuery(studentId, today), ct);
+        return Ok(result);
     }
 
     [HttpGet("missed-sessions")]

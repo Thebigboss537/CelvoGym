@@ -39,15 +39,6 @@ public sealed record FixedScheduleInput(
     Guid RoutineId,
     List<int> Days);
 
-public sealed record NextWorkoutDto(
-    Guid RoutineId,
-    string RoutineName,
-    Guid DayId,
-    string DayName,
-    string ProgramName,
-    int CurrentWeek,
-    int TotalWeeks);
-
 public sealed record MyProgramDto(
     Guid ProgramId,
     string ProgramName,
