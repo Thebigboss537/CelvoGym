@@ -187,7 +187,7 @@ import { ProgramSlot } from '../../../../shared/models';
           [program]="p"
           [initialWeek]="assignFor()!"
           (close)="assignFor.set(null)"
-          (assigned)="onRoutineAssigned($event); assignFor.set(null)" />
+          (assigned)="onRoutineAssigned($event)" />
       }
 
     }
@@ -221,7 +221,6 @@ export class ProgramEditorPage implements OnInit {
   private router = inject(Router);
   private destroyRef = inject(DestroyRef);
 
-  protected readonly programId = signal<string>('');
   protected readonly assignFor = signal<number | null>(null);
 
   protected readonly dayLabels = computed(() => {
@@ -263,7 +262,6 @@ export class ProgramEditorPage implements OnInit {
   ngOnInit() {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const id = params.get('id') ?? '';
-      this.programId.set(id);
       if (id) this.store.reload(id);
     });
   }
