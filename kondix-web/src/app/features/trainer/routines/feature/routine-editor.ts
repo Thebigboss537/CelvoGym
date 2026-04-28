@@ -298,6 +298,12 @@ export class RoutineEditor implements OnInit {
       this.toast.show('El nombre de la rutina es requerido', 'error');
       return;
     }
+    const unnamedDayIdx = this.routine().days.findIndex(d => !d.name.trim());
+    if (unnamedDayIdx !== -1) {
+      this.toast.show(`El día ${unnamedDayIdx + 1} necesita un nombre`, 'error');
+      this.activeDayIndex.set(unnamedDayIdx);
+      return;
+    }
     if (this.isLocked()) return;
     this.saving.set(true);
 
