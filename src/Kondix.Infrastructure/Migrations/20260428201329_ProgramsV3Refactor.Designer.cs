@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Kondix.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kondix.Infrastructure.Migrations
 {
     [DbContext(typeof(KondixDbContext))]
-    partial class KondixDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428201329_ProgramsV3Refactor")]
+    partial class ProgramsV3Refactor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
