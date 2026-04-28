@@ -59,7 +59,7 @@ interface RoutineDetail { id: string; name: string; days: { id: string; name: st
               @for (r of filtered(); track r.id) {
                 <button type="button"
                         class="flex gap-3 items-center p-3 rounded-md border border-border-light bg-card hover:border-primary hover:bg-card-hover text-left transition"
-                        [disabled]="loadingDetail()"
+                        [disabled]="loadingDetailFor() !== null"
                         (click)="pick(r)">
                   <div class="w-1 h-8 bg-primary rounded-sm shrink-0"></div>
                   <div class="flex-1 min-w-0">
@@ -68,7 +68,7 @@ interface RoutineDetail { id: string; name: string; days: { id: string; name: st
                       {{ r.dayCount }} días{{ r.category ? ' · ' + r.category : '' }}
                     </div>
                   </div>
-                  @if (loadingDetail()) {
+                  @if (loadingDetailFor() === r.id) {
                     <span class="text-[10px] text-text-muted font-mono">Cargando…</span>
                   } @else {
                     <lucide-icon name="plus" [size]="14" class="text-text-muted shrink-0"></lucide-icon>
@@ -290,7 +290,7 @@ export class AssignRoutineModal implements OnInit {
   protected readonly query = signal('');
   protected readonly library = signal<RoutineListItem[]>([]);
   protected readonly loadingLib = signal(false);
-  protected readonly loadingDetail = signal(false);
+  protected readonly loadingDetailFor = signal<string | null>(null);
   protected readonly routine = signal<RoutineDetail | null>(null);
   protected readonly mapping = signal<Record<string, number | null>>({});
   protected readonly numberedSelected = signal<string[]>([]);
@@ -307,10 +307,16 @@ export class AssignRoutineModal implements OnInit {
   });
 
   protected readonly weeksSelected = computed<number[]>(() => {
-    if (this.scope() === 'all') return Array.from({ length: this.totalWeeks() }, (_, i) => i);
-    if (this.scope() === 'one') return [this.singleWeek() - 1];
-    const s = Math.min(this.rangeStart(), this.rangeEnd()) - 1;
-    const e = Math.max(this.rangeStart(), this.rangeEnd()) - 1;
+    const total = this.totalWeeks();
+    if (total === 0) return [];
+    if (this.scope() === 'all') return Array.from({ length: total }, (_, i) => i);
+    if (this.scope() === 'one') {
+      const idx = Math.max(0, Math.min(total - 1, this.singleWeek() - 1));
+      return [idx];
+    }
+    const s = Math.max(0, Math.min(this.rangeStart(), this.rangeEnd()) - 1);
+    const e = Math.min(total - 1, Math.max(this.rangeStart(), this.rangeEnd()) - 1);
+    if (e < s) return [];
     return Array.from({ length: e - s + 1 }, (_, i) => s + i);
   });
 
@@ -348,8 +354,8 @@ export class AssignRoutineModal implements OnInit {
   }
 
   async pick(r: RoutineListItem) {
-    if (this.loadingDetail()) return;
-    this.loadingDetail.set(true);
+    if (this.loadingDetailFor()) return;
+    this.loadingDetailFor.set(r.id);
     try {
       const detail = await firstValueFrom(
         this.http.get<{ id: string; name: string; days: { id: string; name: string; blocks: unknown[] }[] }>(
@@ -365,7 +371,7 @@ export class AssignRoutineModal implements OnInit {
     } catch {
       // swallow — global error interceptor will toast
     } finally {
-      this.loadingDetail.set(false);
+      this.loadingDetailFor.set(null);
     }
   }
 
