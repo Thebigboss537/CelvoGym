@@ -155,7 +155,8 @@ import { ProgramSlot } from '../../../../shared/models';
         </main>
 
         <!-- RIGHT: cell inspector -->
-        <aside class="k-prog-inspector flex flex-col border-l border-border-light bg-bg overflow-auto">
+        <aside class="k-prog-inspector flex flex-col border-l border-border-light bg-bg overflow-auto"
+               [class.is-open]="store.selected() !== null">
           <!-- Close button — hidden on wide screens, shown on narrow via CSS -->
           <button type="button"
                   class="k-prog-inspector-close hidden items-center gap-1 text-text-muted hover:text-text text-xs transition px-3 py-2"
