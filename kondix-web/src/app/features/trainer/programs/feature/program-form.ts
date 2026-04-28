@@ -1,629 +1,348 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { ApiService } from '../../../../core/services/api.service';
-import {
-  ProgramAssignmentDto,
-  ProgramDetailDto,
-  ProgramWeekOverrideDto,
-  RoutineListDto,
-} from '../../../../shared/models';
-import { KxSpinner } from '../../../../shared/ui/spinner';
-import { KxConfirmDialog } from '../../../../shared/ui/confirm-dialog';
-import { ToastService } from '../../../../shared/ui/toast';
+import { LucideAngularModule, LUCIDE_ICONS, LucideIconProvider, ArrowLeft, Users, Check, Plus, Moon, X } from 'lucide-angular';
 
-interface RoutineSlot {
-  routineId: string;
-  label: string;
-}
-
-interface WeekRow {
-  weekIndex: number; // 1-based week number
-  days: (RoutineListDto | null)[]; // length = 7 (L..D)
-}
+import { ProgramEditorStore } from '../data-access/program-editor.store';
+import { ProgramMetaPanel } from '../ui/program-meta-panel';
+import { ProgramWeekRow } from '../ui/program-week-row';
+import { CellInspector } from '../ui/cell-inspector';
+import { AssignRoutineModal } from '../ui/assign-routine-modal';
+import { ProgramSlot } from '../../../../shared/models';
 
 @Component({
-  selector: 'app-program-form',
+  selector: 'kx-program-editor-page',
+  standalone: true,
+  imports: [
+    CommonModule, LucideAngularModule,
+    ProgramMetaPanel, ProgramWeekRow, CellInspector, AssignRoutineModal,
+  ],
+  providers: [
+    ProgramEditorStore,
+    { provide: LUCIDE_ICONS, multi: true,
+      useValue: new LucideIconProvider({ ArrowLeft, Users, Check, Plus, Moon, X }) },
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, DragDropModule, KxSpinner, KxConfirmDialog],
   template: `
-    <div class="animate-fade-up px-4 sm:px-6 md:px-8 pt-6 pb-nav-safe md:pb-8">
-      <!-- Breadcrumb -->
-      <nav class="flex items-center gap-1.5 text-sm text-text-secondary mb-4">
-        <a routerLink="/trainer/programs" class="hover:text-text transition">Programas</a>
-        <span class="text-text-muted">/</span>
-        <span class="text-text">{{ isEdit() ? 'Editar programa' : 'Nuevo programa' }}</span>
-      </nav>
+    @if (store.loading() && !store.program()) {
+      <div class="flex items-center justify-center h-full min-h-[60vh]">
+        <p class="text-text-secondary text-sm">Cargando…</p>
+      </div>
+    } @else if (store.error() && !store.program()) {
+      <div class="flex items-center justify-center h-full min-h-[60vh]">
+        <p class="text-danger text-sm">{{ store.error() }}</p>
+      </div>
+    } @else if (store.program(); as p) {
 
-      <h1 class="font-display text-2xl font-extrabold mb-6">
-        {{ isEdit() ? 'Editar programa' : 'Nuevo programa' }}
-      </h1>
-
-      @if (activeAssignmentCount() > 0) {
-        <div class="bg-warning/10 border border-warning/30 rounded-xl p-3 mb-4">
-          <p class="text-warning text-sm font-semibold">Programa con alumnos asignados</p>
-          <p class="text-warning/70 text-xs mt-1">
-            {{ activeAssignmentCount() }} alumno(s) tienen este programa activo.
-            Puedes cambiar nombre y duración, pero para modificar las rutinas
-            debes cancelar las asignaciones primero.
-          </p>
+      <!-- TOP BAR -->
+      <div class="flex items-center justify-between gap-3 px-5 py-3 border-b border-border-light bg-bg">
+        <!-- Left: back + title -->
+        <div class="flex items-center gap-3 min-w-0">
+          <button type="button"
+                  class="px-3 py-1.5 text-text-secondary hover:text-text text-xs transition flex items-center gap-1.5"
+                  (click)="back()">
+            <lucide-icon name="arrow-left" [size]="14"></lucide-icon>
+            Volver
+          </button>
+          <div class="hidden sm:flex flex-col min-w-0">
+            <div class="text-overline text-text-muted">Editando</div>
+            <div class="font-display font-bold text-base text-text truncate">{{ p.name }}</div>
+          </div>
+          @if (!p.isPublished) {
+            <span class="shrink-0 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider text-amber-400 border border-amber-400/40 bg-amber-400/10">
+              BORRADOR
+            </span>
+          }
         </div>
-      }
 
-      @if (loadingData()) {
-        <kx-spinner />
-      } @else {
-        <form (ngSubmit)="save()" class="space-y-5 max-w-xl">
+        <!-- Right: actions -->
+        <div class="flex items-center gap-2 shrink-0">
+          @if (!p.isPublished) {
+            <button type="button"
+                    class="px-3 py-1.5 bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-md transition press flex items-center gap-1.5"
+                    (click)="publish()">
+              <lucide-icon name="check" [size]="13"></lucide-icon>
+              Publicar
+            </button>
+          }
+          <button type="button"
+                  class="px-3 py-1.5 bg-card hover:bg-card-hover border border-border text-text-secondary text-xs font-medium rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  [disabled]="!p.isPublished"
+                  (click)="goAssign()">
+            <lucide-icon name="users" [size]="13"></lucide-icon>
+            Asignar
+          </button>
+        </div>
+      </div>
 
-          <!-- Name -->
-          <div>
-            <label class="block text-xs text-text-secondary mb-1">Nombre</label>
-            <input type="text" [(ngModel)]="name" name="name" required maxlength="200"
-              class="w-full bg-bg-raised border border-border rounded-lg px-3 py-2.5 text-sm text-text focus:outline-none focus:border-primary transition"
-              placeholder="Ej: Torso-Pierna 12 semanas" />
-          </div>
+      <!-- 3-COLUMN GRID -->
+      <div class="k-prog-grid grid h-[calc(100vh-112px)] overflow-hidden"
+           style="grid-template-columns: 320px 1fr 340px;">
 
-          <!-- Description -->
-          <div>
-            <label class="block text-xs text-text-secondary mb-1">Descripción <span class="text-text-muted">(opcional)</span></label>
-            <textarea [(ngModel)]="description" name="description" maxlength="2000" rows="2"
-              class="w-full bg-bg-raised border border-border rounded-lg px-3 py-2.5 text-sm text-text focus:outline-none focus:border-primary transition resize-none"
-              placeholder="Describe el objetivo o estructura del programa..."></textarea>
-          </div>
+        <!-- LEFT: meta panel -->
+        <kx-program-meta-panel
+          [program]="p"
+          (patch)="onMetaPatch($event)"
+          (modeChange)="onModeChange($event)"
+          class="overflow-auto" />
 
-          <!-- Duration -->
-          <div>
-            <label class="block text-xs text-text-secondary mb-1">Duración</label>
-            <div class="flex items-center gap-2">
-              <input type="number" [(ngModel)]="durationWeeks" (ngModelChange)="onDurationChange($event)"
-                name="durationWeeks" required min="1" max="52"
-                class="w-24 bg-bg-raised border border-border rounded-lg px-3 py-2.5 text-sm text-text focus:outline-none focus:border-primary transition text-center" />
-              <span class="text-sm text-text-secondary">semanas</span>
+        <!-- CENTER: calendar -->
+        <main class="flex flex-col overflow-hidden border-x border-border-light">
+          <!-- Center header -->
+          <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-border-light shrink-0">
+            <div>
+              <div class="text-overline text-text-muted">Calendario</div>
+              <h2 class="font-display font-bold text-base text-text">{{ p.weeks.length }} semana{{ p.weeks.length === 1 ? '' : 's' }}</h2>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <!-- Assign routine (opens modal picking week = first week) -->
+              <button type="button"
+                      class="px-3 py-1.5 bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-md transition press flex items-center gap-1.5"
+                      (click)="openAssignFor(0)">
+                <lucide-icon name="plus" [size]="13"></lucide-icon>
+                Asignar rutina
+              </button>
+
+              @if (showFillRest()) {
+                <button type="button"
+                        class="px-3 py-1.5 bg-card hover:bg-card-hover border border-border text-text-secondary text-xs font-medium rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        (click)="fillRest()">
+                  <lucide-icon name="moon" [size]="13"></lucide-icon>
+                  Rellenar descansos
+                </button>
+              }
+
+              @if (p.mode === 'Fixed') {
+                <button type="button"
+                        class="px-3 py-1.5 bg-card hover:bg-card-hover border border-border text-text-secondary text-xs font-medium rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        (click)="addWeek()">
+                  <lucide-icon name="plus" [size]="13"></lucide-icon>
+                  Añadir semana
+                </button>
+              }
             </div>
           </div>
 
-          <!-- Routine slots (source of truth for ProgramRoutine[] persistence) -->
-          <div>
-            <label class="block text-xs text-text-secondary mb-2">Rutinas en rotación</label>
-            <div class="space-y-2">
-              @for (slot of slots(); track $index; let i = $index) {
-                <div class="flex items-center gap-2 bg-bg-raised border border-border rounded-xl px-3 py-2">
-                  <!-- Label letter (A, B, C…) -->
-                  <span class="text-xs font-bold text-text-muted w-5 shrink-0">{{ slotLetter(i) }}</span>
+          <!-- Scrollable grid body -->
+          <div class="flex-1 overflow-auto p-4">
+            <div [style.min-width.px]="720">
+              <!-- Day header row -->
+              <div class="grid gap-1.5 mb-1.5" [style.grid-template-columns]="gridTemplate()">
+                <div></div><!-- week label column placeholder -->
+                @for (label of dayLabels(); track $index) {
+                  <div class="text-overline text-text-muted text-center py-1">{{ label }}</div>
+                }
+                <div></div><!-- menu column placeholder -->
+              </div>
 
-                  <!-- Routine selector -->
-                  <select [(ngModel)]="slot.routineId" [name]="'routine-' + i"
-                    class="select-styled flex-1 bg-bg-raised text-sm text-text border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:border-primary transition cursor-pointer">
-                    <option value="" disabled>Seleccionar rutina</option>
-                    @for (r of routines(); track r.id) {
-                      <option [value]="r.id">{{ r.name }}</option>
-                    }
-                  </select>
-
-                  <!-- Custom label -->
-                  <input type="text" [(ngModel)]="slot.label" [name]="'label-' + i" maxlength="100"
-                    class="w-28 bg-card border border-border-light rounded-lg px-2 py-1.5 text-xs text-text focus:outline-none focus:border-primary transition"
-                    placeholder="Etiqueta" />
-
-                  <!-- Reorder buttons -->
-                  <div class="flex flex-col gap-0.5 shrink-0">
-                    <button type="button" (click)="moveUp(i)"
-                      [disabled]="i === 0"
-                      class="text-text-muted hover:text-text disabled:opacity-30 text-xs leading-none px-1"
-                      aria-label="Subir">▲</button>
-                    <button type="button" (click)="moveDown(i)"
-                      [disabled]="i === slots().length - 1"
-                      class="text-text-muted hover:text-text disabled:opacity-30 text-xs leading-none px-1"
-                      aria-label="Bajar">▼</button>
-                  </div>
-
-                  <!-- Remove -->
-                  @if (slots().length > 1) {
-                    <button type="button" (click)="removeSlot(i)"
-                      class="text-danger hover:text-danger/70 text-sm shrink-0 transition"
-                      aria-label="Eliminar rutina">✕</button>
-                  }
+              <!-- Week rows -->
+              @for (week of p.weeks; track week.id) {
+                <div class="mb-1.5">
+                  <kx-program-week-row
+                    [week]="week"
+                    [selectedDayIndex]="store.selected()?.weekIndex === week.weekIndex ? (store.selected()?.dayIndex ?? null) : null"
+                    [hideMenu]="p.mode === 'Loop'"
+                    [canDelete]="p.weeks.length > 1"
+                    [programObjective]="p.objective"
+                    (selectCell)="selectCell(week.weekIndex, $event)"
+                    (duplicate)="duplicateWeek(week.weekIndex)"
+                    (delete)="deleteWeek(week.weekIndex)" />
                 </div>
               }
             </div>
-
-            @if (routines().length > 0) {
-              <button type="button" (click)="addSlot()"
-                class="text-primary text-xs hover:underline mt-2 transition">
-                + Agregar rutina
-              </button>
-            } @else {
-              <p class="text-text-muted text-xs mt-2">No tenés rutinas creadas. <a routerLink="/trainer/routines/new" class="text-primary hover:underline">Crear una</a>.</p>
-            }
           </div>
+        </main>
 
-          @if (error()) {
-            <p class="text-danger text-xs">{{ error() }}</p>
-          }
+        <!-- RIGHT: cell inspector -->
+        <aside class="k-prog-inspector flex flex-col border-l border-border-light bg-bg overflow-auto">
+          <!-- Close button — hidden on wide screens, shown on narrow via CSS -->
+          <button type="button"
+                  class="k-prog-inspector-close hidden items-center gap-1 text-text-muted hover:text-text text-xs transition px-3 py-2"
+                  (click)="store.clearSelection()">
+            <lucide-icon name="x" [size]="14"></lucide-icon>
+            Cerrar
+          </button>
 
-          <!-- Actions -->
-          <div class="flex gap-2 pt-1">
-            <button type="submit" [disabled]="saving()"
-              class="bg-primary hover:bg-primary-hover text-white text-sm font-medium px-5 py-2.5 rounded-lg transition press disabled:opacity-60">
-              {{ saving() ? 'Guardando...' : (isEdit() ? 'Guardar cambios' : 'Crear programa') }}
-            </button>
-            <a routerLink="/trainer/programs"
-              class="bg-card hover:bg-card-hover border border-border text-text-secondary text-sm px-4 py-2.5 rounded-lg transition">
-              Cancelar
-            </a>
-            @if (isEdit()) {
-              <button type="button" (click)="showDeleteDialog.set(true)"
-                class="ml-auto bg-danger/10 text-danger border border-danger/20 text-sm px-4 py-2.5 rounded-lg transition hover:bg-danger/20">
-                Eliminar
-              </button>
-            }
-          </div>
-        </form>
+          <kx-cell-inspector
+            [slot]="activeSlot()"
+            [weekIndex]="store.selected()?.weekIndex ?? null"
+            [dayLabel]="activeDayLabel()"
+            [canMarkRest]="p.scheduleType === 'Week'"
+            (setKind)="onSetKind($event)"
+            (assign)="openAssignFor(store.selected()?.weekIndex ?? 0)"
+            (removeBlock)="removeBlock($event)" />
+        </aside>
+      </div>
 
-        <!-- Weekly D&D grid + per-week notes (UI projection — not persisted as cells).
-             Notes ARE persisted via PUT /programs/{id}/week-overrides on blur. -->
-        @if (routines().length > 0) {
-          <section class="mt-10 max-w-5xl">
-            <header class="mb-3">
-              <h2 class="font-display text-lg font-bold text-text">Planificación semanal</h2>
-              <p class="text-text-muted text-xs mt-1">
-                Arrastrá rutinas desde el panel para organizar mentalmente las semanas.
-                {{ isEdit()
-                  ? 'Las notas se guardan automáticamente al salir del campo.'
-                  : 'Guardá el programa primero para registrar notas por semana.' }}
-              </p>
-            </header>
+      <!-- Backdrop overlay for narrow screens when inspector is open -->
+      <div class="k-prog-inspector-backdrop hidden fixed inset-0 z-40 bg-black/50"
+           [class.is-open]="store.selected() !== null"
+           (click)="store.clearSelection()"></div>
 
-            <div class="flex gap-4">
-              <!-- Sidebar of available routines -->
-              <aside class="w-56 shrink-0"
-                cdkDropList
-                #sidebar="cdkDropList"
-                [cdkDropListData]="sidebarRoutines()"
-                [cdkDropListConnectedTo]="cellLists()"
-                [cdkDropListSortingDisabled]="true">
-                <p class="text-overline text-text-muted mb-2">Rutinas</p>
-                @for (r of sidebarRoutines(); track r.id) {
-                  <div cdkDrag [cdkDragData]="r"
-                    class="px-3 py-2 mb-2 rounded-lg bg-card border border-border cursor-grab text-sm text-text">
-                    {{ r.name }}
-                  </div>
-                } @empty {
-                  <p class="text-text-muted text-xs">Sin rutinas.</p>
-                }
-              </aside>
-
-              <!-- Weekly grid -->
-              <div class="flex-1 overflow-x-auto">
-                <table class="w-full border-collapse">
-                  <thead>
-                    <tr>
-                      <th class="w-12 text-left text-overline text-text-muted pb-2">Sem</th>
-                      @for (d of weekdays; track d) {
-                        <th class="text-overline text-text-muted pb-2 px-1">{{ d }}</th>
-                      }
-                      <th class="text-overline text-text-muted pb-2 pl-2 text-left w-56">Notas</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (week of weeklyGrid(); track week.weekIndex) {
-                      <tr>
-                        <td class="text-text font-bold align-top pt-2">{{ week.weekIndex }}</td>
-                        @for (cell of week.days; track $index) {
-                          <td class="align-top px-1 py-1">
-                            <div cdkDropList
-                              [id]="cellId(week.weekIndex, $index)"
-                              [cdkDropListData]="week.days"
-                              [cdkDropListConnectedTo]="allListsExcept(week.weekIndex, $index)"
-                              (cdkDropListDropped)="onDrop(week.weekIndex, $index, $event)"
-                              class="min-h-12 p-1 border border-dashed border-border rounded-md bg-bg-raised/40">
-                              @if (cell) {
-                                <div cdkDrag [cdkDragData]="cell"
-                                  class="px-2 py-1 rounded bg-primary/15 text-primary text-xs font-semibold cursor-grab flex items-center justify-between gap-1">
-                                  <span class="truncate">{{ cell.name }}</span>
-                                  <button type="button" (click)="clearCell(week.weekIndex, $index)"
-                                    class="text-primary/70 hover:text-primary leading-none shrink-0"
-                                    aria-label="Quitar rutina">✕</button>
-                                </div>
-                              }
-                            </div>
-                          </td>
-                        }
-                        <td class="pl-2 align-top py-1">
-                          <input type="text" maxlength="2000"
-                            class="w-full bg-bg-raised border border-border rounded-md px-2 py-1.5 text-xs text-text focus:outline-none focus:border-primary transition disabled:opacity-50"
-                            placeholder="+5kg en compuestos"
-                            [disabled]="!isEdit() || savingNotes().has(week.weekIndex)"
-                            [value]="overrides().get(week.weekIndex) ?? ''"
-                            (blur)="onOverrideBlur(week.weekIndex, $event)" />
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-        }
+      <!-- Assign routine modal -->
+      @if (assignFor() !== null) {
+        <kx-assign-routine-modal
+          [program]="p"
+          [initialWeek]="assignFor()!"
+          (close)="assignFor.set(null)"
+          (assigned)="onRoutineAssigned($event); assignFor.set(null)" />
       }
-    </div>
 
-    <kx-confirm-dialog
-      [open]="showDeleteDialog()"
-      title="Eliminar programa"
-      message="Esta acción no se puede deshacer. ¿Estás seguro?"
-      confirmLabel="Eliminar"
-      variant="danger"
-      (confirmed)="confirmDelete()"
-      (cancelled)="showDeleteDialog.set(false)" />
+    }
   `,
+  styles: [`
+    @media (max-width: 1180px) {
+      :host ::ng-deep .k-prog-grid { grid-template-columns: 240px 1fr !important; }
+      :host ::ng-deep .k-prog-inspector {
+        position: fixed !important;
+        top: 0; right: 0; bottom: 0;
+        width: min(380px, 92vw);
+        z-index: 50;
+        box-shadow: -12px 0 32px rgba(0,0,0,0.5);
+        transform: translateX(100%);
+        transition: transform .2s ease;
+        display: flex !important;
+        flex-direction: column;
+      }
+      :host ::ng-deep .k-prog-inspector.is-open { transform: translateX(0); }
+      :host ::ng-deep .k-prog-inspector-close { display: flex !important; margin: 10px 10px 0 auto !important; }
+      :host ::ng-deep .k-prog-inspector-backdrop { display: block !important; }
+    }
+    @media (max-width: 820px) {
+      :host ::ng-deep .k-prog-grid { grid-template-columns: 1fr !important; }
+    }
+  `],
 })
-export class ProgramForm implements OnInit {
+export class ProgramEditorPage implements OnInit {
+  protected readonly store = inject(ProgramEditorStore);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private api = inject(ApiService);
-  private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
-  isEdit = signal(false);
-  loadingData = signal(true);
-  saving = signal(false);
-  error = signal('');
-  showDeleteDialog = signal(false);
-  activeAssignmentCount = signal(0);
+  protected readonly programId = signal<string>('');
+  protected readonly assignFor = signal<number | null>(null);
 
-  routines = signal<RoutineListDto[]>([]);
-  slots = signal<RoutineSlot[]>([{ routineId: '', label: '' }]);
-
-  // Weekly grid state (Phase 5 — UI projection, NOT persisted as cells).
-  // The trainer drags routines into day cells purely as a planning aid.
-  // The list of routines on the right (sidebar) mirrors `routines` directly.
-  sidebarRoutines = computed<RoutineListDto[]>(() => this.routines());
-  weeklyGrid = signal<WeekRow[]>([]);
-  overrides = signal<Map<number, string>>(new Map());
-  savingNotes = signal<Set<number>>(new Set());
-
-  // Connected drop-list IDs. Recomputed from `weeklyGrid()` so the CDK
-  // wiring updates whenever the duration changes.
-  cellLists = computed<string[]>(() =>
-    this.weeklyGrid().flatMap((w) => w.days.map((_, i) => this.cellId(w.weekIndex, i))),
-  );
-
-  name = '';
-  description = '';
-  durationWeeks = 8;
-
-  readonly weekdays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-
-  private programId = '';
-
-  // Per-week sequence number for note PUTs. If the user blurs twice in
-  // quick succession, only the LATEST request's success/error result is
-  // applied — earlier (out-of-order) responses are dropped.
-  private overrideSeq = new Map<number, number>();
-
-  // Keep the grid sized to durationWeeks (preserve any cells still in range,
-  // grow with empty rows, shrink by trimming overflow). Called explicitly from
-  // ngOnInit, onDurationChange, and loadProgram — `durationWeeks` is a plain
-  // field bound via [(ngModel)], so we can't react to it with effect().
-  private resizeGrid() {
-    const weeks = Math.max(1, Math.min(52, this.durationWeeks || 1));
-    const current = this.weeklyGrid();
-    if (current.length === weeks) return;
-    const next: WeekRow[] = [];
-    for (let i = 1; i <= weeks; i++) {
-      const existing = current.find((w) => w.weekIndex === i);
-      next.push(existing ?? { weekIndex: i, days: this.emptyDays() });
+  protected readonly dayLabels = computed(() => {
+    const p = this.store.program();
+    if (!p) return [];
+    if (p.scheduleType === 'Numbered') {
+      return Array.from({ length: p.daysPerWeek ?? 0 }, (_, i) => `D${i + 1}`);
     }
-    this.weeklyGrid.set(next);
-  }
+    return ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+  });
 
-  slotLetter(index: number): string {
-    return String.fromCharCode(65 + index);
-  }
+  protected readonly gridTemplate = computed(() => {
+    const cells = this.dayLabels().length;
+    return `90px repeat(${cells}, minmax(82px, 1fr)) 40px`;
+  });
 
-  cellId(week: number, day: number): string {
-    return `cell-${week}-${day}`;
-  }
+  protected readonly activeSlot = computed<ProgramSlot | null>(() => {
+    const p = this.store.program();
+    const sel = this.store.selected();
+    if (!p || !sel) return null;
+    const week = p.weeks.find(w => w.weekIndex === sel.weekIndex);
+    return week?.slots.find(s => s.dayIndex === sel.dayIndex) ?? null;
+  });
 
-  // Each cell's connected-to list excludes itself + the sidebar (sidebar drops
-  // *into* cells, not the reverse — sidebar is a one-way source).
-  allListsExcept(week: number, day: number): string[] {
-    const self = this.cellId(week, day);
-    return this.cellLists().filter((id) => id !== self);
-  }
+  protected readonly activeDayLabel = computed(() => {
+    const sel = this.store.selected();
+    if (sel == null) return null;
+    return this.dayLabels()[sel.dayIndex] ?? null;
+  });
+
+  protected readonly showFillRest = computed(() => {
+    const p = this.store.program();
+    if (!p || p.scheduleType === 'Numbered') return false;
+    const empty = p.weeks.flatMap(w => w.slots).filter(s => s.kind === 'Empty').length;
+    const hasRoutine = p.weeks.some(w => w.slots.some(s => s.kind === 'RoutineDay'));
+    return empty > 0 && hasRoutine;
+  });
 
   ngOnInit() {
-    this.programId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.isEdit.set(!!this.programId);
-    this.resizeGrid(); // initial 8-week grid for create flow
-
-    this.api
-      .get<RoutineListDto[]>('/routines')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.routines.set(data);
-          if (this.isEdit()) {
-            this.loadProgram();
-            this.loadOverrides();
-            this.api
-              .get<ProgramAssignmentDto[]>('/program-assignments?activeOnly=true')
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe({
-                next: (assignments) => {
-                  const count = assignments.filter((a) => a.programId === this.programId).length;
-                  this.activeAssignmentCount.set(count);
-                },
-              });
-          } else {
-            this.loadingData.set(false);
-          }
-        },
-        error: () => this.loadingData.set(false),
-      });
-  }
-
-  addSlot() {
-    this.slots.update((s) => [...s, { routineId: '', label: '' }]);
-  }
-
-  removeSlot(index: number) {
-    this.slots.update((s) => s.filter((_, i) => i !== index));
-  }
-
-  moveUp(index: number) {
-    if (index === 0) return;
-    this.slots.update((s) => {
-      const arr = [...s];
-      [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-      return arr;
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const id = params.get('id') ?? '';
+      this.programId.set(id);
+      if (id) this.store.reload(id);
     });
   }
 
-  moveDown(index: number) {
-    if (index === this.slots().length - 1) return;
-    this.slots.update((s) => {
-      const arr = [...s];
-      [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
-      return arr;
+  back() { this.router.navigate(['/trainer/programs']); }
+  selectCell(weekIndex: number, dayIndex: number) { this.store.selectCell(weekIndex, dayIndex); }
+  openAssignFor(weekIndex: number) { this.assignFor.set(weekIndex); }
+
+  onMetaPatch(patch: any) {
+    const p = this.store.program();
+    if (!p) return;
+    this.store.updateMeta(p.id, {
+      name: patch.name ?? p.name,
+      description: patch.description !== undefined ? patch.description : p.description,
+      notes: patch.notes !== undefined ? patch.notes : p.notes,
+      objective: patch.objective ?? p.objective,
+      level: patch.level ?? p.level,
+      mode: patch.mode ?? p.mode,
     });
   }
 
-  onDurationChange(value: number) {
-    this.durationWeeks = value;
-    this.resizeGrid();
-  }
-
-  onDrop(weekIndex: number, dayIndex: number, event: CdkDragDrop<(RoutineListDto | null)[]>) {
-    const targetWeek = this.weeklyGrid().find((w) => w.weekIndex === weekIndex);
-    if (!targetWeek) return;
-
-    const fromContainer = event.previousContainer;
-    const toContainer = event.container;
-
-    // Drop from sidebar → COPY routine into the cell (don't mutate sidebar).
-    if (fromContainer.id !== toContainer.id && fromContainer.data === this.sidebarRoutines()) {
-      const routine = event.item.data as RoutineListDto;
-      this.weeklyGrid.update((grid) =>
-        grid.map((w) =>
-          w.weekIndex === weekIndex
-            ? { ...w, days: w.days.map((c, i) => (i === dayIndex ? routine : c)) }
-            : w,
-        ),
-      );
-      return;
-    }
-
-    // Cell → cell move/swap. CDK passes us the *target* cell's days array via
-    // cdkDropListData — but for cell-to-cell we want explicit slot replacement
-    // rather than splice/insert (each cell holds at most one routine).
-    if (fromContainer.id !== toContainer.id) {
-      const dragged = event.item.data as RoutineListDto;
-      // Parse week/day from the source container id ("cell-<week>-<day>")
-      const m = /^cell-(\d+)-(\d+)$/.exec(fromContainer.id);
-      if (!m) return;
-      const srcWeek = Number(m[1]);
-      const srcDay = Number(m[2]);
-      const targetCell = targetWeek.days[dayIndex];
-
-      // Same-week swap: a single map step with two assignments would either
-      // overwrite each other or skip one of the cells. Rebuild that one
-      // week's days[] in a single pass with both positions changed.
-      if (srcWeek === weekIndex) {
-        this.weeklyGrid.update((grid) =>
-          grid.map((w) => {
-            if (w.weekIndex !== weekIndex) return w;
-            const days = [...w.days];
-            days[srcDay] = targetCell;
-            days[dayIndex] = dragged;
-            return { ...w, days };
-          }),
-        );
-        return;
+  async onModeChange(newMode: 'Fixed' | 'Loop') {
+    const p = this.store.program();
+    if (!p) return;
+    if (newMode === 'Loop' && p.weeks.length > 1) {
+      const ok = window.confirm('El programa en bucle es de una sola semana. Se mantendrá solo la primera semana y se descartarán las demás. ¿Continuar?');
+      if (!ok) return;
+      for (let i = p.weeks.length - 1; i >= 1; i--) {
+        await this.store.deleteWeek(p.id, i);
       }
-
-      this.weeklyGrid.update((grid) =>
-        grid.map((w) => {
-          if (w.weekIndex === srcWeek) {
-            return {
-              ...w,
-              days: w.days.map((c, i) => (i === srcDay ? targetCell : c)),
-            };
-          }
-          if (w.weekIndex === weekIndex) {
-            return {
-              ...w,
-              days: w.days.map((c, i) => (i === dayIndex ? dragged : c)),
-            };
-          }
-          return w;
-        }),
-      );
-      return;
     }
+    this.onMetaPatch({ mode: newMode });
   }
 
-  clearCell(weekIndex: number, dayIndex: number) {
-    this.weeklyGrid.update((grid) =>
-      grid.map((w) =>
-        w.weekIndex === weekIndex
-          ? { ...w, days: w.days.map((c, i) => (i === dayIndex ? null : c)) }
-          : w,
-      ),
-    );
+  async addWeek() {
+    const p = this.store.program(); if (!p) return;
+    await this.store.addWeek(p.id);
   }
 
-  onOverrideBlur(weekIndex: number, event: Event) {
-    if (!this.programId) return;
-    const value = (event.target as HTMLInputElement).value;
-    const previous = this.overrides().get(weekIndex) ?? '';
-    if (value === previous) return; // nothing changed
-
-    const trimmed = value.trim();
-    const seq = (this.overrideSeq.get(weekIndex) ?? 0) + 1;
-    this.overrideSeq.set(weekIndex, seq);
-
-    this.savingNotes.update((s) => new Set(s).add(weekIndex));
-
-    this.api
-      .put(`/programs/${this.programId}/week-overrides/${weekIndex}`, { notes: trimmed })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          if (this.overrideSeq.get(weekIndex) !== seq) {
-            // A newer request superseded us; ignore this stale success.
-            return;
-          }
-          this.overrides.update((m) => {
-            const map = new Map(m);
-            if (trimmed) map.set(weekIndex, trimmed);
-            else map.delete(weekIndex);
-            return map;
-          });
-          this.savingNotes.update((s) => {
-            const next = new Set(s);
-            next.delete(weekIndex);
-            return next;
-          });
-        },
-        error: (err) => {
-          if (this.overrideSeq.get(weekIndex) !== seq) {
-            // Newer request in flight or completed; suppress stale error
-            // so we don't show a misleading toast for old failed write.
-            this.savingNotes.update((s) => {
-              const next = new Set(s);
-              next.delete(weekIndex);
-              return next;
-            });
-            return;
-          }
-          this.savingNotes.update((s) => {
-            const next = new Set(s);
-            next.delete(weekIndex);
-            return next;
-          });
-          this.toast.show(err.error?.error ?? 'No se pudo guardar la nota', 'error');
-        },
-      });
+  async duplicateWeek(weekIndex: number) {
+    const p = this.store.program(); if (!p) return;
+    await this.store.duplicateWeek(p.id, weekIndex);
   }
 
-  save() {
-    const validSlots = this.slots().filter((s) => s.routineId);
-    if (!this.name.trim()) {
-      this.error.set('El nombre es requerido');
-      return;
-    }
-    if (validSlots.length === 0) {
-      this.error.set('Agregá al menos una rutina al programa');
-      return;
-    }
-
-    this.saving.set(true);
-    this.error.set('');
-
-    const body = {
-      name: this.name.trim(),
-      description: this.description.trim() || null,
-      durationWeeks: this.durationWeeks,
-      routines: validSlots.map((s, i) => ({
-        routineId: s.routineId,
-        sortOrder: i,
-        label: s.label.trim() || null,
-      })),
-    };
-
-    const req = this.isEdit()
-      ? this.api.put<ProgramDetailDto>(`/programs/${this.programId}`, body)
-      : this.api.post<ProgramDetailDto>('/programs', body);
-
-    req.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.toast.show(this.isEdit() ? 'Programa actualizado' : 'Programa creado');
-        this.router.navigate(['/trainer/programs']);
-      },
-      error: (err) => {
-        this.error.set(err.error?.error || 'Error al guardar');
-        this.saving.set(false);
-      },
-    });
+  async deleteWeek(weekIndex: number) {
+    const p = this.store.program(); if (!p) return;
+    if (!window.confirm(`¿Eliminar Semana ${weekIndex + 1}? Las rutinas de esta semana se perderán.`)) return;
+    await this.store.deleteWeek(p.id, weekIndex);
   }
 
-  confirmDelete() {
-    this.showDeleteDialog.set(false);
-    this.api
-      .delete(`/programs/${this.programId}`)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.toast.show('Programa eliminado');
-          this.router.navigate(['/trainer/programs']);
-        },
-        error: (err) => this.toast.show(err.error?.error || 'No pudimos eliminar el programa', 'error'),
-      });
+  async fillRest() {
+    const p = this.store.program(); if (!p) return;
+    await this.store.fillRest(p.id);
   }
 
-  private loadProgram() {
-    this.api
-      .get<ProgramDetailDto>(`/programs/${this.programId}`)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (data) => {
-          this.name = data.name;
-          this.description = data.description ?? '';
-          this.durationWeeks = data.durationWeeks;
-          this.resizeGrid();
-          const sorted = [...data.routines].sort((a, b) => a.sortOrder - b.sortOrder);
-          this.slots.set(
-            sorted.map((r) => ({
-              routineId: r.routineId,
-              label: r.label ?? '',
-            })),
-          );
-          this.loadingData.set(false);
-        },
-        error: () => this.loadingData.set(false),
-      });
+  async onSetKind(kind: 'Empty' | 'Rest') {
+    const p = this.store.program(); const sel = this.store.selected();
+    if (!p || !sel) return;
+    await this.store.setSlot(p.id, sel.weekIndex, sel.dayIndex, kind);
   }
 
-  private loadOverrides() {
-    this.api
-      .get<ProgramWeekOverrideDto[]>(`/programs/${this.programId}/week-overrides`)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (list) => {
-          const map = new Map<number, string>();
-          for (const o of list) map.set(o.weekIndex, o.notes);
-          this.overrides.set(map);
-        },
-        error: (err) =>
-          this.toast.show(err.error?.error ?? 'No pudimos cargar las notas semanales', 'error'),
-      });
+  async removeBlock(blockId: string) {
+    const p = this.store.program(); if (!p) return;
+    await this.store.removeBlock(p.id, blockId);
   }
 
-  private emptyDays(): (RoutineListDto | null)[] {
-    return [null, null, null, null, null, null, null];
+  async onRoutineAssigned(payload: { routineId: string; weeks: number[]; mapping?: Record<string, number>; dayIds?: string[]; }) {
+    const p = this.store.program(); if (!p) return;
+    await this.store.assignRoutine(p.id, payload);
+  }
+
+  async publish() {
+    const p = this.store.program(); if (!p) return;
+    if (!window.confirm('¿Publicar este programa? Después podrás asignarlo a estudiantes. Esta acción no se puede deshacer.')) return;
+    await this.store.publish(p.id);
+  }
+
+  goAssign() {
+    const p = this.store.program(); if (!p) return;
+    // Phase 6 will wire this. For now, navigate to the assign sub-route placeholder.
+    this.router.navigate(['/trainer/programs', p.id, 'assign']);
   }
 }
