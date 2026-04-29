@@ -32,6 +32,6 @@ public sealed class ApproveTrainerCommandHandler(IKondixDbContext db, IMediator 
 
         var seeded = await mediator.Send(new SeedCatalogCommand(trainer.Id), cancellationToken);
 
-        return new ApprovalResult(trainer.ApprovedAt, seeded, false);
+        return new ApprovalResult(trainer.ApprovedAt, seeded.Inserted, false);
     }
 }
