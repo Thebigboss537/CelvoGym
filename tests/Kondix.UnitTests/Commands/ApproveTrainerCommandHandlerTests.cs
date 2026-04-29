@@ -36,7 +36,7 @@ public sealed class ApproveTrainerCommandHandlerTests
 
         var sender = Substitute.For<IMediator>();
         sender.Send(Arg.Any<SeedCatalogCommand>(), Arg.Any<CancellationToken>())
-            .Returns(50);
+            .Returns(new SeedCatalogResult(50, 0));
 
         var handler = new ApproveTrainerCommandHandler(db, sender);
         var result = await handler.Handle(new ApproveTrainerCommand(trainerId), CancellationToken.None);

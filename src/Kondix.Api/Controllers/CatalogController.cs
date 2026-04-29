@@ -51,8 +51,8 @@ public class CatalogController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Seed(CancellationToken ct)
     {
         HttpContext.RequirePermission(Permissions.GymManage);
-        var inserted = await mediator.Send(new SeedCatalogCommand(HttpContext.GetTrainerId()), ct);
-        return Ok(new { inserted });
+        var result = await mediator.Send(new SeedCatalogCommand(HttpContext.GetTrainerId()), ct);
+        return Ok(new { inserted = result.Inserted, imagesBackfilled = result.ImagesBackfilled });
     }
 }
 
