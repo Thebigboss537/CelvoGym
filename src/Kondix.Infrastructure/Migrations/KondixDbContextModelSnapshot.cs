@@ -579,35 +579,59 @@ namespace Kondix.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnName("id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnName("created_at");
+
+                    b.Property<int?>("DaysPerWeek")
+                        .HasColumnType("integer")
+                        .HasColumnName("days_per_week");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("description");
 
-                    b.Property<int>("DurationWeeks")
-                        .HasColumnType("integer")
-                        .HasColumnName("duration_weeks");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
+                    b.Property<bool>("IsPublished")
                         .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_active");
+                        .HasColumnName("is_published");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("level");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("mode");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
                         .HasColumnName("name");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Objective")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("objective");
+
+                    b.Property<string>("ScheduleType")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("schedule_type");
 
                     b.Property<Guid>("TrainerId")
                         .HasColumnType("uuid")
@@ -620,6 +644,9 @@ namespace Kondix.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_programs");
 
+                    b.HasIndex("IsPublished")
+                        .HasDatabaseName("ix_programs_is_published");
+
                     b.HasIndex("TrainerId")
                         .HasDatabaseName("ix_programs_trainer_id");
 
@@ -631,76 +658,46 @@ namespace Kondix.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<DateTimeOffset?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("completed_at");
+                        .HasColumnName("id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<DateOnly>("EndDate")
-                        .HasColumnType("date")
-                        .HasColumnName("end_date");
-
-                    b.Property<string>("FixedScheduleJson")
-                        .HasColumnType("jsonb")
-                        .HasColumnName("fixed_schedule_json");
-
-                    b.Property<string>("Mode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasColumnName("mode");
+                        .HasColumnName("created_at");
 
                     b.Property<Guid>("ProgramId")
                         .HasColumnType("uuid")
                         .HasColumnName("program_id");
 
-                    b.Property<int>("RotationIndex")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0)
-                        .HasColumnName("rotation_index");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date")
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("start_date");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("Active")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
                         .HasColumnName("status");
 
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uuid")
                         .HasColumnName("student_id");
 
-                    b.PrimitiveCollection<List<int>>("TrainingDays")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer[]")
-                        .HasColumnName("training_days")
-                        .HasDefaultValueSql("ARRAY[]::integer[]");
+                    b.Property<Guid>("TrainerId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("trainer_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id")
                         .HasName("pk_program_assignments");
 
-                    b.HasIndex("StudentId")
-                        .HasDatabaseName("ix_program_assignments_student_id");
+                    b.HasIndex("ProgramId")
+                        .HasDatabaseName("ix_program_assignments_program_id");
 
-                    b.HasIndex("ProgramId", "StudentId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_program_assignments_program_id_student_id")
-                        .HasFilter("status = 'Active'");
+                    b.HasIndex("TrainerId")
+                        .HasDatabaseName("ix_program_assignments_trainer_id");
 
                     b.HasIndex("StudentId", "Status")
                         .HasDatabaseName("ix_program_assignments_student_id_status");
@@ -708,68 +705,78 @@ namespace Kondix.Infrastructure.Migrations
                     b.ToTable("program_assignments", "kondix");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ProgramRoutine", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ProgramSlot", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("BlockId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("block_id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnName("created_at");
 
-                    b.Property<string>("Label")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("label");
-
-                    b.Property<Guid>("ProgramId")
+                    b.Property<Guid?>("DayId")
                         .HasColumnType("uuid")
-                        .HasColumnName("program_id");
+                        .HasColumnName("day_id");
 
-                    b.Property<Guid>("RoutineId")
+                    b.Property<int>("DayIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_index");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid?>("RoutineId")
                         .HasColumnType("uuid")
                         .HasColumnName("routine_id");
 
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
+                    b.Property<Guid>("WeekId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("week_id");
 
                     b.HasKey("Id")
-                        .HasName("pk_program_routines");
+                        .HasName("pk_program_slots");
+
+                    b.HasIndex("BlockId")
+                        .HasDatabaseName("ix_program_slots_block_id");
+
+                    b.HasIndex("DayId")
+                        .HasDatabaseName("ix_program_slots_day_id");
 
                     b.HasIndex("RoutineId")
-                        .HasDatabaseName("ix_program_routines_routine_id");
+                        .HasDatabaseName("ix_program_slots_routine_id");
 
-                    b.HasIndex("ProgramId", "SortOrder")
-                        .HasDatabaseName("ix_program_routines_program_id_sort_order");
+                    b.HasIndex("WeekId", "DayIndex")
+                        .IsUnique()
+                        .HasDatabaseName("ix_program_slots_week_id_day_index");
 
-                    b.ToTable("program_routines", "kondix");
+                    b.ToTable("program_slots", "kondix");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ProgramWeekOverride", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ProgramWeek", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnName("id");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("NOW()");
+                        .HasColumnName("created_at");
 
-                    b.Property<string>("Notes")
+                    b.Property<string>("Label")
                         .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("notes");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("label");
 
                     b.Property<Guid>("ProgramId")
                         .HasColumnType("uuid")
@@ -780,13 +787,13 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnName("week_index");
 
                     b.HasKey("Id")
-                        .HasName("pk_program_week_overrides");
+                        .HasName("pk_program_weeks");
 
                     b.HasIndex("ProgramId", "WeekIndex")
                         .IsUnique()
-                        .HasDatabaseName("ix_program_week_overrides_program_id_week_index");
+                        .HasDatabaseName("ix_program_weeks_program_id_week_index");
 
-                    b.ToTable("program_week_overrides", "kondix");
+                    b.ToTable("program_weeks", "kondix");
                 });
 
             modelBuilder.Entity("Kondix.Domain.Entities.ProgressPhoto", b =>
@@ -1286,6 +1293,10 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnName("id")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<Guid>("AssignmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("assignment_id");
+
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("completed_at");
@@ -1320,9 +1331,13 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnType("character varying(2000)")
                         .HasColumnName("notes");
 
-                    b.Property<Guid?>("ProgramAssignmentId")
+                    b.Property<Guid>("ProgramId")
                         .HasColumnType("uuid")
-                        .HasColumnName("program_assignment_id");
+                        .HasColumnName("program_id");
+
+                    b.Property<DateOnly?>("RecoversPlannedDate")
+                        .HasColumnType("date")
+                        .HasColumnName("recovers_planned_date");
 
                     b.Property<Guid?>("RecoversSessionId")
                         .HasColumnType("uuid")
@@ -1332,15 +1347,37 @@ namespace Kondix.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("routine_id");
 
+                    b.Property<int?>("Rpe")
+                        .HasColumnType("integer")
+                        .HasColumnName("rpe");
+
+                    b.Property<int>("SlotIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("slot_index");
+
                     b.Property<DateTimeOffset>("StartedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("started_at")
                         .HasDefaultValueSql("NOW()");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("status");
+
                     b.Property<Guid>("StudentId")
                         .HasColumnType("uuid")
                         .HasColumnName("student_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("WeekIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("week_index");
 
                     b.HasKey("Id")
                         .HasName("pk_workout_sessions");
@@ -1348,8 +1385,8 @@ namespace Kondix.Infrastructure.Migrations
                     b.HasIndex("DayId")
                         .HasDatabaseName("ix_workout_sessions_day_id");
 
-                    b.HasIndex("ProgramAssignmentId")
-                        .HasDatabaseName("ix_workout_sessions_program_assignment_id");
+                    b.HasIndex("ProgramId")
+                        .HasDatabaseName("ix_workout_sessions_program_id");
 
                     b.HasIndex("RecoversSessionId")
                         .HasDatabaseName("ix_workout_sessions_recovers_session_id");
@@ -1361,11 +1398,11 @@ namespace Kondix.Infrastructure.Migrations
                         .HasDatabaseName("ix_workout_sessions_student_id_completed_at")
                         .HasFilter("\"feedback_reviewed_at\" IS NULL");
 
-                    b.HasIndex("StudentId", "ProgramAssignmentId")
-                        .HasDatabaseName("ix_workout_sessions_student_id_program_assignment_id");
-
                     b.HasIndex("StudentId", "RoutineId", "DayId")
                         .HasDatabaseName("ix_workout_sessions_student_id_routine_id_day_id");
+
+                    b.HasIndex("AssignmentId", "WeekIndex", "SlotIndex", "Status")
+                        .HasDatabaseName("ix_workout_sessions_assignment_id_week_index_slot_index_status");
 
                     b.ToTable("workout_sessions", "kondix");
                 });
@@ -1528,7 +1565,7 @@ namespace Kondix.Infrastructure.Migrations
                     b.HasOne("Kondix.Domain.Entities.Trainer", "Trainer")
                         .WithMany()
                         .HasForeignKey("TrainerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_programs_trainers_trainer_id");
 
@@ -1538,7 +1575,7 @@ namespace Kondix.Infrastructure.Migrations
             modelBuilder.Entity("Kondix.Domain.Entities.ProgramAssignment", b =>
                 {
                     b.HasOne("Kondix.Domain.Entities.Program", "Program")
-                        .WithMany("ProgramAssignments")
+                        .WithMany("Assignments")
                         .HasForeignKey("ProgramId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -1547,44 +1584,60 @@ namespace Kondix.Infrastructure.Migrations
                     b.HasOne("Kondix.Domain.Entities.Student", "Student")
                         .WithMany("ProgramAssignments")
                         .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_program_assignments_students_student_id");
+
+                    b.HasOne("Kondix.Domain.Entities.Trainer", "Trainer")
+                        .WithMany()
+                        .HasForeignKey("TrainerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_program_assignments_trainers_trainer_id");
 
                     b.Navigation("Program");
 
                     b.Navigation("Student");
+
+                    b.Navigation("Trainer");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ProgramRoutine", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ProgramSlot", b =>
                 {
-                    b.HasOne("Kondix.Domain.Entities.Program", "Program")
-                        .WithMany("ProgramRoutines")
-                        .HasForeignKey("ProgramId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_program_routines_programs_program_id");
+                    b.HasOne("Kondix.Domain.Entities.Day", "Day")
+                        .WithMany()
+                        .HasForeignKey("DayId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_program_slots_days_day_id");
 
                     b.HasOne("Kondix.Domain.Entities.Routine", "Routine")
                         .WithMany()
                         .HasForeignKey("RoutineId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_program_routines_routines_routine_id");
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_program_slots_routines_routine_id");
 
-                    b.Navigation("Program");
+                    b.HasOne("Kondix.Domain.Entities.ProgramWeek", "Week")
+                        .WithMany("Slots")
+                        .HasForeignKey("WeekId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_program_slots_program_weeks_week_id");
+
+                    b.Navigation("Day");
 
                     b.Navigation("Routine");
+
+                    b.Navigation("Week");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ProgramWeekOverride", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ProgramWeek", b =>
                 {
                     b.HasOne("Kondix.Domain.Entities.Program", "Program")
-                        .WithMany()
+                        .WithMany("Weeks")
                         .HasForeignKey("ProgramId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_program_week_overrides_programs_program_id");
+                        .HasConstraintName("fk_program_weeks_programs_program_id");
 
                     b.Navigation("Program");
                 });
@@ -1709,6 +1762,13 @@ namespace Kondix.Infrastructure.Migrations
 
             modelBuilder.Entity("Kondix.Domain.Entities.WorkoutSession", b =>
                 {
+                    b.HasOne("Kondix.Domain.Entities.ProgramAssignment", "Assignment")
+                        .WithMany()
+                        .HasForeignKey("AssignmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_workout_sessions_program_assignments_assignment_id");
+
                     b.HasOne("Kondix.Domain.Entities.Day", "Day")
                         .WithMany()
                         .HasForeignKey("DayId")
@@ -1716,11 +1776,12 @@ namespace Kondix.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_workout_sessions_days_day_id");
 
-                    b.HasOne("Kondix.Domain.Entities.ProgramAssignment", "ProgramAssignment")
-                        .WithMany("WorkoutSessions")
-                        .HasForeignKey("ProgramAssignmentId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_workout_sessions_program_assignments_program_assignment_id");
+                    b.HasOne("Kondix.Domain.Entities.Program", "Program")
+                        .WithMany()
+                        .HasForeignKey("ProgramId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_workout_sessions_programs_program_id");
 
                     b.HasOne("Kondix.Domain.Entities.WorkoutSession", "RecoversSession")
                         .WithMany()
@@ -1742,9 +1803,11 @@ namespace Kondix.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_workout_sessions_students_student_id");
 
+                    b.Navigation("Assignment");
+
                     b.Navigation("Day");
 
-                    b.Navigation("ProgramAssignment");
+                    b.Navigation("Program");
 
                     b.Navigation("RecoversSession");
 
@@ -1780,14 +1843,14 @@ namespace Kondix.Infrastructure.Migrations
 
             modelBuilder.Entity("Kondix.Domain.Entities.Program", b =>
                 {
-                    b.Navigation("ProgramAssignments");
+                    b.Navigation("Assignments");
 
-                    b.Navigation("ProgramRoutines");
+                    b.Navigation("Weeks");
                 });
 
-            modelBuilder.Entity("Kondix.Domain.Entities.ProgramAssignment", b =>
+            modelBuilder.Entity("Kondix.Domain.Entities.ProgramWeek", b =>
                 {
-                    b.Navigation("WorkoutSessions");
+                    b.Navigation("Slots");
                 });
 
             modelBuilder.Entity("Kondix.Domain.Entities.Routine", b =>

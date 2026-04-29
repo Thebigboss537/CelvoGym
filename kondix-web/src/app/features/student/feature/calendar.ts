@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
-import { CalendarMonthDto } from '../../../shared/models';
+import { CalendarMonthDto, NextWorkoutDto, NextWorkoutKind } from '../../../shared/models';
 import { KxSpinner } from '../../../shared/ui/spinner';
 import { KxEmptyState } from '../../../shared/ui/empty-state';
 import { KxProgressBar } from '../../../shared/ui/progress-bar';
@@ -28,6 +28,9 @@ interface DayGridCell {
     <div class="animate-fade-up pt-4">
       @if (loading()) {
         <kx-spinner />
+      } @else if (kind() === 'Numbered') {
+        <kx-empty-state title="Sin calendario"
+          subtitle="Tu programa avanza por entrenamientos completados, no por fechas. Revisa tu lista en Inicio." />
       } @else if (!calendarData()?.activeProgram) {
         <kx-empty-state title="Sin programa activo"
           subtitle="Tu entrenador te asignará un programa pronto" />
@@ -130,6 +133,7 @@ export class Calendar {
   month = signal(new Date().getMonth() + 1); // 1-based
   loading = signal(true);
   calendarData = signal<CalendarMonthDto | null>(null);
+  kind = signal<NextWorkoutKind | null>(null);
 
   monthLabel = computed(() => {
     const label = new Date(this.year(), this.month() - 1, 1)
@@ -215,6 +219,11 @@ export class Calendar {
       const year = this.year();
       const month = this.month();
       this.loadCalendar(year, month);
+    });
+
+    this.api.get<NextWorkoutDto>('/public/my/next-workout').subscribe({
+      next: (data) => this.kind.set(data?.kind ?? null),
+      error: () => this.kind.set(null),
     });
   }
 

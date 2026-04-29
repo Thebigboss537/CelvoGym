@@ -1,6 +1,4 @@
-using Kondix.Application.Common.Helpers;
 using Kondix.Application.Common.Interfaces;
-using Kondix.Application.DTOs;
 using Kondix.Domain.Entities;
 using Kondix.Domain.Enums;
 using MediatR;
@@ -10,88 +8,47 @@ namespace Kondix.Application.Commands.ProgramAssignments;
 
 public sealed record AssignProgramCommand(
     Guid TrainerId,
-    Guid ProgramId,
     Guid StudentId,
-    ProgramAssignmentMode Mode,
-    List<int>? TrainingDays = null,
-    List<FixedScheduleInput>? FixedSchedule = null,
-    DateOnly? StartDate = null) : IRequest<ProgramAssignmentDto>;
+    Guid ProgramId,
+    DateTimeOffset StartDate) : IRequest<Guid>;
 
-public sealed class AssignProgramHandler(IKondixDbContext db)
-    : IRequestHandler<AssignProgramCommand, ProgramAssignmentDto>
+public sealed class AssignProgramHandler(IKondixDbContext db) : IRequestHandler<AssignProgramCommand, Guid>
 {
-    public async Task<ProgramAssignmentDto> Handle(AssignProgramCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(AssignProgramCommand request, CancellationToken ct)
     {
+        // 1. Verify program belongs to trainer + IsPublished.
         var program = await db.Programs
-            .AsNoTracking()
-            .Include(p => p.ProgramRoutines)
             .FirstOrDefaultAsync(p => p.Id == request.ProgramId
-                && p.TrainerId == request.TrainerId
-                && p.IsActive, cancellationToken)
+                && p.TrainerId == request.TrainerId, ct)
             ?? throw new InvalidOperationException("Program not found");
+        if (!program.IsPublished)
+            throw new InvalidOperationException("Publicá el programa primero");
 
-        var trainerStudent = await db.TrainerStudents
-            .Include(ts => ts.Student)
-            .FirstOrDefaultAsync(ts => ts.StudentId == request.StudentId
-                && ts.TrainerId == request.TrainerId
-                && ts.IsActive, cancellationToken)
-            ?? throw new InvalidOperationException("Student not found or not linked to this trainer");
-
-        var existingActive = await db.ProgramAssignments
-            .AnyAsync(pa => pa.StudentId == request.StudentId
-                && pa.Status == ProgramAssignmentStatus.Active, cancellationToken);
-
-        if (existingActive)
-            throw new InvalidOperationException(
-                "El alumno ya tiene un programa activo. Cancélalo antes de asignar otro.");
-
-        if (request.Mode == ProgramAssignmentMode.Rotation && (request.TrainingDays is null || request.TrainingDays.Count == 0))
-            throw new InvalidOperationException("Training days are required for rotation mode");
-
-        if (request.Mode == ProgramAssignmentMode.Fixed)
+        // 2. Cancel any prior Active assignment for this student.
+        var now = DateTimeOffset.UtcNow;
+        var priorActive = await db.ProgramAssignments
+            .Where(a => a.StudentId == request.StudentId
+                && a.TrainerId == request.TrainerId
+                && a.Status == ProgramAssignmentStatus.Active)
+            .ToListAsync(ct);
+        foreach (var prior in priorActive)
         {
-            if (request.FixedSchedule is null || request.FixedSchedule.Count == 0)
-                throw new InvalidOperationException("Fixed schedule is required for fixed mode");
-
-            var programRoutineIds = program.ProgramRoutines.Select(pr => pr.RoutineId).ToHashSet();
-            var invalidRoutines = request.FixedSchedule.Where(fs => !programRoutineIds.Contains(fs.RoutineId)).ToList();
-            if (invalidRoutines.Count > 0)
-                throw new InvalidOperationException("Some routines in the schedule don't belong to this program");
+            prior.Status = ProgramAssignmentStatus.Cancelled;
+            prior.UpdatedAt = now;
         }
 
-        var startDate = request.StartDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
-        var endDate = startDate.AddDays(program.DurationWeeks * 7);
-
-        string? fixedJson = null;
-        var trainingDays = request.TrainingDays ?? [];
-
-        if (request.Mode == ProgramAssignmentMode.Fixed && request.FixedSchedule is not null)
-        {
-            fixedJson = System.Text.Json.JsonSerializer.Serialize(request.FixedSchedule);
-            trainingDays = request.FixedSchedule.SelectMany(fs => fs.Days).Distinct().OrderBy(d => d).ToList();
-        }
-
+        // 3. Insert new active assignment.
         var assignment = new ProgramAssignment
         {
-            ProgramId = request.ProgramId,
+            TrainerId = request.TrainerId,
             StudentId = request.StudentId,
-            Mode = request.Mode,
-            TrainingDays = trainingDays,
-            FixedScheduleJson = fixedJson,
-            StartDate = startDate,
-            EndDate = endDate
+            ProgramId = request.ProgramId,
+            StartDate = request.StartDate,
+            Status = ProgramAssignmentStatus.Active,
+            UpdatedAt = now,
         };
-
         db.ProgramAssignments.Add(assignment);
-        await db.SaveChangesAsync(cancellationToken);
-
-        return new ProgramAssignmentDto(
-            assignment.Id, program.Id, program.Name,
-            trainerStudent.StudentId, trainerStudent.Student.DisplayName,
-            assignment.Mode.ToString(), assignment.Status.ToString(),
-            assignment.TrainingDays, startDate.ToString("yyyy-MM-dd"),
-            endDate.ToString("yyyy-MM-dd"),
-            ProgramWeekHelper.CalculateCurrentWeek(startDate), program.DurationWeeks,
-            assignment.CreatedAt);
+        await db.SaveChangesAsync(ct);
+        return assignment.Id;
     }
 }

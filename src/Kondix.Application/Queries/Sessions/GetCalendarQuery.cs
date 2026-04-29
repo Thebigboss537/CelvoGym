@@ -30,7 +30,8 @@ public sealed class GetCalendarHandler(IKondixDbContext db)
             .OrderByDescending(pa => pa.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
 
-        var suggestedDays = assignment?.TrainingDays ?? [];
+        // TODO Phase 5: restore suggested days from ProgramAssignment in v3 shape
+        var suggestedDays = new List<int>();
 
         // Get all sessions in the month
         var sessions = await db.WorkoutSessions
@@ -64,13 +65,14 @@ public sealed class GetCalendarHandler(IKondixDbContext db)
         }).ToList();
 
         // Program info
+        // TODO Phase 5: restore active program summary once ProgramAssignment has Mode/DurationWeeks in v3 shape.
         ActiveProgramDto? activeProgram = null;
         if (assignment is not null)
         {
-            var currentWeek = CalculateCurrentWeek(assignment.StartDate);
+            var currentWeek = CalculateCurrentWeek(DateOnly.FromDateTime(assignment.StartDate.UtcDateTime));
             activeProgram = new ActiveProgramDto(
-                assignment.Program.Name, currentWeek, assignment.Program.DurationWeeks,
-                assignment.Mode.ToString(), assignment.Status.ToString());
+                assignment.Program.Name, currentWeek, assignment.Program.Weeks.Count,
+                "Rotation", assignment.Status.ToString());
         }
 
         return new CalendarMonthDto(calendarDays, suggestedDays, activeProgram);

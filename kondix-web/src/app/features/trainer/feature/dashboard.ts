@@ -183,7 +183,7 @@ function alertTitle(type: string): string {
                 </button>
                 <button
                   type="button"
-                  (click)="router.navigate(['/trainer/programs/new'])"
+                  (click)="router.navigate(['/trainer/programs'])"
                   class="w-full bg-card border border-border rounded-xl p-3 text-left flex items-center gap-3 hover:bg-card-hover transition-colors"
                   data-testid="quick-create-program"
                 >

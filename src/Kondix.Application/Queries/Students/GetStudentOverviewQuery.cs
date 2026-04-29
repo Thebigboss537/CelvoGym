@@ -43,7 +43,8 @@ public sealed class GetStudentOverviewHandler(IKondixDbContext db)
             .FirstOrDefaultAsync(pa => pa.StudentId == request.StudentId
                 && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active, cancellationToken);
 
-        var expectedDays = activeAssignment?.TrainingDays?.Count ?? 0;
+        // TODO Phase 5: restore expected days from v3 ProgramAssignment shape (TrainingDays removed).
+        var expectedDays = 0;
         var adherence = expectedDays > 0
             ? Math.Min(100, (int)Math.Round((double)sessionsThisWeek / expectedDays * 100))
             : 0;

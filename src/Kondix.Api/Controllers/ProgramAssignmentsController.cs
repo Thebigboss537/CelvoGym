@@ -28,15 +28,9 @@ public class ProgramAssignmentsController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Assign([FromBody] AssignProgramRequest request, CancellationToken ct)
     {
         HttpContext.RequirePermission(Permissions.GymManage);
-        if (!Enum.TryParse<ProgramAssignmentMode>(request.Mode, ignoreCase: true, out var mode))
-            return BadRequest(new { error = "Invalid mode. Use 'Rotation' or 'Fixed'" });
-        var fixedSchedule = request.FixedSchedule?.Select(fs => new FixedScheduleInput(fs.RoutineId, fs.Days)).ToList();
-
-        var result = await mediator.Send(new AssignProgramCommand(
-            HttpContext.GetTrainerId(), request.ProgramId, request.StudentId,
-            mode, request.TrainingDays, fixedSchedule, request.StartDate), ct);
-
-        return Created($"/api/v1/program-assignments/{result.Id}", result);
+        var id = await mediator.Send(new AssignProgramCommand(
+            HttpContext.GetTrainerId(), request.StudentId, request.ProgramId, request.StartDate), ct);
+        return Created($"/api/v1/program-assignments/{id}", new { id });
     }
 
     [HttpPost("bulk")]
@@ -72,12 +66,9 @@ public class ProgramAssignmentsController(IMediator mediator) : ControllerBase
 }
 
 public sealed record AssignProgramRequest(
-    Guid ProgramId,
     Guid StudentId,
-    string Mode,
-    List<int>? TrainingDays = null,
-    List<FixedScheduleEntryRequest>? FixedSchedule = null,
-    DateOnly? StartDate = null);
+    Guid ProgramId,
+    DateTimeOffset StartDate);
 
 public sealed record BulkAssignProgramRequest(
     Guid ProgramId,

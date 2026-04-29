@@ -274,14 +274,36 @@ export interface FixedScheduleEntry {
   days: number[];
 }
 
+export type NextWorkoutKind = 'Routine' | 'Rest' | 'Empty' | 'Numbered' | 'Done';
+
 export interface NextWorkoutDto {
+  kind: NextWorkoutKind;
+  assignmentId?: string | null;
+  routineId?: string | null;
+  routineName?: string | null;
+  dayId?: string | null;
+  dayName?: string | null;
+  weekIndex?: number | null;
+  slotIndex?: number | null;
+  pendingCount?: number | null;
+  completedCount?: number | null;
+  total?: number | null;
+}
+
+export interface ThisWeekPendingSlot {
+  slotIndex: number;
   routineId: string;
   routineName: string;
   dayId: string;
   dayName: string;
-  programName: string;
-  currentWeek: number;
-  totalWeeks: number;
+}
+
+export interface ThisWeekDto {
+  assignmentId: string;
+  weekIndex: number;
+  total: number;
+  completedCount: number;
+  pending: ThisWeekPendingSlot[];
 }
 
 export interface MyProgramDto {
@@ -297,7 +319,8 @@ export interface MyProgramDto {
   endDate: string;
 }
 
-// Programs
+// Programs — legacy v2 types (still consumed by program-list / program-detail / program-form; Phase 4 will rewrite those consumers)
+/** @deprecated v3 — use ProgramSummary instead */
 export interface ProgramListDto {
   id: string;
   name: string;
@@ -308,6 +331,7 @@ export interface ProgramListDto {
   updatedAt: string;
 }
 
+/** @deprecated v3 — use ProgramDetail instead */
 export interface ProgramDetailDto {
   id: string;
   name: string;
@@ -318,12 +342,72 @@ export interface ProgramDetailDto {
   updatedAt: string;
 }
 
+/** @deprecated v3 — no direct replacement; absorbed into ProgramSlot */
 export interface ProgramRoutineDto {
   id: string;
   routineId: string;
   routineName: string;
   label: string | null;
   sortOrder: number;
+}
+
+// Programs — v3 types
+export type ProgramObjective = 'Hipertrofia' | 'Fuerza' | 'Resistencia' | 'Funcional' | 'Rendimiento' | 'Otro';
+export type ProgramLevel = 'Principiante' | 'Intermedio' | 'Avanzado' | 'Todos';
+export type ProgramMode = 'Fixed' | 'Loop';
+export type ProgramScheduleType = 'Week' | 'Numbered';
+export type ProgramSlotKind = 'Empty' | 'Rest' | 'RoutineDay';
+
+export interface ProgramSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  objective: ProgramObjective;
+  level: ProgramLevel;
+  mode: ProgramMode;
+  scheduleType: ProgramScheduleType;
+  daysPerWeek: number | null;
+  weeksCount: number;
+  sessionsCount: number;
+  assignedCount: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProgramSlot {
+  id: string;
+  dayIndex: number;
+  kind: ProgramSlotKind;
+  routineId: string | null;
+  routineName: string | null;
+  dayId: string | null;
+  dayName: string | null;
+  blockId: string | null;
+}
+
+export interface ProgramWeek {
+  id: string;
+  weekIndex: number;
+  label: string;
+  slots: ProgramSlot[];
+}
+
+export interface ProgramDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  notes: string | null;
+  objective: ProgramObjective;
+  level: ProgramLevel;
+  mode: ProgramMode;
+  scheduleType: ProgramScheduleType;
+  daysPerWeek: number | null;
+  isPublished: boolean;
+  assignedCount: number;
+  createdAt: string;
+  updatedAt: string;
+  weeks: ProgramWeek[];
 }
 
 // Per-week notes overrides for a program (Phase 5)

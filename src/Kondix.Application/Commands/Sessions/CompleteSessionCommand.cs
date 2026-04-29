@@ -28,25 +28,8 @@ public sealed class CompleteSessionHandler(IKondixDbContext db)
         session.Notes = request.Notes;
         session.Mood = request.Mood;
 
-        // Advance rotation index and auto-complete only on first completion
-        if (firstCompletion && session.ProgramAssignmentId.HasValue)
-        {
-            var pa = await db.ProgramAssignments
-                .FirstOrDefaultAsync(p => p.Id == session.ProgramAssignmentId
-                    && p.Status == ProgramAssignmentStatus.Active, cancellationToken);
-
-            if (pa is not null && pa.Mode == ProgramAssignmentMode.Rotation)
-            {
-                pa.RotationIndex++;
-            }
-
-            // Auto-complete if past end date
-            if (pa is not null && DateOnly.FromDateTime(DateTime.UtcNow) >= pa.EndDate)
-            {
-                pa.Status = ProgramAssignmentStatus.Completed;
-                pa.CompletedAt = DateTimeOffset.UtcNow;
-            }
-        }
+        // TODO Phase 5: advance rotation index and auto-complete assignment on first completion
+        // Removed because ProgramAssignment.Mode, RotationIndex, EndDate, CompletedAt no longer exist in v3.
 
         await db.SaveChangesAsync(cancellationToken);
 

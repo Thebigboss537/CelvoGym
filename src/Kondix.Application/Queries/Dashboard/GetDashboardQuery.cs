@@ -61,23 +61,9 @@ public sealed class GetDashboardHandler(IKondixDbContext db)
                 alerts.Add(new AlertDto("inactive", $"{name} no entrena hace más de 5 días", sid));
         }
 
-        var today = DateOnly.FromDateTime(now.UtcDateTime);
-        var endingSoon = await db.ProgramAssignments
-            .AsNoTracking()
-            .Include(pa => pa.Student)
-            .Where(pa => pa.Status == Domain.Enums.ProgramAssignmentStatus.Active
-                && pa.EndDate <= today.AddDays(7)
-                && pa.EndDate >= today
-                && studentIds.Contains(pa.StudentId))
-            .ToListAsync(cancellationToken);
-
-        foreach (var pa in endingSoon)
-        {
-            var daysLeft = pa.EndDate.DayNumber - today.DayNumber;
-            alerts.Add(new AlertDto("program_ending",
-                $"Programa de {pa.Student.DisplayName} termina en {daysLeft} día{(daysLeft != 1 ? "s" : "")}",
-                pa.StudentId));
-        }
+        // TODO Phase 6: restore "program ending soon" alerts once ProgramAssignment has EndDate in v3.
+        // var today = DateOnly.FromDateTime(now.UtcDateTime);
+        // (EndDate was removed from ProgramAssignment in Programs v3 refactor)
 
         // Pinned notes
         var pinnedNotes = await db.TrainerNotes

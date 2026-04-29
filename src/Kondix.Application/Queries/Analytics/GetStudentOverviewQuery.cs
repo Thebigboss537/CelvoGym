@@ -35,7 +35,8 @@ public sealed class GetStudentOverviewHandler(IKondixDbContext db)
                 && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active)
             .FirstOrDefaultAsync(cancellationToken);
 
-        var expectedPerWeek = programAssignment?.TrainingDays.Count ?? 3;
+        // TODO Phase 5: restore expected days per week from v3 ProgramAssignment shape (TrainingDays removed).
+        var expectedPerWeek = 3;
         var weeks = Math.Max(1, (int)Math.Ceiling((now - eightWeeksAgo).TotalDays / 7.0));
         var adherence = expectedPerWeek * weeks > 0
             ? Math.Min(100, totalSessions * 100 / (expectedPerWeek * weeks))

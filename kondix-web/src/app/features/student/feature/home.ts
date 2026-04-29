@@ -1,9 +1,13 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { LucideAngularModule, LUCIDE_ICONS, LucideIconProvider, ArrowRight } from 'lucide-angular';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { ApiService } from '../../../core/services/api.service';
-import { MyProgramDto, NextWorkoutDto, PersonalRecordDto, RecoverableSessionDto } from '../../../shared/models';
+import {
+  MyProgramDto, NextWorkoutDto, PersonalRecordDto, RecoverableSessionDto,
+  ThisWeekDto, ThisWeekPendingSlot,
+} from '../../../shared/models';
 import { KxAvatar } from '../../../shared/ui/avatar';
 import { KxEmptyState } from '../../../shared/ui/empty-state';
 import { KxHeroCard } from '../../../shared/ui/hero-card';
@@ -23,12 +27,12 @@ function relativeDate(iso: string): string {
 
 @Component({
   selector: 'app-student-home',
-  imports: [KxHeroCard, KxStatCard, KxAvatar, KxEmptyState, KxSpinner, KxRecoveryBanner],
+  imports: [KxHeroCard, KxStatCard, KxAvatar, KxEmptyState, KxSpinner, KxRecoveryBanner, LucideAngularModule],
+  providers: [{ provide: LUCIDE_ICONS, multi: true, useValue: new LucideIconProvider({ ArrowRight }) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="animate-fade-up space-y-6">
-
-      <!-- Header: date + greeting + avatar -->
+      <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
           <p class="text-overline text-text-muted capitalize">{{ todayLabel }}</p>
@@ -41,59 +45,99 @@ function relativeDate(iso: string): string {
         }
       </div>
 
-      @if (!loading() && missed(); as m) {
+      @if (!loading() && missed() && nextWorkout()?.kind !== 'Numbered') {
         <kx-recovery-banner
-          [missedSession]="m"
+          [missedSession]="missed()!"
           (recover)="onRecover()"
           (dismiss)="missed.set(null)" />
       }
 
       @if (loading()) {
         <kx-spinner />
-      } @else if (!program()) {
-        <!-- No program assigned yet -->
-        <kx-empty-state
-          title="Sin programa asignado"
-          subtitle="Tu entrenador aún no te ha asignado un programa." />
       } @else {
-        <!-- Hero card: today's workout or rest day -->
-        @if (workout()) {
-          <kx-hero-card
-            [routineName]="workout()!.routineName"
-            [dayName]="workout()!.dayName"
-            [programName]="workout()!.programName"
-            [week]="workout()!.currentWeek"
-            [totalWeeks]="workout()!.totalWeeks"
-            (start)="onStartWorkout()" />
-        } @else {
-          <kx-empty-state
-            title="Día de descanso"
-            subtitle="No tienes entreno programado para hoy. Revisa tu calendario." />
+        @switch (nextWorkout()?.kind ?? 'Done') {
+          @case ('Routine') {
+            <kx-hero-card
+              [routineName]="nextWorkout()?.routineName ?? ''"
+              [dayName]="nextWorkout()?.dayName ?? ''"
+              [programName]="programName()"
+              [week]="programWeek()"
+              [totalWeeks]="programTotalWeeks()"
+              (start)="onStartWorkout()" />
+          }
+          @case ('Rest') {
+            <kx-empty-state
+              title="Día de descanso"
+              subtitle="Hoy toca recuperar. Mañana sigues entrenando." />
+          }
+          @case ('Empty') {
+            <kx-empty-state
+              title="Día libre"
+              subtitle="No tienes entreno programado para hoy." />
+          }
+          @case ('Numbered') {
+            <section>
+              <h2 class="font-display text-2xl font-bold mb-1">Esta semana</h2>
+              <p class="text-sm text-text-muted mb-4">
+                {{ thisWeek()?.completedCount ?? 0 }} de {{ thisWeek()?.total ?? 0 }} entrenamientos completados
+              </p>
+
+              @if ((thisWeek()?.pending?.length ?? 0) === 0) {
+                <kx-empty-state title="¡Listo!" subtitle="Completaste todos los entrenamientos de esta semana." />
+              } @else {
+                <ul class="flex flex-col gap-2.5">
+                  @for (slot of thisWeek()?.pending ?? []; track slot.slotIndex) {
+                    <li>
+                      <button type="button"
+                              class="w-full bg-card border border-border rounded-xl p-4 flex items-center gap-3 text-left hover:border-primary transition"
+                              (click)="startNumberedSession(slot)">
+                        <div class="w-10 h-10 rounded-lg bg-primary-light text-primary flex items-center justify-center font-display font-bold">
+                          D{{ slot.slotIndex + 1 }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="font-semibold text-text">{{ slot.dayName }}</div>
+                          <div class="text-xs text-text-muted">{{ slot.routineName }}</div>
+                        </div>
+                        <lucide-icon name="arrow-right" [size]="16"></lucide-icon>
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+          }
+          @case ('Done') {
+            @if (program()) {
+              <kx-empty-state
+                title="¡Programa completado!"
+                subtitle="Has terminado este programa. Tu entrenador te asignará uno nuevo pronto." />
+            } @else {
+              <kx-empty-state
+                title="Sin programa asignado"
+                subtitle="Tu entrenador aún no te ha asignado un programa." />
+            }
+          }
         }
 
-        <!-- Esta semana section -->
-        <section>
-          <p class="text-overline text-text-muted mb-3">ESTA SEMANA</p>
-          <div class="flex gap-3">
-            <div class="flex-1">
-              <kx-stat-card
-                label="Semana"
-                [value]="weekLabel()" />
+        <!-- "ESTA SEMANA" stats — hide on Numbered (already shown above) -->
+        @if (nextWorkout()?.kind !== 'Numbered') {
+          <section>
+            <p class="text-overline text-text-muted mb-3">ESTA SEMANA</p>
+            <div class="flex gap-3">
+              <div class="flex-1">
+                <kx-stat-card label="Semana" [value]="weekLabel()" />
+              </div>
+              <div class="flex-1">
+                <kx-stat-card label="PRs nuevos" [value]="recentPrCount()" />
+              </div>
+              <div class="flex-1">
+                <kx-stat-card label="Volumen" value="—" />
+              </div>
             </div>
-            <div class="flex-1">
-              <kx-stat-card
-                label="PRs nuevos"
-                [value]="recentPrCount()" />
-            </div>
-            <div class="flex-1">
-              <kx-stat-card
-                label="Volumen"
-                value="—" />
-            </div>
-          </div>
-        </section>
+          </section>
+        }
 
-        <!-- PRs recientes section -->
+        <!-- PRs RECIENTES -->
         <section>
           <p class="text-overline text-text-muted mb-3">PRs RECIENTES 🏆</p>
           @if (records().length === 0) {
@@ -139,7 +183,8 @@ export class Home implements OnInit {
   });
 
   loading = signal(true);
-  workout = signal<NextWorkoutDto | null>(null);
+  nextWorkout = signal<NextWorkoutDto | null>(null);
+  thisWeek = signal<ThisWeekDto | null>(null);
   program = signal<MyProgramDto | null>(null);
   records = signal<PersonalRecordDto[]>([]);
   missed = signal<RecoverableSessionDto | null>(null);
@@ -147,6 +192,10 @@ export class Home implements OnInit {
   private pending = signal(3);
 
   firstName = computed(() => this.authStore.user()?.firstName ?? 'Atleta');
+
+  programName = computed(() => this.program()?.programName ?? '');
+  programWeek = computed(() => this.program()?.currentWeek ?? 1);
+  programTotalWeeks = computed(() => this.program()?.totalWeeks ?? 0);
 
   weekLabel = computed(() => {
     const p = this.program();
@@ -161,30 +210,67 @@ export class Home implements OnInit {
   });
 
   ngOnInit() {
-    this.api.get<NextWorkoutDto>('/public/my/next-workout').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (data) => { this.workout.set(data); this.done(); },
-      error: () => this.done(),
-    });
+    this.api.get<NextWorkoutDto>('/public/my/next-workout')
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (data) => {
+          this.nextWorkout.set(data);
+          if (data?.kind === 'Numbered') this.loadThisWeek();
+          this.done();
+        },
+        error: () => this.done(),
+      });
 
-    this.api.get<MyProgramDto>('/public/my/program').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (data) => { this.program.set(data); this.done(); },
-      error: () => this.done(),
-    });
+    this.api.get<MyProgramDto>('/public/my/program')
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (data) => { this.program.set(data); this.done(); },
+        error: () => this.done(),
+      });
 
-    this.api.get<PersonalRecordDto[]>('/public/my/records').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (data) => { this.records.set(data); this.done(); },
-      error: () => this.done(),
-    });
+    this.api.get<PersonalRecordDto[]>('/public/my/records')
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (data) => { this.records.set(data); this.done(); },
+        error: () => this.done(),
+      });
 
-    // Recovery banner — 204 resolves to null which is the desired "no banner" state
-    this.api.get<RecoverableSessionDto>('/public/my/missed-sessions').pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (data) => this.missed.set(data ?? null),
-      error: () => this.missed.set(null),
-    });
+    this.api.get<RecoverableSessionDto>('/public/my/missed-sessions')
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (data) => this.missed.set(data ?? null),
+        error: () => this.missed.set(null),
+      });
+  }
+
+  private loadThisWeek() {
+    this.api.get<ThisWeekDto>('/public/my/this-week')
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (data) => this.thisWeek.set(data),
+        error: () => this.thisWeek.set(null),
+      });
   }
 
   onStartWorkout() {
-    this.router.navigate(['/workout/session/overview']);
+    const nw = this.nextWorkout();
+    if (!nw || nw.kind !== 'Routine') return;
+    this.router.navigate(['/workout/session/overview'], {
+      queryParams: {
+        routineId: nw.routineId,
+        dayId: nw.dayId,
+        weekIndex: nw.weekIndex,
+        slotIndex: nw.slotIndex,
+      },
+    });
+  }
+
+  startNumberedSession(slot: ThisWeekPendingSlot) {
+    const tw = this.thisWeek();
+    if (!tw) return;
+    this.router.navigate(['/workout/session/overview'], {
+      queryParams: {
+        routineId: slot.routineId,
+        dayId: slot.dayId,
+        weekIndex: tw.weekIndex,
+        slotIndex: slot.slotIndex,
+      },
+    });
   }
 
   onRecover(): void {

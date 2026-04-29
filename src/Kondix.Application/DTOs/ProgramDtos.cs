@@ -1,11 +1,20 @@
+using Kondix.Domain.Enums;
+
 namespace Kondix.Application.DTOs;
 
-public sealed record ProgramListDto(
+public sealed record ProgramSummaryDto(
     Guid Id,
     string Name,
     string? Description,
-    int DurationWeeks,
-    int RoutineCount,
+    ProgramObjective Objective,
+    ProgramLevel Level,
+    ProgramMode Mode,
+    ProgramScheduleType ScheduleType,
+    int? DaysPerWeek,
+    int WeeksCount,
+    int SessionsCount,
+    int AssignedCount,
+    bool IsPublished,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
 
@@ -13,18 +22,30 @@ public sealed record ProgramDetailDto(
     Guid Id,
     string Name,
     string? Description,
-    int DurationWeeks,
-    List<ProgramRoutineDto> Routines,
+    string? Notes,
+    ProgramObjective Objective,
+    ProgramLevel Level,
+    ProgramMode Mode,
+    ProgramScheduleType ScheduleType,
+    int? DaysPerWeek,
+    bool IsPublished,
+    int AssignedCount,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    List<ProgramWeekDto> Weeks);
 
-public sealed record ProgramRoutineDto(
+public sealed record ProgramWeekDto(
     Guid Id,
-    Guid RoutineId,
-    string RoutineName,
-    string? Label,
-    int SortOrder);
+    int WeekIndex,
+    string Label,
+    List<ProgramSlotDto> Slots);
 
-public sealed record CreateProgramRoutineInput(
-    Guid RoutineId,
-    string? Label);
+public sealed record ProgramSlotDto(
+    Guid Id,
+    int DayIndex,
+    ProgramSlotKind Kind,
+    Guid? RoutineId,
+    string? RoutineName,
+    Guid? DayId,
+    string? DayName,
+    Guid? BlockId);

@@ -11,106 +11,94 @@ public sealed record StartSessionCommand(
     Guid StudentId,
     Guid RoutineId,
     Guid DayId,
+    int? WeekIndex = null,
+    int? SlotIndex = null,
     DateOnly? RecoversPlannedDate = null) : IRequest<WorkoutSessionDto>;
 
-public sealed class StartSessionHandler(IKondixDbContext db)
-    : IRequestHandler<StartSessionCommand, WorkoutSessionDto>
+public sealed class StartSessionHandler(IKondixDbContext db) : IRequestHandler<StartSessionCommand, WorkoutSessionDto>
 {
-    public async Task<WorkoutSessionDto> Handle(StartSessionCommand request, CancellationToken cancellationToken)
+    public async Task<WorkoutSessionDto> Handle(StartSessionCommand request, CancellationToken ct)
     {
-        // Find active ProgramAssignment that contains this routine
-        var programAssignment = await db.ProgramAssignments
-            .AsNoTracking()
-            .FirstOrDefaultAsync(pa => pa.StudentId == request.StudentId
-                && pa.Status == ProgramAssignmentStatus.Active
-                && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == request.RoutineId),
-                cancellationToken)
-            ?? throw new InvalidOperationException("Routine not assigned to this student");
-
-        var dayExists = await db.Days
-            .AnyAsync(d => d.Id == request.DayId && d.RoutineId == request.RoutineId, cancellationToken);
-        if (!dayExists) throw new InvalidOperationException("Day not found in this routine");
-
-        // Recovery-flow validations
-        bool isRecovery = false;
-        if (request.RecoversPlannedDate is not null)
+        // 1. If there's already an InProgress session for this student, return it (idempotent).
+        var active = await db.WorkoutSessions
+            .Where(s => s.StudentId == request.StudentId
+                        && s.Status == WorkoutSessionStatus.InProgress)
+            .OrderByDescending(s => s.StartedAt)
+            .FirstOrDefaultAsync(ct);
+        if (active is not null)
         {
-            var plannedDate = request.RecoversPlannedDate.Value;
+            return new WorkoutSessionDto(active.Id, active.RoutineId, active.DayId,
+                active.StartedAt, active.CompletedAt, active.Notes);
+        }
+
+        // 2. Resolve the active assignment with weeks + slots.
+        var assignment = await db.ProgramAssignments
+            .Include(a => a.Program).ThenInclude(p => p.Weeks).ThenInclude(w => w.Slots)
+            .Where(a => a.StudentId == request.StudentId && a.Status == ProgramAssignmentStatus.Active)
+            .OrderByDescending(a => a.StartDate)
+            .FirstOrDefaultAsync(ct);
+        if (assignment is null)
+            throw new InvalidOperationException("No active program assignment");
+
+        // 3. Compute current week index (Loop=0, Fixed=daysSinceStart/7).
+        var p = assignment.Program;
+        int currentWeekIdx;
+        if (p.Mode == ProgramMode.Loop)
+        {
+            currentWeekIdx = 0;
+        }
+        else
+        {
+            var startDay = DateOnly.FromDateTime(assignment.StartDate.UtcDateTime);
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-            // Validate planned date is within the 2-day recovery window [today-2, today-1]
-            var daysDiff = today.DayNumber - plannedDate.DayNumber;
-            if (daysDiff < 1 || daysDiff > 2)
-                throw new InvalidOperationException(
-                    $"Recovery planned date {plannedDate} is outside the 2-day recovery window. " +
-                    "Only yesterday or 2 days ago are eligible.");
-
-            // Validate the planned date's weekday is a configured training day
-            var dow = (int)plannedDate.DayOfWeek;
-            if (!programAssignment.TrainingDays.Contains(dow))
-                throw new InvalidOperationException(
-                    $"The planned date {plannedDate} (weekday {dow}) is not a configured training day for this assignment.");
-
-            // Load recent sessions (from plannedDate onwards) to check for honoring
-            var windowStart = new DateTimeOffset(
-                plannedDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-
-            var recentSessions = await db.WorkoutSessions
-                .AsNoTracking()
-                .Where(s => s.StudentId == request.StudentId
-                    && s.ProgramAssignmentId == programAssignment.Id
-                    && s.StartedAt >= windowStart)
-                .Select(s => new
-                {
-                    s.IsRecovery,
-                    s.CompletedAt,
-                    Date = DateOnly.FromDateTime(s.StartedAt.UtcDateTime),
-                })
-                .ToListAsync(cancellationToken);
-
-            // Verify no completed normal session exists for that planned date
-            var alreadyCompleted = recentSessions.Any(s => !s.IsRecovery && s.Date == plannedDate && s.CompletedAt != null);
-            if (alreadyCompleted)
-                throw new InvalidOperationException(
-                    $"A session was already completed on {plannedDate}. Recovery is not needed.");
-
-            // Verify no recovery session already covers that planned date
-            // (mirrors GetMissedSessionQuery's "honored" check: IsRecovery && Date >= plannedDate && Date <= today)
-            var alreadyRecovered = recentSessions.Any(s => s.IsRecovery && s.Date >= plannedDate && s.Date <= today);
-            if (alreadyRecovered)
-                throw new InvalidOperationException(
-                    $"A recovery session has already been started for the planned date {plannedDate}.");
-
-            isRecovery = true;
+            var daysSinceStart = Math.Max(0, today.DayNumber - startDay.DayNumber);
+            currentWeekIdx = daysSinceStart / 7;
+            if (currentWeekIdx >= p.Weeks.Count)
+                throw new InvalidOperationException("Program has ended");
         }
 
-        // Check for existing active session for this day
-        var activeSession = await db.WorkoutSessions
-            .FirstOrDefaultAsync(ws => ws.StudentId == request.StudentId
-                && ws.DayId == request.DayId
-                && ws.ProgramAssignmentId == programAssignment.Id
-                && ws.CompletedAt == null, cancellationToken);
+        // 4. Resolve target slot. Prefer (weekIndex, slotIndex) if supplied. Otherwise, find a slot in the
+        //    current week matching (routineId, dayId).
+        int weekIdx = request.WeekIndex ?? currentWeekIdx;
+        var week = p.Weeks.FirstOrDefault(w => w.WeekIndex == weekIdx)
+            ?? throw new InvalidOperationException($"Week {weekIdx} not found");
 
-        if (activeSession is not null)
+        ProgramSlot? slot;
+        if (request.SlotIndex is int slotIdx)
         {
-            return new WorkoutSessionDto(activeSession.Id, activeSession.RoutineId,
-                activeSession.DayId, activeSession.StartedAt, activeSession.CompletedAt,
-                activeSession.Notes);
+            slot = week.Slots.FirstOrDefault(s => s.DayIndex == slotIdx
+                && s.Kind == ProgramSlotKind.RoutineDay
+                && s.RoutineId == request.RoutineId
+                && s.DayId == request.DayId);
         }
+        else
+        {
+            slot = week.Slots.FirstOrDefault(s => s.Kind == ProgramSlotKind.RoutineDay
+                && s.RoutineId == request.RoutineId
+                && s.DayId == request.DayId);
+        }
+        if (slot is null)
+            throw new InvalidOperationException("Routine/day not assigned to current week");
 
+        // 5. Create the session.
+        var now = DateTimeOffset.UtcNow;
         var session = new WorkoutSession
         {
             StudentId = request.StudentId,
-            ProgramAssignmentId = programAssignment.Id,
-            RoutineId = request.RoutineId,
-            DayId = request.DayId,
-            StartedAt = DateTimeOffset.UtcNow,
-            IsRecovery = isRecovery,
-            // RecoversSessionId stays null — there is no real session row for a missed-but-never-started day.
+            AssignmentId = assignment.Id,
+            ProgramId = p.Id,
+            RoutineId = slot.RoutineId!.Value,
+            DayId = slot.DayId!.Value,
+            WeekIndex = weekIdx,
+            SlotIndex = slot.DayIndex,
+            StartedAt = now,
+            Status = WorkoutSessionStatus.InProgress,
+            IsRecovery = request.RecoversPlannedDate.HasValue,
+            RecoversPlannedDate = request.RecoversPlannedDate,
+            UpdatedAt = now,
         };
-
         db.WorkoutSessions.Add(session);
-        await db.SaveChangesAsync(cancellationToken);
+        await db.SaveChangesAsync(ct);
 
         return new WorkoutSessionDto(session.Id, session.RoutineId, session.DayId,
             session.StartedAt, session.CompletedAt, session.Notes);

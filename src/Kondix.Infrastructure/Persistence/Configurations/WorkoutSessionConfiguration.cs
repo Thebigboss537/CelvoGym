@@ -19,7 +19,7 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
         builder.Property(ws => ws.CreatedAt).HasDefaultValueSql("NOW()");
 
         builder.HasIndex(ws => new { ws.StudentId, ws.RoutineId, ws.DayId });
-        builder.HasIndex(ws => new { ws.StudentId, ws.ProgramAssignmentId });
+        builder.HasIndex(ws => new { ws.AssignmentId, ws.WeekIndex, ws.SlotIndex, ws.Status });
         builder.HasIndex(ws => new { ws.StudentId, ws.CompletedAt }).HasFilter("\"feedback_reviewed_at\" IS NULL");
 
         builder.HasOne(ws => ws.Student)
@@ -27,11 +27,17 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
             .HasForeignKey(ws => ws.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(ws => ws.ProgramAssignment)
-            .WithMany(pa => pa.WorkoutSessions)
-            .HasForeignKey(ws => ws.ProgramAssignmentId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
+        builder.Property(ws => ws.Status).HasConversion<string>().HasMaxLength(16).IsRequired();
+
+        builder.HasOne(ws => ws.Assignment)
+            .WithMany()
+            .HasForeignKey(ws => ws.AssignmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(ws => ws.Program)
+            .WithMany()
+            .HasForeignKey(ws => ws.ProgramId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(ws => ws.Routine)
             .WithMany()
@@ -42,6 +48,10 @@ public class WorkoutSessionConfiguration : IEntityTypeConfiguration<WorkoutSessi
             .WithMany()
             .HasForeignKey(ws => ws.DayId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Property(ws => ws.WeekIndex).IsRequired();
+        builder.Property(ws => ws.SlotIndex).IsRequired();
+        builder.Property(ws => ws.UpdatedAt).IsRequired();
 
         builder.Property(ws => ws.IsRecovery).HasDefaultValue(false);
         builder.HasOne(ws => ws.RecoversSession)

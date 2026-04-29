@@ -44,7 +44,13 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
     public async Task<IActionResult> StartSession([FromBody] StartSessionRequest request, CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
-        var result = await mediator.Send(new StartSessionCommand(studentId, request.RoutineId, request.DayId, request.RecoversPlannedDate), ct);
+        var result = await mediator.Send(new StartSessionCommand(
+            studentId,
+            request.RoutineId,
+            request.DayId,
+            request.WeekIndex,
+            request.SlotIndex,
+            request.RecoversPlannedDate), ct);
         return Ok(result);
     }
 
@@ -162,8 +168,19 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
     public async Task<IActionResult> GetNextWorkout(CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
-        var result = await mediator.Send(new GetNextWorkoutQuery(studentId), ct);
-        return result is not null ? Ok(result) : NoContent();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = await mediator.Send(new GetNextWorkoutQuery(studentId, today), ct);
+        return Ok(result);
+    }
+
+    [HttpGet("this-week")]
+    public async Task<IActionResult> GetThisWeek(CancellationToken ct)
+    {
+        var studentId = HttpContext.GetStudentId();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var result = await mediator.Send(new GetThisWeekQuery(studentId, today), ct);
+        if (result is null) return NoContent();
+        return Ok(result);
     }
 
     [HttpGet("missed-sessions")]
@@ -181,10 +198,10 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
         CancellationToken ct)
     {
         var studentId = HttpContext.GetStudentId();
+        // TODO Phase 5: restore ProgramRoutines ownership check via v3 ProgramSlot structure.
         var hasAssignment = await db.ProgramAssignments
             .AnyAsync(pa => pa.StudentId == studentId
-                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active
-                && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == routineId), ct);
+                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active, ct);
         if (!hasAssignment) throw new InvalidOperationException("Routine not assigned to this student");
 
         var result = await mediator.Send(new GetCommentsQuery(routineId, dayId), ct);
@@ -221,7 +238,12 @@ public class StudentPortalController(IMediator mediator, IKondixDbContext db) : 
     }
 }
 
-public sealed record StartSessionRequest(Guid RoutineId, Guid DayId, DateOnly? RecoversPlannedDate = null);
+public sealed record StartSessionRequest(
+    Guid RoutineId,
+    Guid DayId,
+    int? WeekIndex = null,
+    int? SlotIndex = null,
+    DateOnly? RecoversPlannedDate = null);
 public sealed record CompleteSessionRequest(string? Notes, MoodType? Mood);
 public sealed record ToggleSetRequest(Guid SessionId, Guid SetId, Guid RoutineId);
 public sealed record UpdateSetDataRequest(Guid SessionId, Guid SetId, Guid RoutineId, string? Weight, string? Reps, int? Rpe);

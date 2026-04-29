@@ -1,6 +1,6 @@
 using Kondix.Application.Common.Interfaces;
-using Kondix.Application.DTOs;
 using Kondix.Domain.Entities;
+using Kondix.Domain.Enums;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,26 +10,24 @@ public sealed record CreateProgramCommand(
     Guid TrainerId,
     string Name,
     string? Description,
-    int DurationWeeks,
-    List<CreateProgramRoutineInput> Routines) : IRequest<ProgramDetailDto>;
+    ProgramObjective Objective,
+    ProgramLevel Level,
+    ProgramMode Mode,
+    ProgramScheduleType ScheduleType,
+    int? DaysPerWeek,
+    int DurationWeeks) : IRequest<Guid>;
 
-public sealed class CreateProgramHandler(IKondixDbContext db)
-    : IRequestHandler<CreateProgramCommand, ProgramDetailDto>
+public sealed class CreateProgramHandler(IKondixDbContext db) : IRequestHandler<CreateProgramCommand, Guid>
 {
-    public async Task<ProgramDetailDto> Handle(CreateProgramCommand request, CancellationToken cancellationToken)
+    public async Task<Guid> Handle(CreateProgramCommand request, CancellationToken ct)
     {
-        if (request.Routines.Count == 0)
-            throw new InvalidOperationException("A program must have at least one routine");
+        var trainerExists = await db.Trainers.AnyAsync(t => t.Id == request.TrainerId, ct);
+        if (!trainerExists) throw new InvalidOperationException("Trainer not found");
 
-        // Verify all routines belong to trainer
-        var routineIds = request.Routines.Select(r => r.RoutineId).ToList();
-        var routines = await db.Routines
-            .AsNoTracking()
-            .Where(r => routineIds.Contains(r.Id) && r.TrainerId == request.TrainerId && r.IsActive)
-            .ToDictionaryAsync(r => r.Id, cancellationToken);
-
-        if (routines.Count != routineIds.Distinct().Count())
-            throw new InvalidOperationException("One or more routines not found");
+        var effectiveWeeks = request.Mode == ProgramMode.Loop ? 1 : request.DurationWeeks;
+        var slotsPerWeek = request.ScheduleType == ProgramScheduleType.Numbered
+            ? (request.DaysPerWeek ?? throw new InvalidOperationException("DaysPerWeek required for Numbered schedule type"))
+            : 7;
 
         var now = DateTimeOffset.UtcNow;
         var program = new Program
@@ -37,31 +35,31 @@ public sealed class CreateProgramHandler(IKondixDbContext db)
             TrainerId = request.TrainerId,
             Name = request.Name,
             Description = request.Description,
-            DurationWeeks = request.DurationWeeks,
+            Objective = request.Objective,
+            Level = request.Level,
+            Mode = request.Mode,
+            ScheduleType = request.ScheduleType,
+            DaysPerWeek = request.ScheduleType == ProgramScheduleType.Numbered ? request.DaysPerWeek : null,
+            IsPublished = false,
             UpdatedAt = now
         };
 
-        var routineDtos = new List<ProgramRoutineDto>();
-
-        for (var i = 0; i < request.Routines.Count; i++)
+        for (var wi = 0; wi < effectiveWeeks; wi++)
         {
-            var input = request.Routines[i];
-            var pr = new ProgramRoutine
+            var week = new ProgramWeek
             {
-                RoutineId = input.RoutineId,
-                Label = input.Label,
-                SortOrder = i
+                WeekIndex = wi,
+                Label = request.Mode == ProgramMode.Loop ? "Semana base" : $"Semana {wi + 1}"
             };
-            program.ProgramRoutines.Add(pr);
-
-            var routine = routines[input.RoutineId];
-            routineDtos.Add(new ProgramRoutineDto(pr.Id, pr.RoutineId, routine.Name, pr.Label, pr.SortOrder));
+            for (var di = 0; di < slotsPerWeek; di++)
+            {
+                week.Slots.Add(new ProgramSlot { DayIndex = di, Kind = ProgramSlotKind.Empty });
+            }
+            program.Weeks.Add(week);
         }
 
         db.Programs.Add(program);
-        await db.SaveChangesAsync(cancellationToken);
-
-        return new ProgramDetailDto(program.Id, program.Name, program.Description,
-            program.DurationWeeks, routineDtos, program.CreatedAt, program.UpdatedAt);
+        await db.SaveChangesAsync(ct);
+        return program.Id;
     }
 }

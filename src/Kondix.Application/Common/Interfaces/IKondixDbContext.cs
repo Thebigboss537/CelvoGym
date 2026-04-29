@@ -16,9 +16,9 @@ public interface IKondixDbContext
     DbSet<Exercise> Exercises { get; }
     DbSet<ExerciseSet> ExerciseSets { get; }
     DbSet<Program> Programs { get; }
-    DbSet<ProgramRoutine> ProgramRoutines { get; }
+    DbSet<ProgramWeek> ProgramWeeks { get; }
+    DbSet<ProgramSlot> ProgramSlots { get; }
     DbSet<ProgramAssignment> ProgramAssignments { get; }
-    DbSet<ProgramWeekOverride> ProgramWeekOverrides { get; }
     DbSet<WorkoutSession> WorkoutSessions { get; }
     DbSet<SetLog> SetLogs { get; }
     DbSet<TrainerNote> TrainerNotes { get; }

@@ -15,10 +15,11 @@ public sealed class GetMyRoutineDetailHandler(IKondixDbContext db)
 {
     public async Task<StudentRoutineDetailDto> Handle(GetMyRoutineDetailQuery request, CancellationToken cancellationToken)
     {
+        // TODO Phase 5: restore proper ownership check via v3 ProgramSlot structure.
+        // Old check used ProgramRoutines which no longer exists in Programs v3.
         var hasAssignment = await db.ProgramAssignments
             .AnyAsync(pa => pa.StudentId == request.StudentId
-                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active
-                && pa.Program.ProgramRoutines.Any(pr => pr.RoutineId == request.RoutineId),
+                && pa.Status == Domain.Enums.ProgramAssignmentStatus.Active,
                 cancellationToken);
 
         if (!hasAssignment)

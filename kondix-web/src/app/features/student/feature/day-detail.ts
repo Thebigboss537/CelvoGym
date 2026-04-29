@@ -153,7 +153,7 @@ import { KxSpinner } from '../../../shared/ui/spinner';
                 @if (nextWorkout()) {
                   <p class="text-text text-xl font-bold leading-tight">{{ nextWorkout()!.routineName }}</p>
                   <p class="text-text-secondary text-sm">
-                    {{ nextWorkout()!.dayName }} · {{ nextWorkout()!.programName }}
+                    {{ nextWorkout()!.dayName }}
                   </p>
                 } @else {
                   <p class="text-text text-xl font-bold leading-tight">{{ program()!.name }}</p>
